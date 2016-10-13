@@ -4,16 +4,19 @@ YACC=bison
 
 LFILE=lexical.l
 YFILE=syntax.y
+CFILES=$(shell find . -name "*.c")
+HFILES=$(shell find . -name "*.h")
+CFLAGS=-O2 -std=c99
 
 OBJ_DIR=obj/
 TEST_DIR=test/
 TARGET=compiler
 
-$(TARGET):
+$(TARGET):$(YFILE) $(LFILE) $(CFILES) $(HFILES)
 	mkdir -p $(OBJ_DIR)
 	$(LEX) -o $(LFILE:.l=.c) $(LFILE)
 	$(YACC) $(YFILE) --defines=$(YFILE:.y=.h) -o $(YFILE:.y=.c)
-	$(CC) $(YFILE:.y=.c) $(LFILE:.l=.c) -o $(TARGET) -lfl
+	$(CC) $(CFILES) -o $(TARGET) -lfl
 
 .PHONY:test test-lex test-unit
 

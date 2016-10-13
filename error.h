@@ -13,7 +13,7 @@ const char *ErrorReason[] = {
 	[ERR_INVALID_NUM] = "invalid number.",
 	[ERR_INVALID_OCT] = "invalid oct number.",
 	[ERR_INVALID_HEX] = "invalid hex number.",
-	[ERR_INVALID_DEC] = "invalid dec number."
+	[ERR_INVALID_DEC] = "invalid dec number.",
 	[ERR_UNKNOWN_TOKEN] = "unknown token."
 };
 

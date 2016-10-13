@@ -1,12 +1,10 @@
 %{
 #include <stdlib.h>
 #include <stdio.h>
+#include "basic-dat.h"
 #include "syntax.h"
 #include "common.h"
 #include "component.h"
-
-int installFloat(float);
-int installInt(int);
 
 int yycolumn = 1;
 
@@ -55,30 +53,21 @@ else               {patternlog("ELSE");return ELSE;}
 do                 {patternlog("DO");return DO;}
 while              {patternlog("WHILE");return WHILE;}
 for                {patternlog("FOR");return FOR;}
-int                {patternlog("INT");return SPEC;}
-float              {patternlog("FLOAT");return SPEC;}
+int                {patternlog("INT");return INT;}
+float              {patternlog("FLOAT");return FLOAT;}
+struct             {patternlog("FLOAT");return STRUCT;}
+{int}              {patternlog("NUM:i");atoi(yytext);return NUM;}
+{hex}              {patternlog("NUM:x");atoi(yytext);return NUM;}
+{oct}              {patternlog("NUM:o");atoi(yytext);return NUM;}
 {blank}            {/*do nothing*/}
-{float}            {patternlog("NUM:f");installFloat(atof(yytext));return NUM;}
-{int}              {patternlog("NUM:i");installInt(atoi(yytext));return NUM;}
-{hex}              {patternlog("NUM:x");installInt(atoi(yytext));return NUM;}
-{oct}              {patternlog("NUM:o");installInt(atoi(yytext));return NUM;}
-{invalidnum}       {patternlog("NUM:v");installInt(atoi(yytext));return NUM;}
+{float}            {patternlog("NUM:f");atof(yytext);return NUM;}
+{invalidnum}       {patternlog("NUM:v");atoi(yytext);return NUM;}
 {string}           {patternlog("STR");register_string(yytext);return STRING;}
 {id}               {patternlog("ID");register_id(yytext);return ID;}
 {multiplecomment}  {patternlog("MC");/*do nothing*/}
 {singlecomment}    {patternlog("SC");/*do nothing*/}
 
 %%
-
-int installFloat(float number)
-{
-    return 0;
-}
-
-int installInt(int number)
-{
-    return 0;
-}
 
 int main()
 {

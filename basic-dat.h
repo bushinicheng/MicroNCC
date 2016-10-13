@@ -1,14 +1,12 @@
-#ifndef __BASIC_DATA_H__
-#define __BASIC_DATA_H__
-
-#include "syntax.h"
+#ifndef __BASIC_DAT_H__
+#define __BASIC_DAT_H__
 
 /* 表达式
  *
  */
 
 typedef struct tagNodeInfo {
-	yytokentype lexval;
+	int lexval;
 	union {
 		int i;float f;double llf;void *p;
 		int st;
@@ -28,7 +26,7 @@ typedef struct tagNode {
 	DebugInfo di;
 } Node, *PNode;
 
-extern PNode astroot;
+extern Node astroot;
 extern DebugInfo debug;
 
 #endif

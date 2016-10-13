@@ -3,8 +3,9 @@
 #include "basic-dat.h"
 
 Node astroot;
+DebugInfo curd;
 
-PNode build_subast(...)
+PNode build_subast(DebugInfo *di, ...)
 {
 	return 0;
 }
