@@ -3,4 +3,5 @@
 parser
 compiler
 *.[oO]
+obj/*
 

@@ -28,6 +28,10 @@ float f5 = +0.1;
 float f6 = 0.3e;//invalid float
 string1 = "Hello\" World!";
 string2 = "prefix""suffix";//valid string
+string2 = "prefix"  "suffix";//valid string
+string2 = "prefix"			 "suffix";//valid string
+string2 = "prefix"
+"suffix";//valid string
 if(1){}
 else{}
 
