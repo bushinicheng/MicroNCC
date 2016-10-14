@@ -3,8 +3,9 @@
 #include <assert.h>
 #include "basic-dat.h"
 
-#define __AST_NEED__
+#define __AST_C__
 #include "ast.h"
+#include "debug.h"
 
 #define MAX_SIZE (1024*1024*2)
 
@@ -22,15 +23,28 @@ Node *new_node()
 
 Node* __attribute__((noinline)) build_subast(int nodetype, ...)
 {
-	Node *pre_child = NULL;
+	va_list vlist;
+	va_start(vlist, nodetype);
 	Node *parnd = new_node();
+	Node *first_child = va_arg(vlist, PNode);
+	Node *prev_child = first_child;
+	printf("*");
+	printf("%d,%s,%p", nodetype, str_nodes[nodetype], prev_child);
+	printf("*\n");
+	set_break();
 	parnd->semanval = nodetype;
-	for(int i = nr_child_nodes[nodetype]; i>= 0; i--)
+	for(int i = 1; i < nr_child_nodes[nodetype]; i++)
 	{
-		Node *post_child = *(Node **)(&nodetype + i);
-		post_child->sibling = pre_child;
-		pre_child = post_child;
+		Node *post_child = va_arg(vlist, PNode);
+		prev_child->sibling = post_child;
+		prev_child = post_child;
 	}
-	parnd->child = pre_child;
-	return 0;
+	if(!nr_child_nodes[nodetype])
+		first_child = NULL;
+	else
+		prev_child->sibling = NULL;
+	parnd->child = first_child;
+	printf("%p,%p\n", first_child->sibling, parnd->child);
+	va_end(vlist);
+	return parnd;
 }

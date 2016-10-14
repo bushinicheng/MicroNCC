@@ -5,6 +5,7 @@
 #include "syntax.h"
 #include "common.h"
 #include "component.h"
+#include "ast.h"
 
 int yycolumn = 1;
 
@@ -147,8 +148,13 @@ static int reg(int lexval)
 
 int main()
 {
+	int yyparse();
 	int init_component();
 	init_component();
-    while(yylex()>0);
+#ifdef __DEBUG_LEX__
+	while(yylex()>0);
+#else
+	yyparse();
+#endif
     return 0;
 }

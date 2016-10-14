@@ -17,3 +17,5 @@ int yyerror(const char *str)
 	printf("%s\n", str);
 	return 0;
 }
+
+int __attribute__((noinline)) set_break(){return 0;}

@@ -558,6 +558,7 @@ char *yytext;
 #include "syntax.h"
 #include "common.h"
 #include "component.h"
+#include "ast.h"
 
 int yycolumn = 1;
 
@@ -576,7 +577,7 @@ static int symbol(int lexval);
 static int num(int specval);
 static int reg(int lexval);
 
-#line 580 "lexical.c"
+#line 581 "lexical.c"
 
 #define INITIAL 0
 
@@ -790,9 +791,9 @@ YY_DECL
 		}
 
 	{
-#line 42 "lexical.l"
+#line 43 "lexical.l"
 
-#line 796 "lexical.c"
+#line 797 "lexical.c"
 
 	while ( 1 )		/* loops until end-of-file is reached */
 		{
@@ -851,175 +852,175 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 43 "lexical.l"
+#line 44 "lexical.l"
 {logd("AS");	return symbol(ASSIGNOP);}
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 44 "lexical.l"
+#line 45 "lexical.l"
 {logd("EQ");	return symbol(EQ);}
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 45 "lexical.l"
+#line 46 "lexical.l"
 {logd("LT");	return symbol(LT);}
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 46 "lexical.l"
+#line 47 "lexical.l"
 {logd("LE");	return symbol(LE);}
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 47 "lexical.l"
+#line 48 "lexical.l"
 {logd("NE");	return symbol(NE);}
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 48 "lexical.l"
+#line 49 "lexical.l"
 {logd("GT");	return symbol(GT);}
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 49 "lexical.l"
+#line 50 "lexical.l"
 {logd("GE");	return symbol(GE);}
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 51 "lexical.l"
+#line 52 "lexical.l"
 {logd("LP");	return symbol(LP);}
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 52 "lexical.l"
+#line 53 "lexical.l"
 {logd("RP");	return symbol(RP);}
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 53 "lexical.l"
+#line 54 "lexical.l"
 {logd("LB");	return symbol(LB);}
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 54 "lexical.l"
+#line 55 "lexical.l"
 {logd("RB");	return symbol(RB);}
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 55 "lexical.l"
+#line 56 "lexical.l"
 {logd("LC");	return symbol(LC);}
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 56 "lexical.l"
+#line 57 "lexical.l"
 {logd("RC");	return symbol(RC);}
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 57 "lexical.l"
+#line 58 "lexical.l"
 {logd("DOT");	return symbol(DOT);}
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 58 "lexical.l"
+#line 59 "lexical.l"
 {logd("COMMA");	return symbol(COMMA);}
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 59 "lexical.l"
+#line 60 "lexical.l"
 {logd("SEMI");	return symbol(SEMI);}
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 61 "lexical.l"
+#line 62 "lexical.l"
 {logd("IF");		return symbol(IF);}
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 62 "lexical.l"
+#line 63 "lexical.l"
 {logd("ELSE");	return symbol(ELSE);}
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 63 "lexical.l"
+#line 64 "lexical.l"
 {logd("DO");		return symbol(DO);}
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 64 "lexical.l"
+#line 65 "lexical.l"
 {logd("WHILE");	return symbol(WHILE);}
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 65 "lexical.l"
+#line 66 "lexical.l"
 {logd("FOR");	return symbol(FOR);}
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 66 "lexical.l"
+#line 67 "lexical.l"
 {logd("INT");	return symbol(INT);}
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 67 "lexical.l"
+#line 68 "lexical.l"
 {logd("FLOAT");	return symbol(FLOAT);}
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 68 "lexical.l"
+#line 69 "lexical.l"
 {logd("STRUCT");	return symbol(STRUCT);}
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 70 "lexical.l"
+#line 71 "lexical.l"
 {logd("NUM:i");	return num('i');}
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 71 "lexical.l"
+#line 72 "lexical.l"
 {logd("NUM:x");	return num('x');}
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 72 "lexical.l"
+#line 73 "lexical.l"
 {logd("NUM:o");	return num('o');}
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 73 "lexical.l"
+#line 74 "lexical.l"
 {logd("NUM:f");	return num('f');}
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 75 "lexical.l"
+#line 76 "lexical.l"
 {logd("NUM:v");	return symbol(NUM);}
 	YY_BREAK
 case 30:
 /* rule 30 can match eol */
 YY_RULE_SETUP
-#line 76 "lexical.l"
+#line 77 "lexical.l"
 {logd("STR");	return reg(STRING);}
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 77 "lexical.l"
+#line 78 "lexical.l"
 {logd("ID");		return reg(ID);}
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 78 "lexical.l"
+#line 79 "lexical.l"
 {/*do nothing*/}
 	YY_BREAK
 case 33:
 /* rule 33 can match eol */
 YY_RULE_SETUP
-#line 79 "lexical.l"
+#line 80 "lexical.l"
 {yycolumn = 0;}
 	YY_BREAK
 case 34:
 /* rule 34 can match eol */
 YY_RULE_SETUP
-#line 80 "lexical.l"
+#line 81 "lexical.l"
 {logd("MC");	/*do nothing*/}
 	YY_BREAK
 case 35:
@@ -1027,15 +1028,15 @@ case 35:
 (yy_c_buf_p) = yy_cp -= 1;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 81 "lexical.l"
+#line 82 "lexical.l"
 {logd("SC");	/*do nothing*/}
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 83 "lexical.l"
+#line 84 "lexical.l"
 ECHO;
 	YY_BREAK
-#line 1039 "lexical.c"
+#line 1040 "lexical.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -2030,7 +2031,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 82 "lexical.l"
+#line 83 "lexical.l"
 
 
 
@@ -2099,9 +2100,14 @@ static int reg(int lexval)
 
 int main()
 {
+	int yyparse();
 	int init_component();
 	init_component();
-    while(yylex()>0);
+#ifdef __DEBUG_LEX__
+	while(yylex()>0);
+#else
+	yyparse();
+#endif
     return 0;
 }
 

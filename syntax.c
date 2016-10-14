@@ -68,7 +68,11 @@
 #include "basic-dat.h"
 #include "ast.h"
 
-#line 72 "syntax.c" /* yacc.c:339  */
+int yylex();
+int yyerror(const char *str);
+
+
+#line 76 "syntax.c" /* yacc.c:339  */
 
 # ifndef YY_NULLPTR
 #  if defined __cplusplus && 201103L <= __cplusplus
@@ -144,11 +148,11 @@ extern int yydebug;
 typedef union YYSTYPE YYSTYPE;
 union YYSTYPE
 {
-#line 7 "syntax.y" /* yacc.c:355  */
+#line 11 "syntax.y" /* yacc.c:355  */
 
 	Node *pnd;
 
-#line 152 "syntax.c" /* yacc.c:355  */
+#line 156 "syntax.c" /* yacc.c:355  */
 };
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1
@@ -163,7 +167,7 @@ int yyparse (void);
 
 /* Copy the second part of user declarations.  */
 
-#line 167 "syntax.c" /* yacc.c:358  */
+#line 171 "syntax.c" /* yacc.c:358  */
 
 #ifdef short
 # undef short
@@ -403,18 +407,18 @@ union yyalloc
 #endif /* !YYCOPY_NEEDED */
 
 /* YYFINAL -- State number of the termination state.  */
-#define YYFINAL  13
+#define YYFINAL  15
 /* YYLAST -- Last index in YYTABLE.  */
-#define YYLAST   37
+#define YYLAST   46
 
 /* YYNTOKENS -- Number of terminals.  */
 #define YYNTOKENS  36
 /* YYNNTS -- Number of nonterminals.  */
 #define YYNNTS  21
 /* YYNRULES -- Number of rules.  */
-#define YYNRULES  34
+#define YYNRULES  38
 /* YYNSTATES -- Number of states.  */
-#define YYNSTATES  52
+#define YYNSTATES  57
 
 /* YYTRANSLATE[YYX] -- Symbol number corresponding to YYX as returned
    by yylex, with out-of-bounds checking.  */
@@ -464,10 +468,10 @@ static const yytype_uint8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,    45,    45,    48,    49,    52,    53,    57,    58,    61,
-      62,    65,    67,    71,    72,    74,    78,    79,    80,    82,
-      84,    85,    86,    88,    89,    91,    94,    95,    97,    98,
-     100,   101,   103,   105,   108
+       0,    52,    52,    55,    56,    59,    60,    61,    65,    66,
+      69,    70,    73,    76,    80,    81,    84,    88,    89,    90,
+      93,    96,    97,    98,   101,   102,   105,   109,   110,   113,
+     114,   117,   118,   121,   124,   128,   129,   130,   131
 };
 #endif
 
@@ -498,12 +502,12 @@ static const yytype_uint16 yytoknum[] =
 };
 # endif
 
-#define YYPACT_NINF -29
+#define YYPACT_NINF -30
 
 #define yypact_value_is_default(Yystate) \
-  (!!((Yystate) == (-29)))
+  (!!((Yystate) == (-30)))
 
-#define YYTABLE_NINF -34
+#define YYTABLE_NINF -35
 
 #define yytable_value_is_error(Yytable_value) \
   0
@@ -512,12 +516,12 @@ static const yytype_uint16 yytoknum[] =
      STATE-NUM.  */
 static const yytype_int8 yypact[] =
 {
-     -18,   -29,   -29,   -28,     5,   -29,   -18,   -17,   -29,   -29,
-      -4,   -29,    -3,   -29,   -29,   -29,     2,     3,   -18,   -11,
-     -18,   -29,     4,   -18,   -10,   -29,    10,     6,    -8,    -6,
-     -29,   -29,   -29,     7,     9,    18,   -29,   -18,   -29,   -29,
-      13,    -6,    11,   -29,   -10,    -6,   -29,   -29,   -29,   -29,
-     -29,   -29
+     -16,   -30,   -30,   -26,     7,   -30,   -16,   -30,   -16,   -17,
+     -30,   -30,     4,   -30,     5,   -30,   -30,   -30,   -23,   -30,
+      15,    13,    10,    12,    21,   -16,   -30,    -3,   -16,   -30,
+     -30,   -23,   -14,    16,   -30,    22,    17,     2,   -14,   -30,
+     -30,   -30,   -30,    26,   -30,   -30,   -16,   -30,    23,   -14,
+      -6,   -14,   -30,   -30,   -30,   -30,    26
 };
 
   /* YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
@@ -525,28 +529,28 @@ static const yytype_int8 yypact[] =
      means the default is an error.  */
 static const yytype_uint8 yydefact[] =
 {
-       0,    28,    29,     0,     0,     2,     4,     0,    26,    27,
-      32,    30,     0,     1,     3,     6,     0,     0,    18,     0,
-      18,     5,     0,    17,    22,     7,     0,    10,     0,     0,
-      31,    16,    25,     0,    21,    23,     8,     0,    11,    34,
-       0,    14,     0,    19,    22,     0,     9,    12,    13,    15,
-      20,    24
+      19,    29,    30,     0,     0,     2,     4,     7,    18,     0,
+      27,    28,    33,    31,     0,     1,     3,    17,    23,     6,
+      26,     0,     0,    22,    24,    19,    26,     0,    19,     5,
+      20,    23,     0,     0,     8,     0,    11,     0,     0,    21,
+      36,    37,    35,    25,    32,     9,     0,    12,     0,    15,
+       0,     0,    10,    13,    14,    16,    38
 };
 
   /* YYPGOTO[NTERM-NUM].  */
 static const yytype_int8 yypgoto[] =
 {
-     -29,   -29,    25,   -29,   -29,    -5,   -29,   -29,    -7,   -29,
-     -16,   -29,    -9,   -29,   -29,     0,   -29,   -29,   -29,   -29,
-     -12
+     -30,   -30,    31,   -30,   -30,    -8,   -30,   -30,    -9,   -30,
+      -7,   -30,    11,   -30,   -30,     0,   -30,   -30,   -30,   -30,
+     -29
 };
 
   /* YYDEFGOTO[NTERM-NUM].  */
 static const yytype_int8 yydefgoto[] =
 {
-      -1,     4,     5,     6,    17,    26,    27,    21,    40,    41,
-      22,    23,    33,    34,    35,    24,     8,     9,    11,    12,
-      42
+      -1,     4,     5,     6,    21,    35,    36,    29,    48,    49,
+       7,     8,    22,    23,    24,    18,    10,    11,    13,    14,
+      50
 };
 
   /* YYTABLE[YYPACT[STATE-NUM]] -- What to do in state STATE-NUM.  If
@@ -554,48 +558,50 @@ static const yytype_int8 yydefgoto[] =
      number is the opposite.  If YYTABLE_NINF, syntax error.  */
 static const yytype_int8 yytable[] =
 {
-       7,    25,    15,    10,    29,    13,     7,    31,     1,     2,
-       3,   -33,    18,    19,    16,     1,     2,     3,    20,    28,
-      30,    32,    36,    38,    37,    39,    43,    44,    45,    47,
-      49,    14,    46,    51,    48,    50,     0,    28
+       9,    17,    19,    43,    51,    12,     9,    15,    26,    34,
+       1,     2,     3,    55,    20,    40,    41,    42,    33,   -34,
+      25,    38,    56,     1,     2,     3,    27,    37,    28,    30,
+      31,    32,    44,    47,    45,    46,    51,    16,    52,    53,
+      54,     0,    39,     0,     0,     0,    37
 };
 
 static const yytype_int8 yycheck[] =
 {
-       0,    12,    19,    31,    20,     0,     6,    23,    26,    27,
-      28,    15,    15,    11,    31,    26,    27,    28,    15,    19,
-      16,    31,    12,    31,    18,    31,    19,    18,    10,    16,
-      19,     6,    37,    45,    41,    44,    -1,    37
+       0,     8,    19,    32,    10,    31,     6,     0,    31,    12,
+      26,    27,    28,    19,    31,    29,    30,    31,    25,    15,
+      15,    28,    51,    26,    27,    28,    11,    27,    15,    19,
+      18,    10,    16,    31,    12,    18,    10,     6,    46,    16,
+      49,    -1,    31,    -1,    -1,    -1,    46
 };
 
   /* YYSTOS[STATE-NUM] -- The (internal number of the) accessing
      symbol of state STATE-NUM.  */
 static const yytype_uint8 yystos[] =
 {
-       0,    26,    27,    28,    37,    38,    39,    51,    52,    53,
-      31,    54,    55,     0,    38,    19,    31,    40,    15,    11,
-      15,    43,    46,    47,    51,    12,    41,    42,    51,    46,
-      16,    46,    31,    48,    49,    50,    12,    18,    31,    31,
-      44,    45,    56,    19,    18,    10,    41,    16,    44,    19,
-      48,    56
+       0,    26,    27,    28,    37,    38,    39,    46,    47,    51,
+      52,    53,    31,    54,    55,     0,    38,    46,    51,    19,
+      31,    40,    48,    49,    50,    15,    31,    11,    15,    43,
+      19,    18,    10,    46,    12,    41,    42,    51,    46,    48,
+      29,    30,    31,    56,    16,    12,    18,    31,    44,    45,
+      56,    10,    41,    16,    44,    19,    56
 };
 
   /* YYR1[YYN] -- Symbol number of symbol that rule YYN derives.  */
 static const yytype_uint8 yyr1[] =
 {
-       0,    36,    37,    38,    38,    39,    39,    40,    40,    41,
-      41,    42,    43,    44,    44,    45,    46,    46,    46,    47,
-      48,    48,    48,    49,    49,    50,    51,    51,    52,    52,
-      53,    53,    54,    55,    56
+       0,    36,    37,    38,    38,    39,    39,    39,    40,    40,
+      41,    41,    42,    43,    44,    44,    45,    46,    46,    46,
+      47,    48,    48,    48,    49,    49,    50,    51,    51,    52,
+      52,    53,    53,    54,    55,    56,    56,    56,    56
 };
 
   /* YYR2[YYN] -- Number of symbols on the right hand side of rule YYN.  */
 static const yytype_uint8 yyr2[] =
 {
-       0,     2,     1,     2,     1,     3,     2,     3,     4,     3,
-       1,     2,     4,     2,     1,     2,     2,     1,     0,     3,
-       3,     1,     0,     1,     3,     1,     1,     1,     1,     1,
-       2,     5,     1,     1,     1
+       0,     2,     1,     2,     1,     3,     2,     1,     3,     4,
+       3,     1,     2,     4,     2,     1,     2,     2,     1,     0,
+       3,     3,     1,     0,     1,     3,     1,     1,     1,     1,
+       1,     2,     5,     1,     1,     1,     1,     1,     3
 };
 
 
@@ -1272,19 +1278,229 @@ yyreduce:
   switch (yyn)
     {
         case 2:
-#line 45 "syntax.y" /* yacc.c:1646  */
+#line 52 "syntax.y" /* yacc.c:1646  */
     {astroot=build_subast(AST_Program_is_ExtDefList, (yyvsp[0].pnd));}
-#line 1278 "syntax.c" /* yacc.c:1646  */
-    break;
-
-  case 3:
-#line 48 "syntax.y" /* yacc.c:1646  */
-    {(yyval.pnd)=build_subast(AST_ExtDefList_is_ExtDef_ExtDefList, (yyvsp[-1].pnd), (yyvsp[0].pnd));}
 #line 1284 "syntax.c" /* yacc.c:1646  */
     break;
 
+  case 3:
+#line 55 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_ExtDefList_is_ExtDef_ExtDefList, (yyvsp[-1].pnd), (yyvsp[0].pnd));}
+#line 1290 "syntax.c" /* yacc.c:1646  */
+    break;
 
-#line 1288 "syntax.c" /* yacc.c:1646  */
+  case 4:
+#line 56 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_ExtDefList_is_ExtDef, (yyvsp[0].pnd));}
+#line 1296 "syntax.c" /* yacc.c:1646  */
+    break;
+
+  case 5:
+#line 59 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_ExtDef_is_Specifier_FuncDec_CompSt, (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
+#line 1302 "syntax.c" /* yacc.c:1646  */
+    break;
+
+  case 6:
+#line 60 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_ExtDef_is_Specifier_SEMI, (yyvsp[-1].pnd), (yyvsp[0].pnd));}
+#line 1308 "syntax.c" /* yacc.c:1646  */
+    break;
+
+  case 7:
+#line 61 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_ExtDef_is_DefList, (yyvsp[0].pnd));}
+#line 1314 "syntax.c" /* yacc.c:1646  */
+    break;
+
+  case 8:
+#line 65 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_FuncDec_is_ID_LP_RP, (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
+#line 1320 "syntax.c" /* yacc.c:1646  */
+    break;
+
+  case 9:
+#line 66 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_FuncDec_is_ID_LP_ArgList_RP, (yyvsp[-3].pnd), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
+#line 1326 "syntax.c" /* yacc.c:1646  */
+    break;
+
+  case 10:
+#line 69 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_ArgList_is_Arg_COMMA_ArgList, (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
+#line 1332 "syntax.c" /* yacc.c:1646  */
+    break;
+
+  case 11:
+#line 70 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_ArgList_is_Arg, (yyvsp[0].pnd));}
+#line 1338 "syntax.c" /* yacc.c:1646  */
+    break;
+
+  case 12:
+#line 73 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_Arg_is_Specifier_ID, (yyvsp[-1].pnd), (yyvsp[0].pnd));}
+#line 1344 "syntax.c" /* yacc.c:1646  */
+    break;
+
+  case 13:
+#line 76 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_CompSt_is_LC_DefList_StmtList_RC, (yyvsp[-3].pnd), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
+#line 1350 "syntax.c" /* yacc.c:1646  */
+    break;
+
+  case 14:
+#line 80 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_StmtList_is_Stmt_StmtList, (yyvsp[-1].pnd), (yyvsp[0].pnd));}
+#line 1356 "syntax.c" /* yacc.c:1646  */
+    break;
+
+  case 15:
+#line 81 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_StmtList_is_Stmt, (yyvsp[0].pnd));}
+#line 1362 "syntax.c" /* yacc.c:1646  */
+    break;
+
+  case 16:
+#line 84 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_Stmt_is_Exp_SEMI, (yyvsp[-1].pnd), (yyvsp[0].pnd));}
+#line 1368 "syntax.c" /* yacc.c:1646  */
+    break;
+
+  case 17:
+#line 88 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_DefList_is_Def_DefList, (yyvsp[-1].pnd), (yyvsp[0].pnd));}
+#line 1374 "syntax.c" /* yacc.c:1646  */
+    break;
+
+  case 18:
+#line 89 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_DefList_is_Def, (yyvsp[0].pnd));}
+#line 1380 "syntax.c" /* yacc.c:1646  */
+    break;
+
+  case 19:
+#line 90 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_DefList_is_None);}
+#line 1386 "syntax.c" /* yacc.c:1646  */
+    break;
+
+  case 20:
+#line 93 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_Def_is_Specifier_DecList_SEMI, (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
+#line 1392 "syntax.c" /* yacc.c:1646  */
+    break;
+
+  case 21:
+#line 96 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_DecList_is_Dec_COMMA_DecList, (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
+#line 1398 "syntax.c" /* yacc.c:1646  */
+    break;
+
+  case 22:
+#line 97 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_DecList_is_Dec, (yyvsp[0].pnd));}
+#line 1404 "syntax.c" /* yacc.c:1646  */
+    break;
+
+  case 23:
+#line 98 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_DecList_is_None);}
+#line 1410 "syntax.c" /* yacc.c:1646  */
+    break;
+
+  case 24:
+#line 101 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_Dec_is_VarDec, (yyvsp[0].pnd));}
+#line 1416 "syntax.c" /* yacc.c:1646  */
+    break;
+
+  case 25:
+#line 102 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_Dec_is_VarDec_ASSIGNOP_Exp, (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
+#line 1422 "syntax.c" /* yacc.c:1646  */
+    break;
+
+  case 26:
+#line 105 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_VarDec_is_ID, (yyvsp[0].pnd));}
+#line 1428 "syntax.c" /* yacc.c:1646  */
+    break;
+
+  case 27:
+#line 109 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_Specifier_is_TYPE, (yyvsp[0].pnd));}
+#line 1434 "syntax.c" /* yacc.c:1646  */
+    break;
+
+  case 28:
+#line 110 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_Specifier_is_StructSpecifier, (yyvsp[0].pnd));}
+#line 1440 "syntax.c" /* yacc.c:1646  */
+    break;
+
+  case 29:
+#line 113 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_TYPE_is_INT, (yyvsp[0].pnd));}
+#line 1446 "syntax.c" /* yacc.c:1646  */
+    break;
+
+  case 30:
+#line 114 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_TYPE_is_FLOAT, (yyvsp[0].pnd));}
+#line 1452 "syntax.c" /* yacc.c:1646  */
+    break;
+
+  case 31:
+#line 117 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_StructSpecifier_is_STRUCT_Tag, (yyvsp[-1].pnd), (yyvsp[0].pnd));}
+#line 1458 "syntax.c" /* yacc.c:1646  */
+    break;
+
+  case 32:
+#line 118 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_StructSpecifier_is_STRUCT_OptTag_LC_DefList_RC, (yyvsp[-4].pnd), (yyvsp[-3].pnd), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
+#line 1464 "syntax.c" /* yacc.c:1646  */
+    break;
+
+  case 33:
+#line 121 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_Tag_is_ID, (yyvsp[0].pnd));}
+#line 1470 "syntax.c" /* yacc.c:1646  */
+    break;
+
+  case 34:
+#line 124 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_OptTag_is_ID, (yyvsp[0].pnd));}
+#line 1476 "syntax.c" /* yacc.c:1646  */
+    break;
+
+  case 35:
+#line 128 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_Exp_is_ID, (yyvsp[0].pnd));}
+#line 1482 "syntax.c" /* yacc.c:1646  */
+    break;
+
+  case 36:
+#line 129 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_Exp_is_NUM, (yyvsp[0].pnd));}
+#line 1488 "syntax.c" /* yacc.c:1646  */
+    break;
+
+  case 37:
+#line 130 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_Exp_is_STRING, (yyvsp[0].pnd));}
+#line 1494 "syntax.c" /* yacc.c:1646  */
+    break;
+
+  case 38:
+#line 131 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_Exp_is_Exp_ASSIGNOP_Exp, (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
+#line 1500 "syntax.c" /* yacc.c:1646  */
+    break;
+
+
+#line 1504 "syntax.c" /* yacc.c:1646  */
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
