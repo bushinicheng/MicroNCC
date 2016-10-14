@@ -1,11 +1,11 @@
 %{
 #include <stdio.h>
 #include "basic-dat.h"
+#include "ast.h"
 %}
 
 %union {
-	Node *node;
-	NodeInfo ni;
+	Node *pnd;
 }
 
 %token<YYTOKENTYPE>
@@ -21,7 +21,7 @@
 %left PLUS SUB
 %left MULTI DIVL
 
-%type<node>
+%type<pnd>
 	Program
 	ExtDefList
 	ExtDef
@@ -42,10 +42,10 @@
 
 %%
 
-Program:ExtDefList {}
+Program:ExtDefList {astroot=build_subast(AST_Program_is_ExtDefList, $1);}
 ;
 
-ExtDefList:ExtDef ExtDefList
+ExtDefList:ExtDef ExtDefList {$$=build_subast(AST_ExtDefList_is_ExtDef_ExtDefList, $1, $2);}
 		  |ExtDef
 ;
 

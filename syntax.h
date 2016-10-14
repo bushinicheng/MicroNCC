@@ -86,12 +86,11 @@ extern int yydebug;
 typedef union YYSTYPE YYSTYPE;
 union YYSTYPE
 {
-#line 6 "syntax.y" /* yacc.c:1909  */
+#line 7 "syntax.y" /* yacc.c:1909  */
 
-	Node *node;
-	NodeInfo ni;
+	Node *pnd;
 
-#line 95 "syntax.h" /* yacc.c:1909  */
+#line 94 "syntax.h" /* yacc.c:1909  */
 };
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1

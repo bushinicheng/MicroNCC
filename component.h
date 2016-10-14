@@ -3,6 +3,6 @@
 
 int register_string(const char *);
 int register_id(const char *);
-
+int next_number(char **str, int base);
 
 #endif

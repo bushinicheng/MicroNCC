@@ -4,35 +4,41 @@ YACC=bison
 
 LFILE=lexical.l
 YFILE=syntax.y
+LCFILE=$(LFILE:.l=.c)
+YCFILE=$(YFILE:.y=.c)
+YHFILE=$(YFILE:.y=.h)
 CFILES=$(shell find . -name "*.c")
 HFILES=$(shell find . -name "*.h")
 CFLAGS=-O2 -std=c99
 
 OBJ_DIR=obj/
 TEST_DIR=test/
-TARGET=compiler
+COMPILER=compiler
 
-$(TARGET):$(YFILE) $(LFILE) $(CFILES) $(HFILES)
+all:$(COMPILER)
+
+$(LCFILE):$(LFILE)
+	$(LEX) -o $(LCFILE) $(LFILE)
+
+$(YHFILE) $(YCFILE):$(YFILE)
+	$(YACC) $(YFILE) --defines=$(YHFILE) -o $(YCFILE)
+
+$(COMPILER):$(YFILE) $(LFILE) $(CFILES) $(HFILES)
 	mkdir -p $(OBJ_DIR)
-	$(LEX) -o $(LFILE:.l=.c) $(LFILE)
-	$(YACC) $(YFILE) --defines=$(YFILE:.y=.h) -o $(YFILE:.y=.c)
-	$(CC) $(CFILES) -o $(TARGET) -lfl
+	$(CC) $(CFILES) -o $(COMPILER) -lfl
 
-.PHONY:test test-lex test-unit
+.PHONY:test test-lex clean
 
-test:$(TARGET)
-	bash test.sh $(TARGET)
-
-test-unit:
-	#
+test:$(COMPILER)
+	bash test.sh $(COMPILER)
 
 test-lex:
 	mkdir -p $(OBJ_DIR)
 	$(LEX) -o $(LFILE:.l=.c) $(LFILE)
-	$(CC) $(LFILE:.l=.c) component.c -o $(TARGET) -lfl
-	bash test.sh $(TARGET)
+	$(CC) $(LFILE:.l=.c) component.c -o $(COMPILER) -lfl
+	bash test.sh $(COMPILER)
 
 clean:
-	rm -rf $(TARGET)
+	rm -rf $(COMPILER)
 	rm -rf $(OBJ_DIR)
 	rm -rf $(TEST_DIR)*.err $(TEST_DIR)*.out

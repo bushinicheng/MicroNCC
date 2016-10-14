@@ -9,11 +9,19 @@
 int yycolumn = 1;
 
 #ifdef __DEBUG__
-#define patternlog(a) \
+#define logd(a) \
 	printf("{%s,\t%s}\n", a, yytext)
 #else
-#define patternlog(a) do{}while(0)
+#define logd(a) do{}while(0)
 #endif
+
+#define YY_USER_ACTION do { \
+		yycolumn += yyleng; \
+	} while(0);
+
+static int symbol(int lexval);
+static int num(int specval);
+static int reg(int lexval);
 
 %}
 
@@ -23,51 +31,119 @@ float            [+-]?(([0-9]+\.([0-9]+)?)|(([0-9]+)?\.([0-9]+)))([eE][+-]?[0-9]
 int              [+-]?[1-9][0-9]+
 hex              0[xX][0-9a-fA-F]+
 oct              0[1-7][0-7]*
-invalidnum       [0-9][_a-zA-Z0-9\.]*
+invalidnum       \.?[0-9][_a-zA-Z0-9\.]*
 string           (\"([^\"]*(\\\")?)*\"[ \t\r\n]*)+
-blank            [ \t\r\n]+
+blank            [ \t\r]+
+newline          [\n]+
 id               [_a-zA-Z][_a-zA-Z0-9]*
-end              [^_a-zA-Z]
 multiplecomment  (?s:\/\*([^\*]|\*[^\/])*\*\/)
 singlecomment    \/\/.*$
 
 %%
-"="                {patternlog("ASSIGN");return ASSIGNOP;}
-"=="               {patternlog("EQ");return EQ;}
-"<"                {patternlog("LT");return LT;}
-"<="               {patternlog("LE");return LE;}
-"<>"               {patternlog("NE");return NE;}
-">"                {patternlog("GT");return GT;}
-">="               {patternlog("GE");return GE;}
-"("                {patternlog("LP");return LP;}
-")"                {patternlog("RP");return RP;}
-"["                {patternlog("LB");return LB;}
-"]"                {patternlog("RB");return RB;}
-"{"                {patternlog("LC");return LC;}
-"}"                {patternlog("RC");return RC;}
-"."                {patternlog("DOT");return DOT;}
-","                {patternlog("COMMA");return COMMA;}
-";"                {patternlog("SEMI");return SEMI;}
-if                 {patternlog("IF");return IF;}
-else               {patternlog("ELSE");return ELSE;}
-do                 {patternlog("DO");return DO;}
-while              {patternlog("WHILE");return WHILE;}
-for                {patternlog("FOR");return FOR;}
-int                {patternlog("INT");return INT;}
-float              {patternlog("FLOAT");return FLOAT;}
-struct             {patternlog("FLOAT");return STRUCT;}
-{int}              {patternlog("NUM:i");atoi(yytext);return NUM;}
-{hex}              {patternlog("NUM:x");atoi(yytext);return NUM;}
-{oct}              {patternlog("NUM:o");atoi(yytext);return NUM;}
+"="                {logd("AS");	return symbol(ASSIGNOP);}
+"=="               {logd("EQ");	return symbol(EQ);}
+"<"                {logd("LT");	return symbol(LT);}
+"<="               {logd("LE");	return symbol(LE);}
+"<>"               {logd("NE");	return symbol(NE);}
+">"                {logd("GT");	return symbol(GT);}
+">="               {logd("GE");	return symbol(GE);}
+
+"("                {logd("LP");	return symbol(LP);}
+")"                {logd("RP");	return symbol(RP);}
+"["                {logd("LB");	return symbol(LB);}
+"]"                {logd("RB");	return symbol(RB);}
+"{"                {logd("LC");	return symbol(LC);}
+"}"                {logd("RC");	return symbol(RC);}
+"."                {logd("DOT");	return symbol(DOT);}
+","                {logd("COMMA");	return symbol(COMMA);}
+";"                {logd("SEMI");	return symbol(SEMI);}
+
+if                 {logd("IF");		return symbol(IF);}
+else               {logd("ELSE");	return symbol(ELSE);}
+do                 {logd("DO");		return symbol(DO);}
+while              {logd("WHILE");	return symbol(WHILE);}
+for                {logd("FOR");	return symbol(FOR);}
+int                {logd("INT");	return symbol(INT);}
+float              {logd("FLOAT");	return symbol(FLOAT);}
+struct             {logd("STRUCT");	return symbol(STRUCT);}
+
+{int}              {logd("NUM:i");	return num('i');}
+{hex}              {logd("NUM:x");	return num('x');}
+{oct}              {logd("NUM:o");	return num('o');}
+{float}            {logd("NUM:f");	return num('f');}
+
+{invalidnum}       {logd("NUM:v");	return symbol(NUM);}
+{string}           {logd("STR");	return reg(STRING);}
+{id}               {logd("ID");		return reg(ID);}
 {blank}            {/*do nothing*/}
-{float}            {patternlog("NUM:f");atof(yytext);return NUM;}
-{invalidnum}       {patternlog("NUM:v");atoi(yytext);return NUM;}
-{string}           {patternlog("STR");register_string(yytext);return STRING;}
-{id}               {patternlog("ID");register_id(yytext);return ID;}
-{multiplecomment}  {patternlog("MC");/*do nothing*/}
-{singlecomment}    {patternlog("SC");/*do nothing*/}
+{newline}          {yycolumn = 0;}
+{multiplecomment}  {logd("MC");	/*do nothing*/}
+{singlecomment}    {logd("SC");	/*do nothing*/}
 
 %%
+
+static int symbol(int lexval)
+{
+	Node *pnd = new_node();
+	pnd->lexval = lexval;
+	pnd->lineno = yylineno;
+	pnd->column = yycolumn;
+	yylval.pnd = pnd;
+	return lexval;
+}
+
+static int num(int specval)
+{
+	int lexval = NUM;
+	char *pstr = yytext;
+	Node *pnd = new_node();
+	pnd->lexval = lexval;
+	pnd->specval = specval;
+	pnd->lineno = yylineno;
+	pnd->column = yycolumn;
+	yylval.pnd = pnd;
+
+	switch(specval)
+	{
+	case 'i':
+		pnd->exval.i = next_number(&pstr, 10);
+		break;
+	case 'o':
+		pstr++;
+		pnd->exval.i = next_number(&pstr, 8);
+		break;
+	case 'x':
+		pstr+=2;
+		pnd->exval.i = next_number(&pstr, 16);
+		break;
+	case 'f':
+		pnd->exval.f = atof(pstr);
+		break;
+	}
+
+	return lexval;
+}
+
+static int reg(int lexval)
+{
+	Node *pnd = new_node();
+	pnd->lexval = lexval;
+	pnd->lineno = yylineno;
+	pnd->column = yycolumn;
+	yylval.pnd = pnd;
+
+	switch(lexval)
+	{
+	case ID:
+		pnd->exval.st = register_id(yytext);
+		break;
+	case STRING:
+		pnd->exval.st = register_string(yytext);
+		break;
+	}
+
+	return lexval;
+}
 
 int main()
 {

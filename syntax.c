@@ -66,8 +66,9 @@
 
 #include <stdio.h>
 #include "basic-dat.h"
+#include "ast.h"
 
-#line 71 "syntax.c" /* yacc.c:339  */
+#line 72 "syntax.c" /* yacc.c:339  */
 
 # ifndef YY_NULLPTR
 #  if defined __cplusplus && 201103L <= __cplusplus
@@ -143,10 +144,9 @@ extern int yydebug;
 typedef union YYSTYPE YYSTYPE;
 union YYSTYPE
 {
-#line 6 "syntax.y" /* yacc.c:355  */
+#line 7 "syntax.y" /* yacc.c:355  */
 
-	Node *node;
-	NodeInfo ni;
+	Node *pnd;
 
 #line 152 "syntax.c" /* yacc.c:355  */
 };
@@ -1273,12 +1273,18 @@ yyreduce:
     {
         case 2:
 #line 45 "syntax.y" /* yacc.c:1646  */
-    {}
+    {astroot=build_subast(AST_Program_is_ExtDefList, (yyvsp[0].pnd));}
 #line 1278 "syntax.c" /* yacc.c:1646  */
     break;
 
+  case 3:
+#line 48 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_ExtDefList_is_ExtDef_ExtDefList, (yyvsp[-1].pnd), (yyvsp[0].pnd));}
+#line 1284 "syntax.c" /* yacc.c:1646  */
+    break;
 
-#line 1282 "syntax.c" /* yacc.c:1646  */
+
+#line 1288 "syntax.c" /* yacc.c:1646  */
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires

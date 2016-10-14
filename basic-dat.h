@@ -22,11 +22,22 @@ typedef struct tagDebugInfo {
 typedef struct tagNode {
 	struct tagNode *sibling;
 	struct tagNode *child;
-	NodeInfo ni;
-	DebugInfo di;
+
+	/* lex structure */
+	int lexval;//token defined in lexical.l
+	int semanval;//semantic value like `Program`
+	int specval;//spec token like `float` or `int` of token `NUM`
+	union {
+		int i;float f;double llf;void *p;
+		int st;
+	} exval;
+
+	/* for debugging */
+	int error;
+	int lineno, column;
 } Node, *PNode;
 
-extern Node astroot;
+extern Node* astroot;
 extern DebugInfo debug;
 
 #endif
