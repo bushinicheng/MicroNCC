@@ -15,19 +15,31 @@ OBJ_DIR=obj/
 TEST_DIR=test/
 COMPILER=compiler
 
+#CMM=test/simple.cmm
+CMM=test/token.cmm
+
 all:$(COMPILER)
 
 $(LCFILE):$(LFILE)
 	$(LEX) -o $(LCFILE) $(LFILE)
 
 $(YHFILE) $(YCFILE):$(YFILE)
-	$(YACC) $(YFILE) --defines=$(YHFILE) -o $(YCFILE)
+	$(YACC) -v $(YFILE) --defines=$(YHFILE) -o $(YCFILE)
 
 $(COMPILER):$(YFILE) $(LFILE) $(CFILES) $(HFILES)
 	mkdir -p $(OBJ_DIR)
 	$(CC) $(CFILES) -o $(COMPILER) -lfl
 
-.PHONY:test test-lex clean
+ast.h:syntax.y
+	python genast.py > ast.h
+
+.PHONY:run run-ast test test-lex clean
+
+run:$(COMPILER)
+	cat $(CMM) | ./$(COMPILER)
+
+run-ast:$(COMPILER)
+	cat $(CMM) | ./$(COMPILER) --print-ast
 
 test:$(COMPILER)
 	bash test.sh $(COMPILER)

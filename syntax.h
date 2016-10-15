@@ -78,8 +78,7 @@ extern int yydebug;
     STRUCT = 288,
     NUM = 289,
     STRING = 290,
-    ID = 291,
-    PLUS = 292
+    ID = 291
   };
 #endif
 
@@ -92,7 +91,7 @@ union YYSTYPE
 
 	Node *pnd;
 
-#line 96 "syntax.h" /* yacc.c:1909  */
+#line 95 "syntax.h" /* yacc.c:1909  */
 };
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1

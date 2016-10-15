@@ -15,7 +15,7 @@ static char yylinetext[MAX_SIZE];
 
 #ifdef __DEBUG_LEX__
 #define logd(a) \
-	printf("{%s,\t%s}\n", a, yytext)
+	do{printf("{%s,%s}\n", a, yytext);strcat(yylinetext, yytext);}while(0)
 #else
 #define logd(a) do{strcat(yylinetext, yytext);}while(0)
 #endif
@@ -33,7 +33,7 @@ static int reg(int lexval);
 %option noyywrap
 
 float            [+-]?(([0-9]+\.([0-9]+)?)|(([0-9]+)?\.([0-9]+)))([eE][+-]?[0-9]+)?
-int              [+-]?[1-9][0-9]+
+int              [+-]?[1-9][0-9]*
 hex              0[xX][0-9a-fA-F]+
 oct              0[1-7][0-7]*
 invalidnum       \.*[0-9][_a-zA-Z0-9\.]*
@@ -49,7 +49,7 @@ singlecomment    \/\/.*$
 "=="                {logd("EQ");	return symbol(EQ);}
 "<"                 {logd("LT");	return symbol(LT);}
 "<="                {logd("LE");	return symbol(LE);}
-"<>"                {logd("NE");	return symbol(NE);}
+"!="                {logd("NE");	return symbol(NE);}
 ">"                 {logd("GT");	return symbol(GT);}
 ">="                {logd("GE");	return symbol(GE);}
 
@@ -69,14 +69,14 @@ singlecomment    \/\/.*$
 ","                 {logd("COMMA");	return symbol(COMMA);}
 ";"                 {logd("SEMI");	return symbol(SEMI);}
 
-if                  {logd("IF");		return symbol(IF);}
+if                  {logd("IF");	return symbol(IF);}
 else                {logd("ELSE");	return symbol(ELSE);}
-do                  {logd("DO");		return symbol(DO);}
+do                  {logd("DO");	return symbol(DO);}
 while               {logd("WHILE");	return symbol(WHILE);}
 for                 {logd("FOR");	return symbol(FOR);}
 int                 {logd("INT");	return symbol(INT);}
 float               {logd("FLOAT");	return symbol(FLOAT);}
-struct              {logd("STRUCT");	return symbol(STRUCT);}
+struct              {logd("STRUCT");return symbol(STRUCT);}
 
 {int}               {logd("NUM:i");	return num('i');}
 {hex}               {logd("NUM:x");	return num('x');}

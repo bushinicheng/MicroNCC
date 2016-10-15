@@ -6,8 +6,13 @@ int yyerrlex(int lineno, int column, int tokenlen, enum ErrorType errno, const c
 {
 	printf("%d:%d: error:%s\n", lineno, column, ErrorReason[errno]);
 	printf("%s\n", yylinetext);
-	for(int i = 1; i < column; i++)
-		printf(" ");
+	for(int i = 0; i < column-1; i++)
+	{
+		if(yylinetext[i]=='\t')
+			printf("\t");
+		else
+			printf(" ");
+	}
 	for(int i = 0; i < tokenlen; i++)
 		printf("^");
 	printf("\n");

@@ -24,9 +24,11 @@ int yyerror(const char *str, ...);
 	ID
 
 %left ASSIGNOP
-%left PLUS SUB
+%left EQ NE
+%left LT LE GE GT
+%left ADD SUB
 %left MULT DIV
-%left DOT POINTER
+%left DOT POINTER LB
 
 %type<pnd>
 	Program
@@ -36,6 +38,7 @@ int yyerror(const char *str, ...);
 	Def
 	StmtList
 	Stmt
+	ElsePart
 	DecList
 	Dec
 	VarDec
@@ -84,6 +87,13 @@ StmtList:Stmt StmtList {$$=build_subast(AST_StmtList_is_Stmt_StmtList, $1, $2);}
 ;
 
 Stmt:Exp SEMI {$$=build_subast(AST_Stmt_is_Exp_SEMI, $1, $2);}
+	|IF LP Exp RP Stmt ElsePart {$$=build_subast(AST_Stmt_is_IF_LP_Exp_RP_Stmt_ElsePart, $1, $2, $3, $4, $5, $6);}
+	|IF LP Exp RP LC StmtList RC ElsePart {$$=build_subast(AST_Stmt_is_IF_LP_Exp_RP_LC_StmtList_RC_ElsePart, $1, $2, $3, $4, $5, $6, $7, $8);}
+;
+
+ElsePart: {/*empty*/}
+		|ELSE Stmt {$$=build_subast(AST_ElsePart_is_ELSE_Stmt, $1, $2);}
+		|ELSE LC StmtList RC {$$=build_subast(AST_ElsePart_is_ELSE_LC_StmtList_RC, $1, $2, $3, $4);}
 ;
 
 /*definition of varible*/
@@ -131,4 +141,15 @@ Exp:ID {$$=build_subast(AST_Exp_is_ID, $1);}
    |Exp ASSIGNOP Exp {$$=build_subast(AST_Exp_is_Exp_ASSIGNOP_Exp, $1, $2, $3);}
    |Exp DOT ID {$$=build_subast(AST_Exp_is_Exp_DOT_ID, $1, $2, $3);}
    |Exp POINTER ID {$$=build_subast(AST_Exp_is_Exp_POINTER_ID, $1, $2, $3);}
+   |Exp ADD Exp {$$=build_subast(AST_Exp_is_Exp_ADD_Exp, $1, $2, $3);}
+   |Exp SUB Exp {$$=build_subast(AST_Exp_is_Exp_SUB_Exp, $1, $2, $3);}
+   |Exp MULT Exp {$$=build_subast(AST_Exp_is_Exp_MULT_Exp, $1, $2, $3);}
+   |Exp DIV Exp {$$=build_subast(AST_Exp_is_Exp_DIV_Exp, $1, $2, $3);}
+   |Exp EQ Exp {$$=build_subast(AST_Exp_is_Exp_EQ_Exp, $1, $2, $3);}
+   |Exp LT Exp {$$=build_subast(AST_Exp_is_Exp_LT_Exp, $1, $2, $3);}
+   |Exp LE Exp {$$=build_subast(AST_Exp_is_Exp_LE_Exp, $1, $2, $3);}
+   |Exp NE Exp {$$=build_subast(AST_Exp_is_Exp_NE_Exp, $1, $2, $3);}
+   |Exp GT Exp {$$=build_subast(AST_Exp_is_Exp_GT_Exp, $1, $2, $3);}
+   |Exp GE Exp {$$=build_subast(AST_Exp_is_Exp_GE_Exp, $1, $2, $3);}
+   |Exp LB Exp RB {$$=build_subast(AST_Exp_is_Exp_LB_Exp_RB, $1, $2, $3, $4);}
 ;
