@@ -134,6 +134,7 @@ int init_component()
 			pass = false;
 		}
 	}
+
 	if(pass)
 		printf("PASS\n");
 	else

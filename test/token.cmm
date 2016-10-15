@@ -14,9 +14,10 @@
 //same as the above
 
 int oct1 = .3;
-int hex1 = 0x4512ad;
-int hex2 = 0x45hasjkd;//invalid hex number
-int hex3 = 0xa4a5s6d45;//invalid hex number
+int hex1 = ~0x4512ad;//invalid token ~
+int hex2 = 0x4512ad;
+int hex3 = 0x45hasjkd;//invalid hex number
+int hex4 = 0xa4a5s6d45;//invalid hex number
 int oct1 = 04512;
 int oct2 = 012348979;//invalid oct number
 int oct3 = 0123asd;//invalid oct number

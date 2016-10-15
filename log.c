@@ -2,20 +2,29 @@
 #include <stdarg.h>
 #include "error.h"
 
-int loge(int lineno, int column, enum ErrorType errno, const char *yylinetext)
+int yyerrlex(int lineno, int column, int tokenlen, enum ErrorType errno, const char *yylinetext)
 {
 	printf("%d:%d: error:%s\n", lineno, column, ErrorReason[errno]);
 	printf("%s\n", yylinetext);
 	for(int i = 1; i < column; i++)
 		printf(" ");
-	printf("^\n");
+	for(int i = 0; i < tokenlen; i++)
+		printf("^");
+	printf("\n");
 	return 0;
 }
 
-int yyerror(const char *str)
+int yyerror(const char *format, ...)
 {
-	printf("%s\n", str);
-	return 0;
+	va_list arg;
+	int done;
+	
+	va_start(arg, format);
+	done = vfprintf(stderr, format, arg);
+	fprintf(stderr, "\n");
+	va_end (arg);
+	
+	return done;
 }
 
 int __attribute__((noinline)) set_break(){return 0;}

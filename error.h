@@ -9,12 +9,14 @@ enum ErrorType {
 	ERR_UNKNOWN_TOKEN
 };
 
-const char *ErrorReason[] = {
+static const char *ErrorReason[] = {
 	[ERR_INVALID_NUM] = "invalid number.",
 	[ERR_INVALID_OCT] = "invalid oct number.",
 	[ERR_INVALID_HEX] = "invalid hex number.",
 	[ERR_INVALID_DEC] = "invalid dec number.",
 	[ERR_UNKNOWN_TOKEN] = "unknown token."
 };
+
+int yyerrlex(int lineno, int column, int tokenlen, enum ErrorType errno, const char *yylinetext);
 
 #endif
