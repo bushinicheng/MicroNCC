@@ -61,4 +61,7 @@ int yylog(FILE *fp, const char *tag, const char *, ...);
 #define logd(...) do{}while(0)
 #endif
 
+#define logG(...) \
+	yylog(stderr, "\033[" YYLOG_STYLE_NORMAL ";" YYLOG_COLOR_GREEN "m", __VA_ARGS__)
+
 #endif

@@ -1,12 +1,9 @@
 %{
-#include <stdlib.h>
-#include <stdio.h>
+#include "common.h"
 #include "basic-dat.h"
 #include "syntax.h"
-#include "common.h"
 #include "component.h"
 #include "ast.h"
-#include "error.h"
 
 #define MAX_SIZE 1024
 

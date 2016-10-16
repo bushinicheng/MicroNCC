@@ -1,7 +1,3 @@
-#include <stdio.h>
-#include <stdarg.h>
-#include <assert.h>
-
 #include "common.h"
 #include "basic-dat.h"
 
@@ -9,7 +5,6 @@
 
 #define __AST_C__
 #include "ast.h"
-#include "debug.h"
 
 #define MAX_SIZE (1024*1024*2)
 
@@ -37,7 +32,7 @@ Node* __attribute__((noinline)) build_subast(int nodetype, ...)
 	prev_child->sibling = NULL;
 	parnd->semanval = nodetype;
 	if(is_print_reduce_step)
-		printf("%s\n", parnodestruct[nodetype].str_struct);
+		logd("%s\n", parnodestruct[nodetype].str_struct);
 	for(int i = 1; i < parnodestruct[nodetype].nr_child; i++)
 	{
 		Node *post_child = va_arg(vlist, PNode);
@@ -60,11 +55,11 @@ void print_ast(Node *root)
 
 	static int space = 0;
 	for(int i = 0; i < 2*space; i++)
-		printf(" ");
+		logd(" ");
 	if(root->semanval > 0)
-		printf("%s\n", parnodestruct[root->semanval].str_root);
+		logd("%s\n", parnodestruct[root->semanval].str_root);
 	else
-		printf("%s\n", str_lexval[root->lexval]);
+		logd("%s\n", str_lexval[root->lexval]);
 
 	space ++;
 	print_ast(root->child);
@@ -76,20 +71,20 @@ int init_ast()
 {
 #ifdef __DEBUG__
 	bool pass = true;
-	printf("[unit test]func:%s, line:%d...", __func__, __LINE__);
+	logd("[unit test]func:%s, line:%d...", __func__, __LINE__);
 	for(int i = 0; i < sizeof(parnodestruct)/sizeof(parnodestruct[0]); i++)
 	{
 		if(parnodestruct[i].nr_child < 0 || parnodestruct[i].str_struct == NULL || parnodestruct[i].str_root == NULL)
 		{
-			printf("test failed at #%d of array parnodestruct.", i);
+			loge("test failed at #%d of array parnodestruct.", i);
 			pass = false;
 		}
 	}
 
 	if(pass)
-		printf("PASS\n");
+		logG("PASS\n");
 	else
-		printf("\n");
+		logd("\n");
 #endif
 	return 0;
 }

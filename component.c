@@ -1,7 +1,3 @@
-#include <stdio.h>
-#include <string.h>
-#include <malloc.h>
-#include <assert.h>
 #include "common.h"
 //#include "basic-dat.h"
 
@@ -104,7 +100,7 @@ int init_component()
 {
 #ifdef __DEBUG__
 	/* unit test of register_string */
-	printf("[unit test]func:%s, line:%d...", __func__, __LINE__);
+	logd("[unit test]func:%s, line:%d...", __func__, __LINE__);
 	char *ss[] = {
 		"\"Hello World!\"",
 		"\"prefix\"\"\\n\\r\\t\\\\suffix\"",
@@ -129,16 +125,16 @@ int init_component()
 		int p = register_string(ss[i]);
 		if(strcmp(&strbuf[p], ans[i]) != 0)
 		{
-			printf("\ntest failed at case #%d.", i);
-			printf("\nshould be '%s' but got '%s'", ans[i], &strbuf[p]);
+			loge("\ntest failed at case #%d.", i);
+			loge("\nshould be '%s' but got '%s'", ans[i], &strbuf[p]);
 			pass = false;
 		}
 	}
 
 	if(pass)
-		printf("PASS\n");
+		logG("PASS\n");
 	else
-		printf("\n");
+		logd("\n");
 #endif
 	return 0;
 }

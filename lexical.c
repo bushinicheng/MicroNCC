@@ -555,14 +555,11 @@ int yy_flex_debug = 0;
 char *yytext;
 #line 1 "lexical.l"
 #line 2 "lexical.l"
-#include <stdlib.h>
-#include <stdio.h>
+#include "common.h"
 #include "basic-dat.h"
 #include "syntax.h"
-#include "common.h"
 #include "component.h"
 #include "ast.h"
-#include "error.h"
 
 #define MAX_SIZE 1024
 
@@ -584,7 +581,7 @@ static int symbol(int lexval);
 static int num(int specval);
 static int reg(int lexval);
 
-#line 588 "lexical.c"
+#line 585 "lexical.c"
 
 #define INITIAL 0
 
@@ -798,9 +795,9 @@ YY_DECL
 		}
 
 	{
-#line 47 "lexical.l"
+#line 44 "lexical.l"
 
-#line 804 "lexical.c"
+#line 801 "lexical.c"
 
 	while ( 1 )		/* loops until end-of-file is reached */
 		{
@@ -859,172 +856,172 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 48 "lexical.l"
+#line 45 "lexical.l"
 {plog("AS");	return symbol(ASSIGNOP);}
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 49 "lexical.l"
+#line 46 "lexical.l"
 {plog("EQ");	return symbol(EQ);}
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 50 "lexical.l"
+#line 47 "lexical.l"
 {plog("LT");	return symbol(LT);}
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 51 "lexical.l"
+#line 48 "lexical.l"
 {plog("LE");	return symbol(LE);}
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 52 "lexical.l"
+#line 49 "lexical.l"
 {plog("NE");	return symbol(NE);}
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 53 "lexical.l"
+#line 50 "lexical.l"
 {plog("GT");	return symbol(GT);}
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 54 "lexical.l"
+#line 51 "lexical.l"
 {plog("GE");	return symbol(GE);}
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 56 "lexical.l"
+#line 53 "lexical.l"
 {plog("ADD");	return symbol(ADD);}
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 57 "lexical.l"
+#line 54 "lexical.l"
 {plog("SUB");	return symbol(SUB);}
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 58 "lexical.l"
+#line 55 "lexical.l"
 {plog("MULT");	return symbol(MULT);}
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 59 "lexical.l"
+#line 56 "lexical.l"
 {plog("DIV");	return symbol(DIV);}
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 61 "lexical.l"
+#line 58 "lexical.l"
 {plog("LP");	return symbol(LP);}
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 62 "lexical.l"
+#line 59 "lexical.l"
 {plog("RP");	return symbol(RP);}
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 63 "lexical.l"
+#line 60 "lexical.l"
 {plog("LB");	return symbol(LB);}
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 64 "lexical.l"
+#line 61 "lexical.l"
 {plog("RB");	return symbol(RB);}
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 65 "lexical.l"
+#line 62 "lexical.l"
 {plog("LC");	return symbol(LC);}
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 66 "lexical.l"
+#line 63 "lexical.l"
 {plog("RC");	return symbol(RC);}
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 67 "lexical.l"
+#line 64 "lexical.l"
 {plog("DOT");	return symbol(DOT);}
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 68 "lexical.l"
+#line 65 "lexical.l"
 {plog("PT");	return symbol(POINTER);}
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 69 "lexical.l"
+#line 66 "lexical.l"
 {plog("COMMA");	return symbol(COMMA);}
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 70 "lexical.l"
+#line 67 "lexical.l"
 {plog("SEMI");	return symbol(SEMI);}
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 72 "lexical.l"
+#line 69 "lexical.l"
 {plog("IF");	return symbol(IF);}
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 73 "lexical.l"
+#line 70 "lexical.l"
 {plog("ELSE");	return symbol(ELSE);}
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 74 "lexical.l"
+#line 71 "lexical.l"
 {plog("DO");	return symbol(DO);}
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 75 "lexical.l"
+#line 72 "lexical.l"
 {plog("WHILE");	return symbol(WHILE);}
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 76 "lexical.l"
+#line 73 "lexical.l"
 {plog("FOR");	return symbol(FOR);}
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 77 "lexical.l"
+#line 74 "lexical.l"
 {plog("INT");	return symbol(INT);}
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 78 "lexical.l"
+#line 75 "lexical.l"
 {plog("FLOAT");	return symbol(FLOAT);}
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 79 "lexical.l"
+#line 76 "lexical.l"
 {plog("STRUCT");return symbol(STRUCT);}
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 81 "lexical.l"
+#line 78 "lexical.l"
 {plog("NUM:i");	return num('i');}
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 82 "lexical.l"
+#line 79 "lexical.l"
 {plog("NUM:x");	return num('x');}
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 83 "lexical.l"
+#line 80 "lexical.l"
 {plog("NUM:o");	return num('o');}
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 84 "lexical.l"
+#line 81 "lexical.l"
 {plog("NUM:f");	return num('f');}
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 86 "lexical.l"
+#line 83 "lexical.l"
 {
 						plog("NUM:v");
 						yyerrlex(yylineno, yycolumn-yyleng+1, yyleng, ERR_INVALID_NUM, yylinetext);
@@ -1034,23 +1031,23 @@ YY_RULE_SETUP
 case 35:
 /* rule 35 can match eol */
 YY_RULE_SETUP
-#line 91 "lexical.l"
+#line 88 "lexical.l"
 {plog("STR");	return reg(STRING);}
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 92 "lexical.l"
+#line 89 "lexical.l"
 {plog("ID");	return reg(ID);}
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 93 "lexical.l"
+#line 90 "lexical.l"
 {strcat(yylinetext, yytext);/*do nothing*/}
 	YY_BREAK
 case 38:
 /* rule 38 can match eol */
 YY_RULE_SETUP
-#line 94 "lexical.l"
+#line 91 "lexical.l"
 {
 						yylineno ++;
 						yycolumn = 0;
@@ -1060,7 +1057,7 @@ YY_RULE_SETUP
 case 39:
 /* rule 39 can match eol */
 YY_RULE_SETUP
-#line 99 "lexical.l"
+#line 96 "lexical.l"
 {plog("MC");	/*do nothing*/}
 	YY_BREAK
 case 40:
@@ -1068,12 +1065,12 @@ case 40:
 (yy_c_buf_p) = yy_cp -= 1;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 100 "lexical.l"
+#line 97 "lexical.l"
 {plog("SC");	/*do nothing*/}
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 101 "lexical.l"
+#line 98 "lexical.l"
 {
 						plog("UB");
 						yyerrlex(yylineno, yycolumn-yyleng+1, yyleng, ERR_UNKNOWN_TOKEN, yylinetext);
@@ -1081,10 +1078,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 106 "lexical.l"
+#line 103 "lexical.l"
 ECHO;
 	YY_BREAK
-#line 1088 "lexical.c"
+#line 1085 "lexical.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -2079,7 +2076,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 105 "lexical.l"
+#line 102 "lexical.l"
 
 
 
