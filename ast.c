@@ -5,6 +5,8 @@
 #include "common.h"
 #include "basic-dat.h"
 
+#define __DEBUG_YACC__
+
 #define __AST_C__
 #include "ast.h"
 #include "debug.h"
@@ -14,6 +16,8 @@
 static Node ndpool[MAX_SIZE];
 Node *astroot = NULL;
 DebugInfo curd;
+
+extern bool is_print_reduce_step;
 
 Node *new_node()
 {
@@ -31,8 +35,9 @@ Node* __attribute__((noinline)) build_subast(int nodetype, ...)
 	Node *first_child = va_arg(vlist, PNode);
 	Node *prev_child = first_child;
 	prev_child->sibling = NULL;
-	set_break();
 	parnd->semanval = nodetype;
+	if(is_print_reduce_step)
+		printf("%s\n", parnodestruct[nodetype].str_struct);
 	for(int i = 1; i < parnodestruct[nodetype].nr_child; i++)
 	{
 		Node *post_child = va_arg(vlist, PNode);

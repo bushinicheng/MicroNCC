@@ -36,10 +36,10 @@ ast.h:syntax.y
 .PHONY:run run-ast test test-lex clean
 
 run:$(COMPILER)
-	cat $(CMM) | ./$(COMPILER)
+	./$(COMPILER) $(CMM)
 
 run-ast:$(COMPILER)
-	cat $(CMM) | ./$(COMPILER) --print-ast
+	./$(COMPILER) --print-ast $(CMM)
 
 test:$(COMPILER)
 	bash test.sh $(COMPILER)

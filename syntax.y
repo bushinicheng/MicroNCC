@@ -63,7 +63,7 @@ ExtDefList:ExtDef {$$=build_subast(AST_ExtDefList_is_ExtDef, $1);}
 ;
 
 ExtDef:Specifier FuncDec CompSt {$$=build_subast(AST_ExtDef_is_Specifier_FuncDec_CompSt, $1, $2, $3);}
-	  |Specifier SEMI {$$=build_subast(AST_ExtDef_is_Specifier_SEMI, $1, $2);}
+	  |StructSpecifier SEMI {$$=build_subast(AST_ExtDef_is_StructSpecifier_SEMI, $1, $2);}
 ;
 
 /*definition of function*/
@@ -89,6 +89,7 @@ StmtList:Stmt StmtList {$$=build_subast(AST_StmtList_is_Stmt_StmtList, $1, $2);}
 Stmt:Exp SEMI {$$=build_subast(AST_Stmt_is_Exp_SEMI, $1, $2);}
 	|IF LP Exp RP Stmt ElsePart {$$=build_subast(AST_Stmt_is_IF_LP_Exp_RP_Stmt_ElsePart, $1, $2, $3, $4, $5, $6);}
 	|IF LP Exp RP LC StmtList RC ElsePart {$$=build_subast(AST_Stmt_is_IF_LP_Exp_RP_LC_StmtList_RC_ElsePart, $1, $2, $3, $4, $5, $6, $7, $8);}
+	|error SEMI {}
 ;
 
 ElsePart: {/*empty*/}

@@ -6,3 +6,4 @@ compiler
 *.[oO]
 obj/*
 *.output
+*.pyc
