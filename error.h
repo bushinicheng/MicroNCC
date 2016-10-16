@@ -6,22 +6,24 @@ enum ErrorType {
 	ERR_INVALID_OCT,
 	ERR_INVALID_HEX,
 	ERR_INVALID_DEC,
+	ERR_EXPECTED_COMMA,
 	ERR_UNKNOWN_TOKEN,
 };
 
 #ifdef __YYLOG_C__
 
 static const char *ErrorReason[] = {
-	[ERR_INVALID_NUM] = "invalid number.",
-	[ERR_INVALID_OCT] = "invalid oct number.",
-	[ERR_INVALID_HEX] = "invalid hex number.",
-	[ERR_INVALID_DEC] = "invalid dec number.",
-	[ERR_UNKNOWN_TOKEN] = "invalid character.",
+	[ERR_INVALID_NUM] = "error type A: invalid number.",
+	[ERR_INVALID_OCT] = "error type A: invalid oct number.",
+	[ERR_INVALID_HEX] = "error type A: invalid hex number.",
+	[ERR_INVALID_DEC] = "error type A: invalid dec number.",
+	[ERR_EXPECTED_COMMA] = "expected ',' here.",
+	[ERR_UNKNOWN_TOKEN] = "error type A: invalid character.",
 };
 
 #endif
 
-int yyerrlex(int, int, int, enum ErrorType, const char *);
+int yyerrlex(int, int, int, enum ErrorType);
 int yylog(FILE *fp, const char *tag, const char *, ...);
 
 /*output style*/

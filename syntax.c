@@ -64,19 +64,15 @@
 /* Copy the first part of user declarations.  */
 #line 1 "syntax.y" /* yacc.c:339  */
 
-#include <stdio.h>
-#include "basic-dat.h"
-#include "error.h"
+#include "common.h"
 #include "debug.h"
 #include "ast.h"
 
 int yylex();
 int yyerror(const char *str, ...);
 
-#define YYDEBUG 1
 
-
-#line 80 "syntax.c" /* yacc.c:339  */
+#line 76 "syntax.c" /* yacc.c:339  */
 
 # ifndef YY_NULLPTR
 #  if defined __cplusplus && 201103L <= __cplusplus
@@ -113,40 +109,43 @@ extern int yydebug;
   {
     LOWWEST = 258,
     LOWWER_THAN_ELSE = 259,
-    ELSE = 260,
-    LT = 261,
-    LE = 262,
-    NE = 263,
-    EQ = 264,
-    GE = 265,
-    GT = 266,
-    ADD = 267,
-    SUB = 268,
-    MULT = 269,
-    DIV = 270,
-    RELOP = 271,
-    ASSIGNOP = 272,
-    LP = 273,
-    RP = 274,
-    LB = 275,
-    RB = 276,
-    LC = 277,
-    RC = 278,
-    DOT = 279,
-    COMMA = 280,
-    SEMI = 281,
-    POINTER = 282,
-    IF = 283,
-    DO = 284,
-    WHILE = 285,
-    FOR = 286,
-    RETURN = 287,
-    INT = 288,
-    FLOAT = 289,
-    STRUCT = 290,
-    NUM = 291,
-    STRING = 292,
-    ID = 293
+    LOWWER_THAN_COMMA = 260,
+    ELSE = 261,
+    COMMA = 262,
+    LT = 263,
+    LE = 264,
+    NE = 265,
+    EQ = 266,
+    GE = 267,
+    GT = 268,
+    ADD = 269,
+    SUB = 270,
+    MULT = 271,
+    DIV = 272,
+    RELOP = 273,
+    ASSIGNOP = 274,
+    LP = 275,
+    RP = 276,
+    LB = 277,
+    RB = 278,
+    LC = 279,
+    RC = 280,
+    DOT = 281,
+    SEMI = 282,
+    POINTER = 283,
+    IF = 284,
+    DO = 285,
+    WHILE = 286,
+    FOR = 287,
+    RETURN = 288,
+    TYPE = 289,
+    INT = 290,
+    CHAR = 291,
+    FLOAT = 292,
+    STRUCT = 293,
+    NUM = 294,
+    STRING = 295,
+    ID = 296
   };
 #endif
 
@@ -155,11 +154,11 @@ extern int yydebug;
 typedef union YYSTYPE YYSTYPE;
 union YYSTYPE
 {
-#line 17 "syntax.y" /* yacc.c:355  */
+#line 13 "syntax.y" /* yacc.c:355  */
 
 	Node *pnd;
 
-#line 163 "syntax.c" /* yacc.c:355  */
+#line 162 "syntax.c" /* yacc.c:355  */
 };
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1
@@ -188,7 +187,7 @@ int yyparse (void);
 
 /* Copy the second part of user declarations.  */
 
-#line 192 "syntax.c" /* yacc.c:358  */
+#line 191 "syntax.c" /* yacc.c:358  */
 
 #ifdef short
 # undef short
@@ -430,23 +429,23 @@ union yyalloc
 #endif /* !YYCOPY_NEEDED */
 
 /* YYFINAL -- State number of the termination state.  */
-#define YYFINAL  13
+#define YYFINAL  11
 /* YYLAST -- Last index in YYTABLE.  */
-#define YYLAST   349
+#define YYLAST   359
 
 /* YYNTOKENS -- Number of terminals.  */
-#define YYNTOKENS  39
+#define YYNTOKENS  42
 /* YYNNTS -- Number of nonterminals.  */
-#define YYNNTS  21
+#define YYNNTS  20
 /* YYNRULES -- Number of rules.  */
-#define YYNRULES  59
+#define YYNRULES  65
 /* YYNSTATES -- Number of states.  */
-#define YYNSTATES  124
+#define YYNSTATES  134
 
 /* YYTRANSLATE[YYX] -- Symbol number corresponding to YYX as returned
    by yylex, with out-of-bounds checking.  */
 #define YYUNDEFTOK  2
-#define YYMAXUTOK   293
+#define YYMAXUTOK   296
 
 #define YYTRANSLATE(YYX)                                                \
   ((unsigned int) (YYX) <= YYMAXUTOK ? yytranslate[YYX] : YYUNDEFTOK)
@@ -484,19 +483,20 @@ static const yytype_uint8 yytranslate[] =
        5,     6,     7,     8,     9,    10,    11,    12,    13,    14,
       15,    16,    17,    18,    19,    20,    21,    22,    23,    24,
       25,    26,    27,    28,    29,    30,    31,    32,    33,    34,
-      35,    36,    37,    38
+      35,    36,    37,    38,    39,    40,    41
 };
 
 #if YYDEBUG
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,    67,    67,    70,    71,    74,    75,    79,    80,    83,
-      84,    87,    90,    94,    95,    98,    99,   100,   101,   102,
-     103,   104,   105,   106,   107,   118,   119,   122,   125,   126,
-     129,   130,   133,   137,   138,   141,   142,   145,   146,   149,
-     152,   156,   157,   158,   159,   160,   161,   162,   163,   164,
-     165,   166,   167,   168,   169,   170,   171,   172,   173,   174
+       0,    62,    62,    65,    66,    69,    70,    71,    78,    79,
+      82,    83,    86,    89,    90,    97,    98,   101,   102,   103,
+     104,   105,   106,   107,   108,   109,   110,   114,   118,   125,
+     126,   129,   130,   136,   137,   138,   144,   145,   148,   149,
+     161,   162,   165,   166,   169,   172,   176,   177,   178,   179,
+     180,   181,   182,   183,   184,   185,   186,   187,   188,   189,
+     190,   191,   192,   193,   194,   195
 };
 #endif
 
@@ -505,14 +505,14 @@ static const yytype_uint8 yyrline[] =
    First, the terminals, then, starting at YYNTOKENS, nonterminals.  */
 static const char *const yytname[] =
 {
-  "$end", "error", "$undefined", "LOWWEST", "LOWWER_THAN_ELSE", "ELSE",
-  "LT", "LE", "NE", "EQ", "GE", "GT", "ADD", "SUB", "MULT", "DIV", "RELOP",
-  "ASSIGNOP", "LP", "RP", "LB", "RB", "LC", "RC", "DOT", "COMMA", "SEMI",
-  "POINTER", "IF", "DO", "WHILE", "FOR", "RETURN", "INT", "FLOAT",
-  "STRUCT", "NUM", "STRING", "ID", "$accept", "Program", "ExtDefList",
-  "ExtDef", "FuncDec", "ArgList", "Arg", "CompSt", "StmtList", "Stmt",
-  "DefList", "Def", "DecList", "Dec", "VarDec", "Specifier", "TYPE",
-  "StructSpecifier", "Tag", "OptTag", "Exp", YY_NULLPTR
+  "$end", "error", "$undefined", "LOWWEST", "LOWWER_THAN_ELSE",
+  "LOWWER_THAN_COMMA", "ELSE", "COMMA", "LT", "LE", "NE", "EQ", "GE", "GT",
+  "ADD", "SUB", "MULT", "DIV", "RELOP", "ASSIGNOP", "LP", "RP", "LB", "RB",
+  "LC", "RC", "DOT", "SEMI", "POINTER", "IF", "DO", "WHILE", "FOR",
+  "RETURN", "TYPE", "INT", "CHAR", "FLOAT", "STRUCT", "NUM", "STRING",
+  "ID", "$accept", "Program", "ExtDefList", "ExtDef", "FuncDec", "ArgList",
+  "Arg", "CompSt", "StmtList", "Stmt", "DefList", "Def", "DecList", "Dec",
+  "VarDec", "Specifier", "StructSpecifier", "Tag", "OptTag", "Exp", YY_NULLPTR
 };
 #endif
 
@@ -524,16 +524,17 @@ static const yytype_uint16 yytoknum[] =
        0,   256,   257,   258,   259,   260,   261,   262,   263,   264,
      265,   266,   267,   268,   269,   270,   271,   272,   273,   274,
      275,   276,   277,   278,   279,   280,   281,   282,   283,   284,
-     285,   286,   287,   288,   289,   290,   291,   292,   293
+     285,   286,   287,   288,   289,   290,   291,   292,   293,   294,
+     295,   296
 };
 # endif
 
-#define YYPACT_NINF -46
+#define YYPACT_NINF -45
 
 #define yypact_value_is_default(Yystate) \
-  (!!((Yystate) == (-46)))
+  (!!((Yystate) == (-45)))
 
-#define YYTABLE_NINF -41
+#define YYTABLE_NINF -46
 
 #define yytable_value_is_error(Yytable_value) \
   0
@@ -542,19 +543,20 @@ static const yytype_uint16 yytoknum[] =
      STATE-NUM.  */
 static const yytype_int16 yypact[] =
 {
-      77,   -46,   -46,   -34,    11,   -46,    77,   -20,   -46,     0,
-      22,   -46,    24,   -46,   -46,    32,    29,   -46,    77,   -10,
-      77,   -46,    51,    77,    38,   -46,   -46,    61,    58,    53,
-      56,   -46,   -46,   -46,    55,    64,    88,   -46,    77,   -46,
-      71,    72,    56,   -46,    96,    56,   109,   114,     4,   -46,
-     -46,   -46,   106,    56,    46,   -46,    38,     4,   -46,   -46,
-     -46,   110,     4,   104,     4,     4,    89,   -46,   -46,   -46,
-       4,     4,     4,     4,     4,     4,     4,     4,     4,     4,
-       4,     4,    98,   -46,    99,   -46,   265,   -46,   111,   131,
-     133,   155,   -46,   322,   322,   306,   306,   322,   322,   -12,
-     -12,   -14,   -14,   287,   177,   -46,   -46,    56,     4,    56,
-       4,   -46,   146,   199,   -46,   221,    56,   128,     4,   -46,
-     -46,   243,    56,   -46
+      42,   -45,   -37,    11,   -45,    42,   -29,     2,    25,   -45,
+      40,   -45,   -45,    26,    49,   -45,   -45,    42,    29,    42,
+     -45,    60,    42,    48,   -45,   -45,    79,    95,    62,   110,
+     -45,   -45,   -45,     1,     0,    59,   -45,    42,   -45,    67,
+      68,   110,   -45,    91,   110,   102,   111,   114,   -45,   -45,
+     -45,     5,   110,    43,   -45,   -45,   126,    48,   114,    96,
+     -45,   -45,   -45,    22,   114,   105,   114,   114,    82,   -45,
+     -45,   -45,   -45,   114,   114,   114,   114,   114,   114,   114,
+     114,   114,   114,   114,   114,    97,   -45,   103,    48,   -45,
+     274,   122,   -45,   -45,   148,   127,   169,   190,   -45,   -45,
+     331,   331,   316,   316,   331,   331,    -7,    -7,    -8,    -8,
+     295,   104,   -45,   -45,   -45,   -45,   110,   114,   110,   114,
+     -45,   -45,   140,   211,   -45,   232,   110,   121,   114,   -45,
+     -45,   253,   110,   -45
 };
 
   /* YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
@@ -562,157 +564,161 @@ static const yytype_int16 yypact[] =
      means the default is an error.  */
 static const yytype_uint8 yydefact[] =
 {
-       0,    35,    36,     0,     0,     2,     3,     0,    33,    34,
-      39,    37,     0,     1,     4,     0,     0,     6,     0,     0,
-       0,     5,     0,    26,     0,    34,     7,     0,    10,     0,
-       0,    38,    25,    32,     0,    29,    30,     8,     0,    11,
-       0,     0,     0,    16,     0,     0,     0,     0,     0,    42,
-      45,    41,     0,    14,     0,    27,     0,     0,     9,    43,
-      44,     0,     0,     0,     0,     0,     0,    12,    13,    24,
-       0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
-       0,     0,     0,    15,     0,    28,    31,    18,     0,     0,
-       0,     0,    17,    54,    55,    56,    53,    58,    57,    49,
-      50,    51,    52,    46,     0,    47,    48,     0,     0,     0,
-       0,    59,    19,     0,    21,     0,     0,     0,     0,    20,
-      22,     0,     0,    23
+       0,    40,     0,     0,     2,     3,     0,     0,    44,    42,
+       0,     1,     4,     0,     0,     7,     6,     0,     0,     0,
+       5,     0,    30,     0,    41,     8,     0,    11,     0,     0,
+      43,    29,    38,     0,     0,    36,     9,     0,    12,     0,
+       0,     0,    18,     0,     0,     0,     0,     0,    47,    50,
+      46,     0,    16,     0,    32,    31,     0,     0,     0,     0,
+      10,    48,    49,     0,     0,     0,     0,     0,     0,    14,
+      13,    15,    26,     0,     0,     0,     0,     0,     0,     0,
+       0,     0,     0,     0,     0,     0,    17,     0,     0,    33,
+      37,     0,    28,    20,     0,     0,     0,     0,    27,    19,
+      59,    60,    61,    58,    63,    62,    54,    55,    56,    57,
+      51,     0,    52,    53,    35,    39,     0,     0,     0,     0,
+      65,    64,    21,     0,    23,     0,     0,     0,     0,    22,
+      24,     0,     0,    25
 };
 
   /* YYPGOTO[NTERM-NUM].  */
 static const yytype_int16 yypgoto[] =
 {
-     -46,   -46,   149,   -46,   -46,   118,   -46,   -46,    37,   -45,
-      25,   -46,   102,   -46,   -46,     1,   -46,    43,   -46,   -46,
-     -43
+     -45,   -45,   147,   -45,   -45,   129,   -45,   -45,    27,   -44,
+      65,   -45,   -40,   -45,   -45,     8,    61,   -45,   -45,   -42
 };
 
   /* YYDEFGOTO[NTERM-NUM].  */
 static const yytype_int8 yydefgoto[] =
 {
-      -1,     4,     5,     6,    16,    27,    28,    21,    52,    53,
-      22,    23,    34,    35,    36,    24,     8,    25,    11,    12,
-      54
+      -1,     3,     4,     5,    14,    26,    27,    20,    51,    52,
+      21,    22,    33,    34,    35,    23,    24,     9,    10,    53
 };
 
   /* YYTABLE[YYPACT[STATE-NUM]] -- What to do in state STATE-NUM.  If
      positive, shift that token.  If negative, reduce the rule whose
      number is the opposite.  If YYTABLE_NINF, syntax error.  */
-static const yytype_int8 yytable[] =
+static const yytype_int16 yytable[] =
 {
-      63,     7,    78,    79,    10,    66,    81,     7,    81,    26,
-      82,    13,    82,    84,    86,    84,    40,    41,    15,    88,
-      29,    90,    91,     1,     2,     3,    17,    93,    94,    95,
-      96,    97,    98,    99,   100,   101,   102,   103,   104,    29,
-      49,    50,    51,     9,   -40,    30,    18,    69,    32,     9,
-      19,    20,    70,    71,    72,    73,    74,    75,    76,    77,
-      78,    79,   112,    80,   114,   113,    81,   115,    40,    41,
-      82,   119,    83,    84,    31,   121,    33,   123,    42,    61,
-      37,    55,    43,    38,    44,    45,    46,    47,    48,    56,
-      68,    39,    49,    50,    51,    70,    71,    72,    73,    74,
-      75,    76,    77,    78,    79,    57,    80,    59,    60,    81,
-       1,     2,     3,    82,    62,    92,    84,    70,    71,    72,
-      73,    74,    75,    76,    77,    78,    79,    64,    80,    67,
-     107,    81,    65,    87,    89,    82,   105,   106,    84,    70,
-      71,    72,    73,    74,    75,    76,    77,    78,    79,   108,
-      80,   116,   109,    81,   120,    14,    58,    82,    85,     0,
-      84,    70,    71,    72,    73,    74,    75,    76,    77,    78,
-      79,     0,    80,     0,     0,    81,     0,     0,     0,    82,
-       0,   110,    84,    70,    71,    72,    73,    74,    75,    76,
-      77,    78,    79,     0,    80,     0,     0,    81,   111,     0,
-       0,    82,     0,     0,    84,    70,    71,    72,    73,    74,
-      75,    76,    77,    78,    79,     0,    80,     0,   117,    81,
-       0,     0,     0,    82,     0,     0,    84,    70,    71,    72,
-      73,    74,    75,    76,    77,    78,    79,     0,    80,     0,
-       0,    81,     0,     0,     0,    82,     0,   118,    84,    70,
-      71,    72,    73,    74,    75,    76,    77,    78,    79,     0,
-      80,     0,   122,    81,     0,     0,     0,    82,     0,     0,
-      84,    70,    71,    72,    73,    74,    75,    76,    77,    78,
-      79,     0,    80,     0,     0,    81,     0,     0,     0,    82,
-       0,     0,    84,    70,    71,    72,    73,    74,    75,    76,
-      77,    78,    79,     0,     0,     0,     0,    81,     0,     0,
-       0,    82,    70,    71,    84,     0,    74,    75,    76,    77,
-      78,    79,     0,     0,     0,     0,    81,     0,     0,     0,
-      82,     0,     0,    84,    76,    77,    78,    79,     0,     0,
-       0,     0,    81,     0,     0,     0,    82,     0,     0,    84
+      65,    56,    54,    15,     8,    68,    69,    57,     6,    81,
+      82,    11,    13,     6,    84,    84,    90,    89,    85,    85,
+      87,    87,    94,    92,    96,    97,    28,   -34,    55,    16,
+      70,   100,   101,   102,   103,   104,   105,   106,   107,   108,
+     109,   110,   111,   -41,    72,    28,    18,    93,   114,   -45,
+      25,    73,    74,    75,    76,    77,    78,    79,    80,    81,
+      82,     7,    83,     1,    17,    84,     7,     2,    63,    85,
+      86,    87,   122,    19,   124,   123,     1,   125,    58,    71,
+       2,    59,   129,    98,    29,    30,   131,    31,   133,    32,
+      73,    74,    75,    76,    77,    78,    79,    80,    81,    82,
+      36,    83,    37,    38,    84,   120,    61,    62,    85,    99,
+      87,    64,    73,    74,    75,    76,    77,    78,    79,    80,
+      81,    82,    66,    83,    39,    40,    84,   121,    39,    40,
+      85,    67,    87,    88,    41,    91,    95,    42,   112,    43,
+      44,    45,    46,    47,   113,   115,   126,   117,   130,    48,
+      49,    50,    12,    48,    49,    50,    73,    74,    75,    76,
+      77,    78,    79,    80,    81,    82,    60,    83,     0,   116,
+      84,     0,     0,     0,    85,     0,    87,    73,    74,    75,
+      76,    77,    78,    79,    80,    81,    82,     0,    83,     0,
+     118,    84,     0,     0,     0,    85,     0,    87,    73,    74,
+      75,    76,    77,    78,    79,    80,    81,    82,     0,    83,
+       0,     0,    84,     0,     0,     0,    85,   119,    87,    73,
+      74,    75,    76,    77,    78,    79,    80,    81,    82,     0,
+      83,     0,   127,    84,     0,     0,     0,    85,     0,    87,
+      73,    74,    75,    76,    77,    78,    79,    80,    81,    82,
+       0,    83,     0,     0,    84,     0,     0,     0,    85,   128,
+      87,    73,    74,    75,    76,    77,    78,    79,    80,    81,
+      82,     0,    83,     0,   132,    84,     0,     0,     0,    85,
+       0,    87,    73,    74,    75,    76,    77,    78,    79,    80,
+      81,    82,     0,    83,     0,     0,    84,     0,     0,     0,
+      85,     0,    87,    73,    74,    75,    76,    77,    78,    79,
+      80,    81,    82,     0,     0,     0,     0,    84,     0,     0,
+       0,    85,     0,    87,    73,    74,     0,     0,    77,    78,
+      79,    80,    81,    82,     0,     0,     0,     0,    84,     0,
+       0,     0,    85,     0,    87,    79,    80,    81,    82,     0,
+       0,     0,     0,    84,     0,     0,     0,    85,     0,    87
 };
 
-static const yytype_int8 yycheck[] =
+static const yytype_int16 yycheck[] =
 {
-      45,     0,    14,    15,    38,    48,    20,     6,    20,    19,
-      24,     0,    24,    27,    57,    27,    12,    13,    38,    62,
-      19,    64,    65,    33,    34,    35,    26,    70,    71,    72,
-      73,    74,    75,    76,    77,    78,    79,    80,    81,    38,
-      36,    37,    38,     0,    22,    20,    22,     1,    23,     6,
-      18,    22,     6,     7,     8,     9,    10,    11,    12,    13,
-      14,    15,   107,    17,   109,   108,    20,   110,    12,    13,
-      24,   116,    26,    27,    23,   118,    38,   122,    22,    42,
-      19,    26,    26,    25,    28,    29,    30,    31,    32,    25,
-      53,    38,    36,    37,    38,     6,     7,     8,     9,    10,
-      11,    12,    13,    14,    15,    17,    17,    36,    36,    20,
-      33,    34,    35,    24,    18,    26,    27,     6,     7,     8,
-       9,    10,    11,    12,    13,    14,    15,    18,    17,    23,
-      19,    20,    18,    23,    30,    24,    38,    38,    27,     6,
-       7,     8,     9,    10,    11,    12,    13,    14,    15,    18,
-      17,     5,    19,    20,    26,     6,    38,    24,    56,    -1,
-      27,     6,     7,     8,     9,    10,    11,    12,    13,    14,
-      15,    -1,    17,    -1,    -1,    20,    -1,    -1,    -1,    24,
-      -1,    26,    27,     6,     7,     8,     9,    10,    11,    12,
-      13,    14,    15,    -1,    17,    -1,    -1,    20,    21,    -1,
-      -1,    24,    -1,    -1,    27,     6,     7,     8,     9,    10,
-      11,    12,    13,    14,    15,    -1,    17,    -1,    19,    20,
-      -1,    -1,    -1,    24,    -1,    -1,    27,     6,     7,     8,
-       9,    10,    11,    12,    13,    14,    15,    -1,    17,    -1,
-      -1,    20,    -1,    -1,    -1,    24,    -1,    26,    27,     6,
-       7,     8,     9,    10,    11,    12,    13,    14,    15,    -1,
-      17,    -1,    19,    20,    -1,    -1,    -1,    24,    -1,    -1,
-      27,     6,     7,     8,     9,    10,    11,    12,    13,    14,
-      15,    -1,    17,    -1,    -1,    20,    -1,    -1,    -1,    24,
-      -1,    -1,    27,     6,     7,     8,     9,    10,    11,    12,
-      13,    14,    15,    -1,    -1,    -1,    -1,    20,    -1,    -1,
-      -1,    24,     6,     7,    27,    -1,    10,    11,    12,    13,
-      14,    15,    -1,    -1,    -1,    -1,    20,    -1,    -1,    -1,
-      24,    -1,    -1,    27,    12,    13,    14,    15,    -1,    -1,
-      -1,    -1,    20,    -1,    -1,    -1,    24,    -1,    -1,    27
+      44,     1,     1,     1,    41,    47,     1,     7,     0,    16,
+      17,     0,    41,     5,    22,    22,    58,    57,    26,    26,
+      28,    28,    64,     1,    66,    67,    18,    27,    27,    27,
+      25,    73,    74,    75,    76,    77,    78,    79,    80,    81,
+      82,    83,    84,    41,     1,    37,    20,    25,    88,    24,
+      21,     8,     9,    10,    11,    12,    13,    14,    15,    16,
+      17,     0,    19,    34,    24,    22,     5,    38,    41,    26,
+      27,    28,   116,    24,   118,   117,    34,   119,    19,    52,
+      38,    22,   126,     1,    19,    25,   128,    22,   132,    41,
+       8,     9,    10,    11,    12,    13,    14,    15,    16,    17,
+      21,    19,     7,    41,    22,     1,    39,    39,    26,    27,
+      28,    20,     8,     9,    10,    11,    12,    13,    14,    15,
+      16,    17,    20,    19,    14,    15,    22,    23,    14,    15,
+      26,    20,    28,     7,    24,    39,    31,    27,    41,    29,
+      30,    31,    32,    33,    41,    23,     6,    20,    27,    39,
+      40,    41,     5,    39,    40,    41,     8,     9,    10,    11,
+      12,    13,    14,    15,    16,    17,    37,    19,    -1,    21,
+      22,    -1,    -1,    -1,    26,    -1,    28,     8,     9,    10,
+      11,    12,    13,    14,    15,    16,    17,    -1,    19,    -1,
+      21,    22,    -1,    -1,    -1,    26,    -1,    28,     8,     9,
+      10,    11,    12,    13,    14,    15,    16,    17,    -1,    19,
+      -1,    -1,    22,    -1,    -1,    -1,    26,    27,    28,     8,
+       9,    10,    11,    12,    13,    14,    15,    16,    17,    -1,
+      19,    -1,    21,    22,    -1,    -1,    -1,    26,    -1,    28,
+       8,     9,    10,    11,    12,    13,    14,    15,    16,    17,
+      -1,    19,    -1,    -1,    22,    -1,    -1,    -1,    26,    27,
+      28,     8,     9,    10,    11,    12,    13,    14,    15,    16,
+      17,    -1,    19,    -1,    21,    22,    -1,    -1,    -1,    26,
+      -1,    28,     8,     9,    10,    11,    12,    13,    14,    15,
+      16,    17,    -1,    19,    -1,    -1,    22,    -1,    -1,    -1,
+      26,    -1,    28,     8,     9,    10,    11,    12,    13,    14,
+      15,    16,    17,    -1,    -1,    -1,    -1,    22,    -1,    -1,
+      -1,    26,    -1,    28,     8,     9,    -1,    -1,    12,    13,
+      14,    15,    16,    17,    -1,    -1,    -1,    -1,    22,    -1,
+      -1,    -1,    26,    -1,    28,    14,    15,    16,    17,    -1,
+      -1,    -1,    -1,    22,    -1,    -1,    -1,    26,    -1,    28
 };
 
   /* YYSTOS[STATE-NUM] -- The (internal number of the) accessing
      symbol of state STATE-NUM.  */
 static const yytype_uint8 yystos[] =
 {
-       0,    33,    34,    35,    40,    41,    42,    54,    55,    56,
-      38,    57,    58,     0,    41,    38,    43,    26,    22,    18,
-      22,    46,    49,    50,    54,    56,    19,    44,    45,    54,
-      49,    23,    49,    38,    51,    52,    53,    19,    25,    38,
-      12,    13,    22,    26,    28,    29,    30,    31,    32,    36,
-      37,    38,    47,    48,    59,    26,    25,    17,    44,    36,
-      36,    47,    18,    48,    18,    18,    59,    23,    47,     1,
-       6,     7,     8,     9,    10,    11,    12,    13,    14,    15,
-      17,    20,    24,    26,    27,    51,    59,    23,    59,    30,
-      59,    59,    26,    59,    59,    59,    59,    59,    59,    59,
-      59,    59,    59,    59,    59,    38,    38,    19,    18,    19,
-      26,    21,    48,    59,    48,    59,     5,    19,    26,    48,
-      26,    59,    19,    48
+       0,    34,    38,    43,    44,    45,    57,    58,    41,    59,
+      60,     0,    44,    41,    46,     1,    27,    24,    20,    24,
+      49,    52,    53,    57,    58,    21,    47,    48,    57,    52,
+      25,    52,    41,    54,    55,    56,    21,     7,    41,    14,
+      15,    24,    27,    29,    30,    31,    32,    33,    39,    40,
+      41,    50,    51,    61,     1,    27,     1,     7,    19,    22,
+      47,    39,    39,    50,    20,    51,    20,    20,    61,     1,
+      25,    50,     1,     8,     9,    10,    11,    12,    13,    14,
+      15,    16,    17,    19,    22,    26,    27,    28,     7,    54,
+      61,    39,     1,    25,    61,    31,    61,    61,     1,    27,
+      61,    61,    61,    61,    61,    61,    61,    61,    61,    61,
+      61,    61,    41,    41,    54,    23,    21,    20,    21,    27,
+       1,    23,    51,    61,    51,    61,     6,    21,    27,    51,
+      27,    61,    21,    51
 };
 
   /* YYR1[YYN] -- Symbol number of symbol that rule YYN derives.  */
 static const yytype_uint8 yyr1[] =
 {
-       0,    39,    40,    41,    41,    42,    42,    43,    43,    44,
-      44,    45,    46,    47,    47,    48,    48,    48,    48,    48,
-      48,    48,    48,    48,    48,    49,    49,    50,    51,    51,
-      52,    52,    53,    54,    54,    55,    55,    56,    56,    57,
-      58,    59,    59,    59,    59,    59,    59,    59,    59,    59,
-      59,    59,    59,    59,    59,    59,    59,    59,    59,    59
+       0,    42,    43,    44,    44,    45,    45,    45,    46,    46,
+      47,    47,    48,    49,    49,    50,    50,    51,    51,    51,
+      51,    51,    51,    51,    51,    51,    51,    51,    51,    52,
+      52,    53,    53,    54,    54,    54,    55,    55,    56,    56,
+      57,    57,    58,    58,    59,    60,    61,    61,    61,    61,
+      61,    61,    61,    61,    61,    61,    61,    61,    61,    61,
+      61,    61,    61,    61,    61,    61
 };
 
   /* YYR2[YYN] -- Number of symbols on the right hand side of rule YYN.  */
 static const yytype_uint8 yyr2[] =
 {
-       0,     2,     1,     1,     2,     3,     2,     3,     4,     3,
-       1,     2,     4,     2,     1,     2,     1,     3,     3,     5,
-       7,     5,     7,     9,     2,     2,     1,     3,     3,     1,
-       1,     3,     1,     1,     1,     1,     1,     2,     5,     1,
-       1,     1,     1,     2,     2,     1,     3,     3,     3,     3,
-       3,     3,     3,     3,     3,     3,     3,     3,     3,     4
+       0,     2,     1,     1,     2,     3,     2,     2,     3,     4,
+       3,     1,     2,     4,     4,     2,     1,     2,     1,     3,
+       3,     5,     7,     5,     7,     9,     2,     3,     3,     2,
+       1,     3,     3,     3,     1,     4,     1,     3,     1,     4,
+       1,     1,     2,     5,     1,     1,     1,     1,     2,     2,
+       1,     3,     3,     3,     3,     3,     3,     3,     3,     3,
+       3,     3,     3,     3,     4,     4
 };
 
 
@@ -1482,362 +1488,423 @@ yyreduce:
   switch (yyn)
     {
         case 2:
-#line 67 "syntax.y" /* yacc.c:1646  */
-    {astroot=build_subast(AST_Program_is_ExtDefList, (yyvsp[0].pnd));}
-#line 1488 "syntax.c" /* yacc.c:1646  */
-    break;
-
-  case 3:
-#line 70 "syntax.y" /* yacc.c:1646  */
-    {(yyval.pnd)=build_subast(AST_ExtDefList_is_ExtDef, (yyvsp[0].pnd));}
+#line 62 "syntax.y" /* yacc.c:1646  */
+    {astroot=build_subast(AST_Program_is_ExtDefList, &(yyloc), (yyvsp[0].pnd));}
 #line 1494 "syntax.c" /* yacc.c:1646  */
     break;
 
-  case 4:
-#line 71 "syntax.y" /* yacc.c:1646  */
-    {(yyval.pnd)=build_subast(AST_ExtDefList_is_ExtDef_ExtDefList, (yyvsp[-1].pnd), (yyvsp[0].pnd));}
+  case 3:
+#line 65 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_ExtDefList_is_ExtDef, &(yyloc), (yyvsp[0].pnd));}
 #line 1500 "syntax.c" /* yacc.c:1646  */
     break;
 
-  case 5:
-#line 74 "syntax.y" /* yacc.c:1646  */
-    {(yyval.pnd)=build_subast(AST_ExtDef_is_Specifier_FuncDec_CompSt, (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
+  case 4:
+#line 66 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_ExtDefList_is_ExtDef_ExtDefList, &(yyloc), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
 #line 1506 "syntax.c" /* yacc.c:1646  */
     break;
 
-  case 6:
-#line 75 "syntax.y" /* yacc.c:1646  */
-    {(yyval.pnd)=build_subast(AST_ExtDef_is_StructSpecifier_SEMI, (yyvsp[-1].pnd), (yyvsp[0].pnd));}
+  case 5:
+#line 69 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_ExtDef_is_Specifier_FuncDec_CompSt, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
 #line 1512 "syntax.c" /* yacc.c:1646  */
     break;
 
-  case 7:
-#line 79 "syntax.y" /* yacc.c:1646  */
-    {(yyval.pnd)=build_subast(AST_FuncDec_is_ID_LP_RP, (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
+  case 6:
+#line 70 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_ExtDef_is_StructSpecifier_SEMI, &(yyloc), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
 #line 1518 "syntax.c" /* yacc.c:1646  */
     break;
 
+  case 7:
+#line 71 "syntax.y" /* yacc.c:1646  */
+    {
+		(yyval.pnd)=build_subast(AST_ExtDef_is_StructSpecifier_SEMI, &(yyloc), (yyvsp[-1].pnd), new_sym_node(SEMI, & (yylsp[-1])));
+		logd("%d:%d: error: missing ';'\n", (yyloc).first_line, (yylsp[-1]).last_column);
+		}
+#line 1527 "syntax.c" /* yacc.c:1646  */
+    break;
+
   case 8:
-#line 80 "syntax.y" /* yacc.c:1646  */
-    {(yyval.pnd)=build_subast(AST_FuncDec_is_ID_LP_ArgList_RP, (yyvsp[-3].pnd), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 1524 "syntax.c" /* yacc.c:1646  */
+#line 78 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_FuncDec_is_ID_LP_RP, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
+#line 1533 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 9:
-#line 83 "syntax.y" /* yacc.c:1646  */
-    {(yyval.pnd)=build_subast(AST_ArgList_is_Arg_COMMA_ArgList, (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 1530 "syntax.c" /* yacc.c:1646  */
+#line 79 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_FuncDec_is_ID_LP_ArgList_RP, &(yyloc), (yyvsp[-3].pnd), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
+#line 1539 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 10:
-#line 84 "syntax.y" /* yacc.c:1646  */
-    {(yyval.pnd)=build_subast(AST_ArgList_is_Arg, (yyvsp[0].pnd));}
-#line 1536 "syntax.c" /* yacc.c:1646  */
+#line 82 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_ArgList_is_Arg_COMMA_ArgList, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
+#line 1545 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 11:
-#line 87 "syntax.y" /* yacc.c:1646  */
-    {(yyval.pnd)=build_subast(AST_Arg_is_Specifier_ID, (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 1542 "syntax.c" /* yacc.c:1646  */
+#line 83 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_ArgList_is_Arg, &(yyloc), (yyvsp[0].pnd));}
+#line 1551 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 12:
-#line 90 "syntax.y" /* yacc.c:1646  */
-    {(yyval.pnd)=build_subast(AST_CompSt_is_LC_DefList_StmtList_RC, (yyvsp[-3].pnd), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 1548 "syntax.c" /* yacc.c:1646  */
+#line 86 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_Arg_is_Specifier_ID, &(yyloc), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
+#line 1557 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 13:
-#line 94 "syntax.y" /* yacc.c:1646  */
-    {(yyval.pnd)=build_subast(AST_StmtList_is_Stmt_StmtList, (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 1554 "syntax.c" /* yacc.c:1646  */
+#line 89 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_CompSt_is_LC_DefList_StmtList_RC, &(yyloc), (yyvsp[-3].pnd), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
+#line 1563 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 14:
-#line 95 "syntax.y" /* yacc.c:1646  */
-    {(yyval.pnd)=build_subast(AST_StmtList_is_Stmt, (yyvsp[0].pnd));}
-#line 1560 "syntax.c" /* yacc.c:1646  */
-    break;
-
-  case 15:
-#line 98 "syntax.y" /* yacc.c:1646  */
-    {(yyval.pnd)=build_subast(AST_Stmt_is_Exp_SEMI, (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 1566 "syntax.c" /* yacc.c:1646  */
-    break;
-
-  case 16:
-#line 99 "syntax.y" /* yacc.c:1646  */
-    {}
+#line 90 "syntax.y" /* yacc.c:1646  */
+    {
+		(yyval.pnd)=build_subast(AST_CompSt_is_LC_DefList_StmtList_RC, &(yyloc), (yyvsp[-3].pnd), (yyvsp[-2].pnd), (yyvsp[-1].pnd), new_sym_node(RC, &(yylsp[-1])));
+		logd("%d:%d: error: missing '\x7d'\n", (yylsp[-1]).last_line, (yylsp[-1]).last_column);
+}
 #line 1572 "syntax.c" /* yacc.c:1646  */
     break;
 
-  case 17:
-#line 100 "syntax.y" /* yacc.c:1646  */
-    {(yyval.pnd)=build_subast(AST_Stmt_is_RETURN_Exp_SEMI, (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
+  case 15:
+#line 97 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_StmtList_is_Stmt_StmtList, &(yyloc), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
 #line 1578 "syntax.c" /* yacc.c:1646  */
     break;
 
-  case 18:
-#line 101 "syntax.y" /* yacc.c:1646  */
-    {(yyval.pnd)=build_subast(AST_Stmt_is_LC_StmtList_RC, (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
+  case 16:
+#line 98 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_StmtList_is_Stmt, &(yyloc), (yyvsp[0].pnd));}
 #line 1584 "syntax.c" /* yacc.c:1646  */
     break;
 
-  case 19:
-#line 102 "syntax.y" /* yacc.c:1646  */
-    {(yyval.pnd)=build_subast(AST_Stmt_is_IF_LP_Exp_RP_Stmt, (yyvsp[-4].pnd), (yyvsp[-3].pnd), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
+  case 17:
+#line 101 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_Stmt_is_Exp_SEMI, &(yyloc), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
 #line 1590 "syntax.c" /* yacc.c:1646  */
     break;
 
-  case 20:
-#line 103 "syntax.y" /* yacc.c:1646  */
-    {(yyval.pnd)=build_subast(AST_Stmt_is_IF_LP_Exp_RP_Stmt_ELSE_Stmt, (yyvsp[-6].pnd), (yyvsp[-5].pnd), (yyvsp[-4].pnd), (yyvsp[-3].pnd), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
+  case 18:
+#line 102 "syntax.y" /* yacc.c:1646  */
+    {}
 #line 1596 "syntax.c" /* yacc.c:1646  */
     break;
 
-  case 21:
-#line 104 "syntax.y" /* yacc.c:1646  */
-    {(yyval.pnd)=build_subast(AST_Stmt_is_WHILE_LP_Exp_RP_Stmt, (yyvsp[-4].pnd), (yyvsp[-3].pnd), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
+  case 19:
+#line 103 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_Stmt_is_RETURN_Exp_SEMI, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
 #line 1602 "syntax.c" /* yacc.c:1646  */
     break;
 
-  case 22:
-#line 105 "syntax.y" /* yacc.c:1646  */
-    {(yyval.pnd)=build_subast(AST_Stmt_is_DO_Stmt_WHILE_LP_Exp_RP_SEMI, (yyvsp[-6].pnd), (yyvsp[-5].pnd), (yyvsp[-4].pnd), (yyvsp[-3].pnd), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
+  case 20:
+#line 104 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_Stmt_is_LC_StmtList_RC, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
 #line 1608 "syntax.c" /* yacc.c:1646  */
     break;
 
-  case 23:
-#line 106 "syntax.y" /* yacc.c:1646  */
-    {(yyval.pnd)=build_subast(AST_Stmt_is_FOR_LP_Exp_SEMI_Exp_SEMI_Exp_RP_Stmt, (yyvsp[-8].pnd), (yyvsp[-7].pnd), (yyvsp[-6].pnd), (yyvsp[-5].pnd), (yyvsp[-4].pnd), (yyvsp[-3].pnd), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
+  case 21:
+#line 105 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_Stmt_is_IF_LP_Exp_RP_Stmt, &(yyloc), (yyvsp[-4].pnd), (yyvsp[-3].pnd), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
 #line 1614 "syntax.c" /* yacc.c:1646  */
     break;
 
-  case 24:
+  case 22:
+#line 106 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_Stmt_is_IF_LP_Exp_RP_Stmt_ELSE_Stmt, &(yyloc), (yyvsp[-6].pnd), (yyvsp[-5].pnd), (yyvsp[-4].pnd), (yyvsp[-3].pnd), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
+#line 1620 "syntax.c" /* yacc.c:1646  */
+    break;
+
+  case 23:
 #line 107 "syntax.y" /* yacc.c:1646  */
-    {
-		Node *pnd = new_node();
-		pnd->lexval = SEMI;
-		pnd->lineno = (yylsp[-1]).first_line;
-		pnd->column = (yylsp[-1]).first_column;
-		(yyval.pnd)=build_subast(AST_Stmt_is_Exp_SEMI, (yyvsp[-1].pnd), pnd);
-		logi("line %d:%d: missing ';'\n", (yyloc).first_line, (yyloc).last_column);
-	}
-#line 1627 "syntax.c" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_Stmt_is_WHILE_LP_Exp_RP_Stmt, &(yyloc), (yyvsp[-4].pnd), (yyvsp[-3].pnd), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
+#line 1626 "syntax.c" /* yacc.c:1646  */
+    break;
+
+  case 24:
+#line 108 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_Stmt_is_DO_Stmt_WHILE_LP_Exp_RP_SEMI, &(yyloc), (yyvsp[-6].pnd), (yyvsp[-5].pnd), (yyvsp[-4].pnd), (yyvsp[-3].pnd), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
+#line 1632 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 25:
-#line 118 "syntax.y" /* yacc.c:1646  */
-    {(yyval.pnd)=build_subast(AST_DefList_is_Def_DefList, (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 1633 "syntax.c" /* yacc.c:1646  */
+#line 109 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_Stmt_is_FOR_LP_Exp_SEMI_Exp_SEMI_Exp_RP_Stmt, &(yyloc), (yyvsp[-8].pnd), (yyvsp[-7].pnd), (yyvsp[-6].pnd), (yyvsp[-5].pnd), (yyvsp[-4].pnd), (yyvsp[-3].pnd), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
+#line 1638 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 26:
-#line 119 "syntax.y" /* yacc.c:1646  */
-    {(yyval.pnd)=build_subast(AST_DefList_is_Def, (yyvsp[0].pnd));}
-#line 1639 "syntax.c" /* yacc.c:1646  */
+#line 110 "syntax.y" /* yacc.c:1646  */
+    {
+		(yyval.pnd)=build_subast(AST_Stmt_is_Exp_SEMI, &(yyloc), (yyvsp[-1].pnd), new_sym_node(SEMI, & (yylsp[-1])));
+		logd("%d:%d: error: missing ';'\n", (yyloc).first_line, (yylsp[-1]).last_column);
+	}
+#line 1647 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 27:
-#line 122 "syntax.y" /* yacc.c:1646  */
-    {(yyval.pnd)=build_subast(AST_Def_is_Specifier_DecList_SEMI, (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 1645 "syntax.c" /* yacc.c:1646  */
+#line 114 "syntax.y" /* yacc.c:1646  */
+    {
+		(yyval.pnd)=build_subast(AST_Stmt_is_RETURN_Exp_SEMI, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), new_sym_node(SEMI, & (yylsp[-1])));
+		logd("%d:%d: error: missing ';'\n", (yyloc).first_line, (yylsp[-1]).last_column);
+	}
+#line 1656 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 28:
-#line 125 "syntax.y" /* yacc.c:1646  */
-    {(yyval.pnd)=build_subast(AST_DecList_is_Dec_COMMA_DecList, (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 1651 "syntax.c" /* yacc.c:1646  */
+#line 118 "syntax.y" /* yacc.c:1646  */
+    {
+		(yyval.pnd)=build_subast(AST_Stmt_is_LC_StmtList_RC, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), new_sym_node(RC, &(yylsp[-1])));
+		logd("%d:%d: error: missing '\x7d'\n", (yyloc).first_line, (yylsp[-1]).last_column);
+	}
+#line 1665 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 29:
-#line 126 "syntax.y" /* yacc.c:1646  */
-    {(yyval.pnd)=build_subast(AST_DecList_is_Dec, (yyvsp[0].pnd));}
-#line 1657 "syntax.c" /* yacc.c:1646  */
+#line 125 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_DefList_is_Def_DefList, &(yyloc), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
+#line 1671 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 30:
-#line 129 "syntax.y" /* yacc.c:1646  */
-    {(yyval.pnd)=build_subast(AST_Dec_is_VarDec, (yyvsp[0].pnd));}
-#line 1663 "syntax.c" /* yacc.c:1646  */
+#line 126 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_DefList_is_Def, &(yyloc), (yyvsp[0].pnd));}
+#line 1677 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 31:
-#line 130 "syntax.y" /* yacc.c:1646  */
-    {(yyval.pnd)=build_subast(AST_Dec_is_VarDec_ASSIGNOP_Exp, (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 1669 "syntax.c" /* yacc.c:1646  */
+#line 129 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_Def_is_Specifier_DecList_SEMI, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
+#line 1683 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 32:
-#line 133 "syntax.y" /* yacc.c:1646  */
-    {(yyval.pnd)=build_subast(AST_VarDec_is_ID, (yyvsp[0].pnd));}
-#line 1675 "syntax.c" /* yacc.c:1646  */
+#line 130 "syntax.y" /* yacc.c:1646  */
+    {
+		(yyval.pnd)=build_subast(AST_Def_is_Specifier_DecList_SEMI, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), new_sym_node(SEMI, & (yylsp[-1])));
+		logd("%d:%d: error: missing ';'\n", (yyloc).first_line, (yyloc).last_column);
+	}
+#line 1692 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 33:
-#line 137 "syntax.y" /* yacc.c:1646  */
-    {(yyval.pnd)=build_subast(AST_Specifier_is_TYPE, (yyvsp[0].pnd));}
-#line 1681 "syntax.c" /* yacc.c:1646  */
+#line 136 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_DecList_is_Dec_COMMA_DecList, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
+#line 1698 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 34:
-#line 138 "syntax.y" /* yacc.c:1646  */
-    {(yyval.pnd)=build_subast(AST_Specifier_is_StructSpecifier, (yyvsp[0].pnd));}
-#line 1687 "syntax.c" /* yacc.c:1646  */
+#line 137 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_DecList_is_Dec, &(yyloc), (yyvsp[0].pnd));}
+#line 1704 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 35:
-#line 141 "syntax.y" /* yacc.c:1646  */
-    {(yyval.pnd)=build_subast(AST_TYPE_is_INT, (yyvsp[0].pnd));}
-#line 1693 "syntax.c" /* yacc.c:1646  */
+#line 138 "syntax.y" /* yacc.c:1646  */
+    {
+			(yyval.pnd)=build_subast(AST_DecList_is_Dec_COMMA_DecList, &(yyloc), (yyvsp[-3].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));
+			yyerrlex((yyloc).first_line, (yylsp[-3]).last_column+1, (yylsp[-2]).last_column-(yylsp[-3]).last_column, ERR_EXPECTED_COMMA);
+		}
+#line 1713 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 36:
-#line 142 "syntax.y" /* yacc.c:1646  */
-    {(yyval.pnd)=build_subast(AST_TYPE_is_FLOAT, (yyvsp[0].pnd));}
-#line 1699 "syntax.c" /* yacc.c:1646  */
+#line 144 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_Dec_is_VarDec, &(yyloc), (yyvsp[0].pnd));}
+#line 1719 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 37:
 #line 145 "syntax.y" /* yacc.c:1646  */
-    {(yyval.pnd)=build_subast(AST_StructSpecifier_is_STRUCT_Tag, (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 1705 "syntax.c" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_Dec_is_VarDec_ASSIGNOP_Exp, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
+#line 1725 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 38:
-#line 146 "syntax.y" /* yacc.c:1646  */
-    {(yyval.pnd)=build_subast(AST_StructSpecifier_is_STRUCT_OptTag_LC_DefList_RC, (yyvsp[-4].pnd), (yyvsp[-3].pnd), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 1711 "syntax.c" /* yacc.c:1646  */
+#line 148 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_VarDec_is_ID, &(yyloc), (yyvsp[0].pnd));}
+#line 1731 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 39:
 #line 149 "syntax.y" /* yacc.c:1646  */
-    {(yyval.pnd)=build_subast(AST_Tag_is_ID, (yyvsp[0].pnd));}
-#line 1717 "syntax.c" /* yacc.c:1646  */
+    {
+		if((yyvsp[-1].pnd)->specval == 'f')
+		{
+			(yyvsp[-1].pnd)->specval = 'i';
+			(yyvsp[-1].pnd)->exval.i = (yyvsp[-1].pnd)->exval.f;
+			logd("%d: error type A: invalid dim\n", (yyloc).first_line);
+		}
+		(yyval.pnd)=build_subast(AST_VarDec_is_VarDec_LB_NUM_RB, &(yyloc), (yyvsp[-3].pnd), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));
+	}
+#line 1745 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 40:
-#line 152 "syntax.y" /* yacc.c:1646  */
-    {(yyval.pnd)=build_subast(AST_OptTag_is_ID, (yyvsp[0].pnd));}
-#line 1723 "syntax.c" /* yacc.c:1646  */
+#line 161 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_Specifier_is_TYPE, &(yyloc), (yyvsp[0].pnd));}
+#line 1751 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 41:
-#line 156 "syntax.y" /* yacc.c:1646  */
-    {(yyval.pnd)=build_subast(AST_Exp_is_ID, (yyvsp[0].pnd));}
-#line 1729 "syntax.c" /* yacc.c:1646  */
+#line 162 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_Specifier_is_StructSpecifier, &(yyloc), (yyvsp[0].pnd));}
+#line 1757 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 42:
-#line 157 "syntax.y" /* yacc.c:1646  */
-    {(yyval.pnd)=build_subast(AST_Exp_is_NUM, (yyvsp[0].pnd));}
-#line 1735 "syntax.c" /* yacc.c:1646  */
+#line 165 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_StructSpecifier_is_STRUCT_Tag, &(yyloc), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
+#line 1763 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 43:
-#line 158 "syntax.y" /* yacc.c:1646  */
-    {(yyval.pnd)=build_subast(AST_Exp_is_ADD_NUM, (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 1741 "syntax.c" /* yacc.c:1646  */
+#line 166 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_StructSpecifier_is_STRUCT_OptTag_LC_DefList_RC, &(yyloc), (yyvsp[-4].pnd), (yyvsp[-3].pnd), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
+#line 1769 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 44:
-#line 159 "syntax.y" /* yacc.c:1646  */
-    {(yyval.pnd)=build_subast(AST_Exp_is_SUB_NUM, (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 1747 "syntax.c" /* yacc.c:1646  */
+#line 169 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_Tag_is_ID, &(yyloc), (yyvsp[0].pnd));}
+#line 1775 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 45:
-#line 160 "syntax.y" /* yacc.c:1646  */
-    {(yyval.pnd)=build_subast(AST_Exp_is_STRING, (yyvsp[0].pnd));}
-#line 1753 "syntax.c" /* yacc.c:1646  */
+#line 172 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_OptTag_is_ID, &(yyloc), (yyvsp[0].pnd));}
+#line 1781 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 46:
-#line 161 "syntax.y" /* yacc.c:1646  */
-    {(yyval.pnd)=build_subast(AST_Exp_is_Exp_ASSIGNOP_Exp, (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 1759 "syntax.c" /* yacc.c:1646  */
+#line 176 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_Exp_is_ID, &(yyloc), (yyvsp[0].pnd));}
+#line 1787 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 47:
-#line 162 "syntax.y" /* yacc.c:1646  */
-    {(yyval.pnd)=build_subast(AST_Exp_is_Exp_DOT_ID, (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 1765 "syntax.c" /* yacc.c:1646  */
+#line 177 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_Exp_is_NUM, &(yyloc), (yyvsp[0].pnd));}
+#line 1793 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 48:
-#line 163 "syntax.y" /* yacc.c:1646  */
-    {(yyval.pnd)=build_subast(AST_Exp_is_Exp_POINTER_ID, (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 1771 "syntax.c" /* yacc.c:1646  */
+#line 178 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_Exp_is_ADD_NUM, &(yyloc), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
+#line 1799 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 49:
-#line 164 "syntax.y" /* yacc.c:1646  */
-    {(yyval.pnd)=build_subast(AST_Exp_is_Exp_ADD_Exp, (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 1777 "syntax.c" /* yacc.c:1646  */
+#line 179 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_Exp_is_SUB_NUM, &(yyloc), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
+#line 1805 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 50:
-#line 165 "syntax.y" /* yacc.c:1646  */
-    {(yyval.pnd)=build_subast(AST_Exp_is_Exp_SUB_Exp, (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 1783 "syntax.c" /* yacc.c:1646  */
+#line 180 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_Exp_is_STRING, &(yyloc), (yyvsp[0].pnd));}
+#line 1811 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 51:
-#line 166 "syntax.y" /* yacc.c:1646  */
-    {(yyval.pnd)=build_subast(AST_Exp_is_Exp_MULT_Exp, (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 1789 "syntax.c" /* yacc.c:1646  */
+#line 181 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_Exp_is_Exp_ASSIGNOP_Exp, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
+#line 1817 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 52:
-#line 167 "syntax.y" /* yacc.c:1646  */
-    {(yyval.pnd)=build_subast(AST_Exp_is_Exp_DIV_Exp, (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 1795 "syntax.c" /* yacc.c:1646  */
+#line 182 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_Exp_is_Exp_DOT_ID, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
+#line 1823 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 53:
-#line 168 "syntax.y" /* yacc.c:1646  */
-    {(yyval.pnd)=build_subast(AST_Exp_is_Exp_EQ_Exp, (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 1801 "syntax.c" /* yacc.c:1646  */
+#line 183 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_Exp_is_Exp_POINTER_ID, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
+#line 1829 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 54:
-#line 169 "syntax.y" /* yacc.c:1646  */
-    {(yyval.pnd)=build_subast(AST_Exp_is_Exp_LT_Exp, (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 1807 "syntax.c" /* yacc.c:1646  */
+#line 184 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_Exp_is_Exp_ADD_Exp, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
+#line 1835 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 55:
-#line 170 "syntax.y" /* yacc.c:1646  */
-    {(yyval.pnd)=build_subast(AST_Exp_is_Exp_LE_Exp, (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 1813 "syntax.c" /* yacc.c:1646  */
+#line 185 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_Exp_is_Exp_SUB_Exp, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
+#line 1841 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 56:
-#line 171 "syntax.y" /* yacc.c:1646  */
-    {(yyval.pnd)=build_subast(AST_Exp_is_Exp_NE_Exp, (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 1819 "syntax.c" /* yacc.c:1646  */
+#line 186 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_Exp_is_Exp_MULT_Exp, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
+#line 1847 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 57:
-#line 172 "syntax.y" /* yacc.c:1646  */
-    {(yyval.pnd)=build_subast(AST_Exp_is_Exp_GT_Exp, (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 1825 "syntax.c" /* yacc.c:1646  */
+#line 187 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_Exp_is_Exp_DIV_Exp, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
+#line 1853 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 58:
-#line 173 "syntax.y" /* yacc.c:1646  */
-    {(yyval.pnd)=build_subast(AST_Exp_is_Exp_GE_Exp, (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 1831 "syntax.c" /* yacc.c:1646  */
+#line 188 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_Exp_is_Exp_EQ_Exp, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
+#line 1859 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 59:
-#line 174 "syntax.y" /* yacc.c:1646  */
-    {(yyval.pnd)=build_subast(AST_Exp_is_Exp_LB_Exp_RB, (yyvsp[-3].pnd), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 1837 "syntax.c" /* yacc.c:1646  */
+#line 189 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_Exp_is_Exp_LT_Exp, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
+#line 1865 "syntax.c" /* yacc.c:1646  */
+    break;
+
+  case 60:
+#line 190 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_Exp_is_Exp_LE_Exp, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
+#line 1871 "syntax.c" /* yacc.c:1646  */
+    break;
+
+  case 61:
+#line 191 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_Exp_is_Exp_NE_Exp, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
+#line 1877 "syntax.c" /* yacc.c:1646  */
+    break;
+
+  case 62:
+#line 192 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_Exp_is_Exp_GT_Exp, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
+#line 1883 "syntax.c" /* yacc.c:1646  */
+    break;
+
+  case 63:
+#line 193 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_Exp_is_Exp_GE_Exp, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
+#line 1889 "syntax.c" /* yacc.c:1646  */
+    break;
+
+  case 64:
+#line 194 "syntax.y" /* yacc.c:1646  */
+    {(yyval.pnd)=build_subast(AST_Exp_is_Exp_LB_Exp_RB, &(yyloc), (yyvsp[-3].pnd), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
+#line 1895 "syntax.c" /* yacc.c:1646  */
+    break;
+
+  case 65:
+#line 195 "syntax.y" /* yacc.c:1646  */
+    {
+		(yyval.pnd)=build_subast(AST_Exp_is_Exp_LB_Exp_RB, &(yyloc), (yyvsp[-3].pnd), (yyvsp[-2].pnd), (yyvsp[-1].pnd), new_sym_node(RB, &(yylsp[-1])));
+		logd("%d:%d: error: missing ']'\n", (yyloc).first_line, (yylsp[-1]).last_column);
+	}
+#line 1904 "syntax.c" /* yacc.c:1646  */
     break;
 
 
-#line 1841 "syntax.c" /* yacc.c:1646  */
+#line 1908 "syntax.c" /* yacc.c:1646  */
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires

@@ -1,14 +1,10 @@
 %{
-#include <stdio.h>
-#include "basic-dat.h"
-#include "error.h"
+#include "common.h"
 #include "debug.h"
 #include "ast.h"
 
 int yylex();
 int yyerror(const char *str, ...);
-
-#define YYDEBUG 1
 
 %}
 
@@ -19,8 +15,8 @@ int yyerror(const char *str, ...);
 }
 
 %nonassoc LOWWEST
-%nonassoc LOWWER_THAN_ELSE
-%nonassoc ELSE
+%nonassoc LOWWER_THAN_ELSE LOWWER_THAN_COMMA
+%nonassoc ELSE COMMA
 
 %token<pnd>
 	LT LE NE EQ GE GT
@@ -29,7 +25,7 @@ int yyerror(const char *str, ...);
 	LP RP LB RB LC RC
 	DOT COMMA SEMI POINTER
 	IF ELSE DO WHILE FOR RETURN /* inline key words */
-	INT FLOAT STRUCT /* inline specifier */
+	TYPE INT CHAR FLOAT STRUCT /* inline specifier */
 	NUM STRING
 	ID
 
@@ -38,7 +34,7 @@ int yyerror(const char *str, ...);
 %left LT LE GE GT
 %left ADD SUB
 %left MULT DIV
-%left DOT POINTER LB
+%left DOT POINTER LB RB
 
 %type<pnd>
 	Program
@@ -53,7 +49,6 @@ int yyerror(const char *str, ...);
 	VarDec
 	Specifier
 	StructSpecifier
-	TYPE
 	FuncDec
 	ArgList
 	Arg
@@ -64,112 +59,141 @@ int yyerror(const char *str, ...);
 
 %%
 
-Program:ExtDefList {astroot=build_subast(AST_Program_is_ExtDefList, $1);}
+Program:ExtDefList {astroot=build_subast(AST_Program_is_ExtDefList, &@$, $1);}
 ;
 
-ExtDefList:ExtDef {$$=build_subast(AST_ExtDefList_is_ExtDef, $1);}
-		  |ExtDef ExtDefList {$$=build_subast(AST_ExtDefList_is_ExtDef_ExtDefList, $1, $2);}
+ExtDefList:ExtDef {$$=build_subast(AST_ExtDefList_is_ExtDef, &@$, $1);}
+		  |ExtDef ExtDefList {$$=build_subast(AST_ExtDefList_is_ExtDef_ExtDefList, &@$, $1, $2);}
 ;
 
-ExtDef:Specifier FuncDec CompSt {$$=build_subast(AST_ExtDef_is_Specifier_FuncDec_CompSt, $1, $2, $3);}
-	  |StructSpecifier SEMI {$$=build_subast(AST_ExtDef_is_StructSpecifier_SEMI, $1, $2);}
+ExtDef:Specifier FuncDec CompSt {$$=build_subast(AST_ExtDef_is_Specifier_FuncDec_CompSt, &@$, $1, $2, $3);}
+	  |StructSpecifier SEMI {$$=build_subast(AST_ExtDef_is_StructSpecifier_SEMI, &@$, $1, $2);}
+	  |StructSpecifier error {
+		$$=build_subast(AST_ExtDef_is_StructSpecifier_SEMI, &@$, $1, new_sym_node(SEMI, & @1));
+		logd("%d:%d: error: missing ';'\n", @$.first_line, @1.last_column);
+		}
 ;
 
 /*definition of function*/
-FuncDec:ID LP RP {$$=build_subast(AST_FuncDec_is_ID_LP_RP, $1, $2, $3);}
-	  |ID LP ArgList RP {$$=build_subast(AST_FuncDec_is_ID_LP_ArgList_RP, $1, $2, $3, $4);}
+FuncDec:ID LP RP {$$=build_subast(AST_FuncDec_is_ID_LP_RP, &@$, $1, $2, $3);}
+	  |ID LP ArgList RP {$$=build_subast(AST_FuncDec_is_ID_LP_ArgList_RP, &@$, $1, $2, $3, $4);}
 ;
 
-ArgList:Arg COMMA ArgList {$$=build_subast(AST_ArgList_is_Arg_COMMA_ArgList, $1, $2, $3);}
-	   |Arg {$$=build_subast(AST_ArgList_is_Arg, $1);}
+ArgList:Arg COMMA ArgList {$$=build_subast(AST_ArgList_is_Arg_COMMA_ArgList, &@$, $1, $2, $3);}
+	   |Arg {$$=build_subast(AST_ArgList_is_Arg, &@$, $1);}
 ;
 
-Arg:Specifier ID {$$=build_subast(AST_Arg_is_Specifier_ID, $1, $2);}
+Arg:Specifier ID {$$=build_subast(AST_Arg_is_Specifier_ID, &@$, $1, $2);}
 ;
 
-CompSt:LC DefList StmtList RC {$$=build_subast(AST_CompSt_is_LC_DefList_StmtList_RC, $1, $2, $3, $4);}
+CompSt:LC DefList StmtList RC {$$=build_subast(AST_CompSt_is_LC_DefList_StmtList_RC, &@$, $1, $2, $3, $4);}
+	  |LC DefList StmtList error {
+		$$=build_subast(AST_CompSt_is_LC_DefList_StmtList_RC, &@$, $1, $2, $3, new_sym_node(RC, &@3));
+		logd("%d:%d: error: missing '\x7d'\n", @3.last_line, @3.last_column);
+}
 ;
 
 /* statement in function */
-StmtList:Stmt StmtList {$$=build_subast(AST_StmtList_is_Stmt_StmtList, $1, $2);}
-		|Stmt {$$=build_subast(AST_StmtList_is_Stmt, $1);}
+StmtList:Stmt StmtList {$$=build_subast(AST_StmtList_is_Stmt_StmtList, &@$, $1, $2);}
+		|Stmt {$$=build_subast(AST_StmtList_is_Stmt, &@$, $1);}
 ;
 
-Stmt:Exp SEMI {$$=build_subast(AST_Stmt_is_Exp_SEMI, $1, $2);}
+Stmt:Exp SEMI {$$=build_subast(AST_Stmt_is_Exp_SEMI, &@$, $1, $2);}
 	|SEMI {}
-	|RETURN Exp SEMI {$$=build_subast(AST_Stmt_is_RETURN_Exp_SEMI, $1, $2, $3);}
-	|LC StmtList RC {$$=build_subast(AST_Stmt_is_LC_StmtList_RC, $1, $2, $3);}
-	|IF LP Exp RP Stmt %prec LOWWER_THAN_ELSE {$$=build_subast(AST_Stmt_is_IF_LP_Exp_RP_Stmt, $1, $2, $3, $4, $5);}
-	|IF LP Exp RP Stmt ELSE Stmt {$$=build_subast(AST_Stmt_is_IF_LP_Exp_RP_Stmt_ELSE_Stmt, $1, $2, $3, $4, $5, $6, $7);}
-	|WHILE LP Exp RP Stmt {$$=build_subast(AST_Stmt_is_WHILE_LP_Exp_RP_Stmt, $1, $2, $3, $4, $5);}
-	|DO Stmt WHILE LP Exp RP SEMI {$$=build_subast(AST_Stmt_is_DO_Stmt_WHILE_LP_Exp_RP_SEMI, $1, $2, $3, $4, $5, $6, $7);}
-	|FOR LP Exp SEMI Exp SEMI Exp RP Stmt {$$=build_subast(AST_Stmt_is_FOR_LP_Exp_SEMI_Exp_SEMI_Exp_RP_Stmt, $1, $2, $3, $4, $5, $6, $7, $8, $9);}
+	|RETURN Exp SEMI {$$=build_subast(AST_Stmt_is_RETURN_Exp_SEMI, &@$, $1, $2, $3);}
+	|LC StmtList RC {$$=build_subast(AST_Stmt_is_LC_StmtList_RC, &@$, $1, $2, $3);}
+	|IF LP Exp RP Stmt %prec LOWWER_THAN_ELSE {$$=build_subast(AST_Stmt_is_IF_LP_Exp_RP_Stmt, &@$, $1, $2, $3, $4, $5);}
+	|IF LP Exp RP Stmt ELSE Stmt {$$=build_subast(AST_Stmt_is_IF_LP_Exp_RP_Stmt_ELSE_Stmt, &@$, $1, $2, $3, $4, $5, $6, $7);}
+	|WHILE LP Exp RP Stmt {$$=build_subast(AST_Stmt_is_WHILE_LP_Exp_RP_Stmt, &@$, $1, $2, $3, $4, $5);}
+	|DO Stmt WHILE LP Exp RP SEMI {$$=build_subast(AST_Stmt_is_DO_Stmt_WHILE_LP_Exp_RP_SEMI, &@$, $1, $2, $3, $4, $5, $6, $7);}
+	|FOR LP Exp SEMI Exp SEMI Exp RP Stmt {$$=build_subast(AST_Stmt_is_FOR_LP_Exp_SEMI_Exp_SEMI_Exp_RP_Stmt, &@$, $1, $2, $3, $4, $5, $6, $7, $8, $9);}
 	|Exp error {
-		Node *pnd = new_node();
-		pnd->lexval = SEMI;
-		pnd->lineno = @1.first_line;
-		pnd->column = @1.first_column;
-		$$=build_subast(AST_Stmt_is_Exp_SEMI, $1, pnd);
-		logi("line %d:%d: missing ';'\n", @$.first_line, @$.last_column);
+		$$=build_subast(AST_Stmt_is_Exp_SEMI, &@$, $1, new_sym_node(SEMI, & @1));
+		logd("%d:%d: error: missing ';'\n", @$.first_line, @1.last_column);
+	}
+	|RETURN Exp error {
+		$$=build_subast(AST_Stmt_is_RETURN_Exp_SEMI, &@$, $1, $2, new_sym_node(SEMI, & @2));
+		logd("%d:%d: error: missing ';'\n", @$.first_line, @2.last_column);
+	}
+	|LC StmtList error {
+		$$=build_subast(AST_Stmt_is_LC_StmtList_RC, &@$, $1, $2, new_sym_node(RC, &@2));
+		logd("%d:%d: error: missing '\x7d'\n", @$.first_line, @2.last_column);
 	}
 ;
 
 /*definition of varible*/
-DefList:Def DefList {$$=build_subast(AST_DefList_is_Def_DefList, $1, $2);}
-	   |Def {$$=build_subast(AST_DefList_is_Def, $1);}
+DefList:Def DefList {$$=build_subast(AST_DefList_is_Def_DefList, &@$, $1, $2);}
+	   |Def {$$=build_subast(AST_DefList_is_Def, &@$, $1);}
 ;
 
-Def:Specifier DecList SEMI {$$=build_subast(AST_Def_is_Specifier_DecList_SEMI, $1, $2, $3);}
+Def:Specifier DecList SEMI {$$=build_subast(AST_Def_is_Specifier_DecList_SEMI, &@$, $1, $2, $3);}
+   |Specifier DecList error {
+		$$=build_subast(AST_Def_is_Specifier_DecList_SEMI, &@$, $1, $2, new_sym_node(SEMI, & @2));
+		logd("%d:%d: error: missing ';'\n", @$.first_line, @$.last_column);
+	}
 ;
 
-DecList:Dec COMMA DecList {$$=build_subast(AST_DecList_is_Dec_COMMA_DecList, $1, $2, $3);}
-	   |Dec {$$=build_subast(AST_DecList_is_Dec, $1);}
+DecList:Dec COMMA DecList {$$=build_subast(AST_DecList_is_Dec_COMMA_DecList, &@$, $1, $2, $3);}
+	   |Dec {$$=build_subast(AST_DecList_is_Dec, &@$, $1);}
+       |Dec error COMMA DecList {
+			$$=build_subast(AST_DecList_is_Dec_COMMA_DecList, &@$, $1, $3, $4);
+			yyerrlex(@$.first_line, @1.last_column+1, @2.last_column-@1.last_column, ERR_EXPECTED_COMMA);
+		}
 ;
 
-Dec:VarDec {$$=build_subast(AST_Dec_is_VarDec, $1);}
-   |VarDec ASSIGNOP Exp {$$=build_subast(AST_Dec_is_VarDec_ASSIGNOP_Exp, $1, $2, $3);}
+Dec:VarDec {$$=build_subast(AST_Dec_is_VarDec, &@$, $1);}
+   |VarDec ASSIGNOP Exp {$$=build_subast(AST_Dec_is_VarDec_ASSIGNOP_Exp, &@$, $1, $2, $3);}
 ;
 
-VarDec:ID {$$=build_subast(AST_VarDec_is_ID, $1);}
+VarDec:ID {$$=build_subast(AST_VarDec_is_ID, &@$, $1);}
+	  |VarDec LB NUM RB {
+		if($3->specval == 'f')
+		{
+			$3->specval = 'i';
+			$3->exval.i = $3->exval.f;
+			logd("%d: error type A: invalid dim\n", @$.first_line);
+		}
+		$$=build_subast(AST_VarDec_is_VarDec_LB_NUM_RB, &@$, $1, $2, $3, $4);
+	}
 ;
 
 /*specifier and struct*/
-Specifier:TYPE {$$=build_subast(AST_Specifier_is_TYPE, $1);}
-		  |StructSpecifier {$$=build_subast(AST_Specifier_is_StructSpecifier, $1);}
+Specifier:TYPE {$$=build_subast(AST_Specifier_is_TYPE, &@$, $1);}
+		  |StructSpecifier {$$=build_subast(AST_Specifier_is_StructSpecifier, &@$, $1);}
 ;
 
-TYPE:INT {$$=build_subast(AST_TYPE_is_INT, $1);}
-	|FLOAT {$$=build_subast(AST_TYPE_is_FLOAT, $1);}
+StructSpecifier:STRUCT Tag {$$=build_subast(AST_StructSpecifier_is_STRUCT_Tag, &@$, $1, $2);}
+			   |STRUCT OptTag LC DefList RC {$$=build_subast(AST_StructSpecifier_is_STRUCT_OptTag_LC_DefList_RC, &@$, $1, $2, $3, $4, $5);}
 ;
 
-StructSpecifier:STRUCT Tag {$$=build_subast(AST_StructSpecifier_is_STRUCT_Tag, $1, $2);}
-			   |STRUCT OptTag LC DefList RC {$$=build_subast(AST_StructSpecifier_is_STRUCT_OptTag_LC_DefList_RC, $1, $2, $3, $4, $5);}
+Tag:ID {$$=build_subast(AST_Tag_is_ID, &@$, $1);}
 ;
 
-Tag:ID {$$=build_subast(AST_Tag_is_ID, $1);}
-;
-
-OptTag:ID {$$=build_subast(AST_OptTag_is_ID, $1);}
+OptTag:ID {$$=build_subast(AST_OptTag_is_ID, &@$, $1);}
 ;
 
 /*expression*/
-Exp:ID {$$=build_subast(AST_Exp_is_ID, $1);}
-   |NUM {$$=build_subast(AST_Exp_is_NUM, $1);}
-   |ADD NUM {$$=build_subast(AST_Exp_is_ADD_NUM, $1, $2);}
-   |SUB NUM {$$=build_subast(AST_Exp_is_SUB_NUM, $1, $2);}
-   |STRING {$$=build_subast(AST_Exp_is_STRING, $1);}
-   |Exp ASSIGNOP Exp {$$=build_subast(AST_Exp_is_Exp_ASSIGNOP_Exp, $1, $2, $3);}
-   |Exp DOT ID {$$=build_subast(AST_Exp_is_Exp_DOT_ID, $1, $2, $3);}
-   |Exp POINTER ID {$$=build_subast(AST_Exp_is_Exp_POINTER_ID, $1, $2, $3);}
-   |Exp ADD Exp {$$=build_subast(AST_Exp_is_Exp_ADD_Exp, $1, $2, $3);}
-   |Exp SUB Exp {$$=build_subast(AST_Exp_is_Exp_SUB_Exp, $1, $2, $3);}
-   |Exp MULT Exp {$$=build_subast(AST_Exp_is_Exp_MULT_Exp, $1, $2, $3);}
-   |Exp DIV Exp {$$=build_subast(AST_Exp_is_Exp_DIV_Exp, $1, $2, $3);}
-   |Exp EQ Exp {$$=build_subast(AST_Exp_is_Exp_EQ_Exp, $1, $2, $3);}
-   |Exp LT Exp {$$=build_subast(AST_Exp_is_Exp_LT_Exp, $1, $2, $3);}
-   |Exp LE Exp {$$=build_subast(AST_Exp_is_Exp_LE_Exp, $1, $2, $3);}
-   |Exp NE Exp {$$=build_subast(AST_Exp_is_Exp_NE_Exp, $1, $2, $3);}
-   |Exp GT Exp {$$=build_subast(AST_Exp_is_Exp_GT_Exp, $1, $2, $3);}
-   |Exp GE Exp {$$=build_subast(AST_Exp_is_Exp_GE_Exp, $1, $2, $3);}
-   |Exp LB Exp RB {$$=build_subast(AST_Exp_is_Exp_LB_Exp_RB, $1, $2, $3, $4);}
+Exp:ID {$$=build_subast(AST_Exp_is_ID, &@$, $1);}
+   |NUM {$$=build_subast(AST_Exp_is_NUM, &@$, $1);}
+   |ADD NUM {$$=build_subast(AST_Exp_is_ADD_NUM, &@$, $1, $2);}
+   |SUB NUM {$$=build_subast(AST_Exp_is_SUB_NUM, &@$, $1, $2);}
+   |STRING {$$=build_subast(AST_Exp_is_STRING, &@$, $1);}
+   |Exp ASSIGNOP Exp {$$=build_subast(AST_Exp_is_Exp_ASSIGNOP_Exp, &@$, $1, $2, $3);}
+   |Exp DOT ID {$$=build_subast(AST_Exp_is_Exp_DOT_ID, &@$, $1, $2, $3);}
+   |Exp POINTER ID {$$=build_subast(AST_Exp_is_Exp_POINTER_ID, &@$, $1, $2, $3);}
+   |Exp ADD Exp {$$=build_subast(AST_Exp_is_Exp_ADD_Exp, &@$, $1, $2, $3);}
+   |Exp SUB Exp {$$=build_subast(AST_Exp_is_Exp_SUB_Exp, &@$, $1, $2, $3);}
+   |Exp MULT Exp {$$=build_subast(AST_Exp_is_Exp_MULT_Exp, &@$, $1, $2, $3);}
+   |Exp DIV Exp {$$=build_subast(AST_Exp_is_Exp_DIV_Exp, &@$, $1, $2, $3);}
+   |Exp EQ Exp {$$=build_subast(AST_Exp_is_Exp_EQ_Exp, &@$, $1, $2, $3);}
+   |Exp LT Exp {$$=build_subast(AST_Exp_is_Exp_LT_Exp, &@$, $1, $2, $3);}
+   |Exp LE Exp {$$=build_subast(AST_Exp_is_Exp_LE_Exp, &@$, $1, $2, $3);}
+   |Exp NE Exp {$$=build_subast(AST_Exp_is_Exp_NE_Exp, &@$, $1, $2, $3);}
+   |Exp GT Exp {$$=build_subast(AST_Exp_is_Exp_GT_Exp, &@$, $1, $2, $3);}
+   |Exp GE Exp {$$=build_subast(AST_Exp_is_Exp_GE_Exp, &@$, $1, $2, $3);}
+   |Exp LB Exp RB {$$=build_subast(AST_Exp_is_Exp_LB_Exp_RB, &@$, $1, $2, $3, $4);}
+   |Exp LB Exp error {
+		$$=build_subast(AST_Exp_is_Exp_LB_Exp_RB, &@$, $1, $2, $3, new_sym_node(RB, &@3));
+		logd("%d:%d: error: missing ']'\n", @$.first_line, @3.last_column);
+	}
 ;

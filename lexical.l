@@ -21,7 +21,7 @@ int init_component();
 #define MAX_SIZE 1024
 
 static int yycolumn = 1;
-static char yylinetext[MAX_SIZE];
+char yylinetext[MAX_SIZE];
 
 #ifdef __DEBUG_LEX__
 #define tokout(a) \
@@ -40,6 +40,7 @@ extern YYLTYPE yylloc;
 	} while(0);
 
 static int symbol(int lexval);
+static int type(int specval);
 static int num(int specval);
 static int reg(int lexval);
 
@@ -57,8 +58,8 @@ string           (\"([^\"]*(\\\")?)*\"[ \t\r\n]*)+
 blank            [ \t\r]+
 newline          \n+
 id               [_a-zA-Z][_a-zA-Z0-9]*
-multiplecomment  (?s:\/\*([^\*]|\*[^\/])*\*\/)
-singlecomment    \/\/.*$
+blockcomment     (?s:\/\*([^\*]|\*[^\/])*\*\/)
+linecomment      \/\/.*$
 invalidcomment   \/\*([^\*]|\*[^\/])*$
 
 %%
@@ -91,8 +92,9 @@ else                {tokout("ELSE");	return symbol(ELSE);}
 do                  {tokout("DO");		return symbol(DO);}
 while               {tokout("WHILE");	return symbol(WHILE);}
 for                 {tokout("FOR");		return symbol(FOR);}
-int                 {tokout("INT");		return symbol(INT);}
-float               {tokout("FLOAT");	return symbol(FLOAT);}
+int                 {tokout("INT");		return type(INT);}
+char                {tokout("CHAR");	return type(CHAR);}
+float               {tokout("FLOAT");	return type(FLOAT);}
 struct              {tokout("STRUCT");	return symbol(STRUCT);}
 return              {tokout("RETURN");	return symbol(RETURN);}
 
@@ -103,25 +105,26 @@ return              {tokout("RETURN");	return symbol(RETURN);}
 
 {invalidnum}        {
 						tokout("NUM:v");
-						yyerrlex(yylineno, yycolumn-yyleng+1, yyleng, ERR_INVALID_NUM, yylinetext);
+						yyerrlex(yylineno, yycolumn-yyleng, yyleng, ERR_INVALID_NUM);
 						return symbol(NUM);
 					}
 {string}            {tokout("STR");		return reg(STRING);}
 {id}                {tokout("ID");		return reg(ID);}
 {blank}             {strcat(yylinetext, yytext);/*do nothing*/}
 {newline}           {
-						yycolumn = 0;
+						yycolumn = 1;
 						yylinetext[0] = 0;
 					}
-{multiplecomment}   {tokout("MC");	/*do nothing*/}
-{singlecomment}     {tokout("SC");	/*do nothing*/}
+{blockcomment}      {tokout("MC");	/*do nothing*/}
+{linecomment}       {tokout("SC");	/*do nothing*/}
 {invalidcomment}    {
 						tokout("IC");
-						logd("error type A at line %d: invalid comment\n", yylineno-strcnt(yytext, '\n')-1);
+						extern int curlineno;
+						logd("%d: error type A: invalid comment\n", curlineno);
 					}
 .					{
 						tokout("UB");
-						yyerrlex(yylineno, yycolumn-yyleng+1, yyleng, ERR_UNKNOWN_TOKEN, yylinetext);
+						yyerrlex(yylineno, yycolumn-yyleng, yyleng, ERR_UNKNOWN_TOKEN);
 					}
 
 %%
@@ -130,6 +133,18 @@ static int symbol(int lexval)
 {
 	Node *pnd = new_node();
 	pnd->lexval = lexval;
+	pnd->lineno = yylineno;
+	pnd->column = yycolumn;
+	yylval.pnd = pnd;
+	return lexval;
+}
+
+static int type(int specval)
+{
+	int lexval = TYPE;
+	Node *pnd = new_node();
+	pnd->lexval = lexval;
+	pnd->specval = specval;
 	pnd->lineno = yylineno;
 	pnd->column = yycolumn;
 	yylval.pnd = pnd;

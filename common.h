@@ -19,6 +19,8 @@
 #endif
 #include "error.h"
 #include "debug.h"
+#include "basic-dat.h"
+#include "syntax.h"
 
 
 

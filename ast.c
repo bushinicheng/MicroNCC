@@ -1,20 +1,18 @@
 #include "common.h"
-#include "basic-dat.h"
-
-#define __DEBUG_YACC__
 
 #define __AST_C__
 #include "ast.h"
 
 #define MAX_SIZE (1024*1024*2)
 
+int curlineno;
 static Node ndpool[MAX_SIZE];
 Node *astroot = NULL;
 DebugInfo curd;
 
 extern bool is_print_reduce_step;
 
-Node *new_node()
+Node* new_node()
 {
 	static int ndpool_p = -1;
 	assert(ndpool_p < MAX_SIZE);
@@ -22,13 +20,24 @@ Node *new_node()
 	return &ndpool[ndpool_p];
 }
 
-Node* __attribute__((noinline)) build_subast(int nodetype, ...)
+Node* new_sym_node(int lexval, YYLTYPE *yyinfo)
+{
+	Node *pnd = new_node();
+	pnd->lexval = lexval;
+	pnd->lineno = yyinfo->first_line;
+	pnd->column = yyinfo->last_column;
+	return pnd;
+}
+
+Node* __attribute__((noinline)) build_subast(int nodetype, YYLTYPE *yyinfo, ...)
 {
 	va_list vlist;
-	va_start(vlist, nodetype);
+	va_start(vlist, yyinfo);
 	Node *parnd = new_node();
 	Node *first_child = va_arg(vlist, PNode);
 	Node *prev_child = first_child;
+	parnd->lineno = curlineno = yyinfo->first_line;
+	parnd->column = yyinfo->first_column;
 	prev_child->sibling = NULL;
 	parnd->semanval = nodetype;
 	if(is_print_reduce_step)
@@ -70,16 +79,18 @@ void print_ast(Node *root)
 				logd("NUM:%d\n", root->exval.i);
 				break;
 			case 'o':
-				logd("NUM:%o\n", root->exval.i);
+				logd("NUM:0%o\n", root->exval.i);
 				break;
 			case 'x':
-				logd("NUM:%x\n", root->exval.i);
+				logd("NUM:0x%x\n", root->exval.i);
 				break;
 			case 'f':
 				logd("NUM:%f\n", root->exval.f);
 				break;
 			}
 		}
+		else if(root->lexval == TYPE)
+			logd("TYPE:%s\n", str_lexval[root->specval]);
 		else
 			logd("%s\n", str_lexval[root->lexval]);
 	}

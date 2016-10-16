@@ -4,9 +4,10 @@
 #define __YYLOG_C__
 #include "error.h"
 
-int yyerrlex(int lineno, int column, int tokenlen, enum ErrorType errortype, const char *yylinetext)
+int yyerrlex(int lineno, int column, int tokenlen, enum ErrorType errortype)
 {
-	printf("%d:%d: error:%s\n", lineno, column, ErrorReason[errortype]);
+	extern char yylinetext[1024];
+	printf("%d:%d: %s\n", lineno, column, ErrorReason[errortype]);
 	printf("%s\n", yylinetext);
 	for(int i = 0; i < column-1; i++)
 	{
@@ -26,9 +27,9 @@ int yyerror(const char *format, ...)
 {
 	int done;
 	va_list arg;
-	extern int yylineno;
+	extern int curlineno;
 	va_start(arg, format);
-	logd("error type B at line %d: ", yylineno);
+	logd("%d: error type B: ", curlineno);
 	done = vfprintf(stderr, format, arg);
 	logd("\n");
 	va_end (arg);
