@@ -29,7 +29,7 @@ typedef struct tagNode {
 	int specval;//spec token like `float` or `int` of token `NUM`
 	union {
 		int i;float f;double llf;void *p;
-		int st;
+		char* st;
 	} exval;
 
 	/* for debugging */

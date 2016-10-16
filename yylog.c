@@ -24,11 +24,13 @@ int yyerrlex(int lineno, int column, int tokenlen, enum ErrorType errortype, con
 /*for compatibility*/
 int yyerror(const char *format, ...)
 {
-	va_list arg;
 	int done;
+	va_list arg;
+	extern int yylineno;
 	va_start(arg, format);
+	logd("error type B at line %d: ", yylineno);
 	done = vfprintf(stderr, format, arg);
-	fprintf(stderr, "\n");
+	logd("\n");
 	va_end (arg);
 	return done;
 }

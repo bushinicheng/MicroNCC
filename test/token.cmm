@@ -28,6 +28,12 @@ int main(){
 	float f4 = 0.3e4;
 	float f5 = +0.1;
 	float f6 = 0.3e;//invalid float
+
+	struct Complex {
+		int real;
+		float img;
+	} complex;
+
 	string1 = "Hello\" World!";
 	string2 = "prefix""suffix";//valid string
 	string2 = "prefix"  "suffix";//valid string
@@ -37,12 +43,10 @@ int main(){
 	if(1){a=1;}
 	else{b=1;}
 
-	do{/*expression*/}while(1);
-	for(/*st*/;/*cond*/;/*step*/){};
+	test=a+b*c/d;
 
-	struct Complex {
-		int real;
-		float img;
-	};
+	do{/*statement*/b=3;}while(1);
+	for(/*st*/c=0;/*cond*/c<12;/*step*/c=c+1){c=c+1;};
+
 	return 0;
 }

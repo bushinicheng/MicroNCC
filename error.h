@@ -54,12 +54,12 @@ int yylog(FILE *fp, const char *tag, const char *, ...);
 #define logi(...) \
 	yylog(stderr, "\033[" YYLOG_STYLE_NORMAL ";" YYLOG_COLOR_WHITE "m", __VA_ARGS__)
 
-#ifdef __DEBUG__
+//#ifdef __DEBUG__
 #define logd(...) \
 	yylog(stderr, "\033[0m", __VA_ARGS__)
-#else
-#define logd(...) do{}while(0)
-#endif
+//#else
+//#define logd(...) do{}while(0)
+//#endif
 
 #define logG(...) \
 	yylog(stderr, "\033[" YYLOG_STYLE_NORMAL ";" YYLOG_COLOR_GREEN "m", __VA_ARGS__)

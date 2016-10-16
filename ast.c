@@ -59,7 +59,30 @@ void print_ast(Node *root)
 	if(root->semanval > 0)
 		logd("%s\n", parnodestruct[root->semanval].str_root);
 	else
-		logd("%s\n", str_lexval[root->lexval]);
+	{
+		if(root->lexval == ID)
+			logd("%s:%s\n", str_lexval[root->lexval], root->exval.st);
+		else if(root->lexval == NUM)
+		{
+			switch(root->specval)
+			{
+			case 'i':
+				logd("NUM:%d\n", root->exval.i);
+				break;
+			case 'o':
+				logd("NUM:%o\n", root->exval.i);
+				break;
+			case 'x':
+				logd("NUM:%x\n", root->exval.i);
+				break;
+			case 'f':
+				logd("NUM:%f\n", root->exval.f);
+				break;
+			}
+		}
+		else
+			logd("%s\n", str_lexval[root->lexval]);
+	}
 
 	space ++;
 	print_ast(root->child);

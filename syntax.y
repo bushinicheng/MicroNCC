@@ -1,16 +1,26 @@
 %{
 #include <stdio.h>
 #include "basic-dat.h"
+#include "error.h"
+#include "debug.h"
 #include "ast.h"
 
 int yylex();
 int yyerror(const char *str, ...);
 
+#define YYDEBUG 1
+
 %}
+
+%locations
 
 %union {
 	Node *pnd;
 }
+
+%nonassoc LOWWEST
+%nonassoc LOWWER_THAN_ELSE
+%nonassoc ELSE
 
 %token<pnd>
 	LT LE NE EQ GE GT
@@ -38,7 +48,6 @@ int yyerror(const char *str, ...);
 	Def
 	StmtList
 	Stmt
-	ElsePart
 	DecList
 	Dec
 	VarDec
@@ -87,14 +96,22 @@ StmtList:Stmt StmtList {$$=build_subast(AST_StmtList_is_Stmt_StmtList, $1, $2);}
 ;
 
 Stmt:Exp SEMI {$$=build_subast(AST_Stmt_is_Exp_SEMI, $1, $2);}
-	|IF LP Exp RP Stmt ElsePart {$$=build_subast(AST_Stmt_is_IF_LP_Exp_RP_Stmt_ElsePart, $1, $2, $3, $4, $5, $6);}
-	|IF LP Exp RP LC StmtList RC ElsePart {$$=build_subast(AST_Stmt_is_IF_LP_Exp_RP_LC_StmtList_RC_ElsePart, $1, $2, $3, $4, $5, $6, $7, $8);}
-	|error SEMI {}
-;
-
-ElsePart: {/*empty*/}
-		|ELSE Stmt {$$=build_subast(AST_ElsePart_is_ELSE_Stmt, $1, $2);}
-		|ELSE LC StmtList RC {$$=build_subast(AST_ElsePart_is_ELSE_LC_StmtList_RC, $1, $2, $3, $4);}
+	|SEMI {}
+	|RETURN Exp SEMI {$$=build_subast(AST_Stmt_is_RETURN_Exp_SEMI, $1, $2, $3);}
+	|LC StmtList RC {$$=build_subast(AST_Stmt_is_LC_StmtList_RC, $1, $2, $3);}
+	|IF LP Exp RP Stmt %prec LOWWER_THAN_ELSE {$$=build_subast(AST_Stmt_is_IF_LP_Exp_RP_Stmt, $1, $2, $3, $4, $5);}
+	|IF LP Exp RP Stmt ELSE Stmt {$$=build_subast(AST_Stmt_is_IF_LP_Exp_RP_Stmt_ELSE_Stmt, $1, $2, $3, $4, $5, $6, $7);}
+	|WHILE LP Exp RP Stmt {$$=build_subast(AST_Stmt_is_WHILE_LP_Exp_RP_Stmt, $1, $2, $3, $4, $5);}
+	|DO Stmt WHILE LP Exp RP SEMI {$$=build_subast(AST_Stmt_is_DO_Stmt_WHILE_LP_Exp_RP_SEMI, $1, $2, $3, $4, $5, $6, $7);}
+	|FOR LP Exp SEMI Exp SEMI Exp RP Stmt {$$=build_subast(AST_Stmt_is_FOR_LP_Exp_SEMI_Exp_SEMI_Exp_RP_Stmt, $1, $2, $3, $4, $5, $6, $7, $8, $9);}
+	|Exp error {
+		Node *pnd = new_node();
+		pnd->lexval = SEMI;
+		pnd->lineno = @1.first_line;
+		pnd->column = @1.first_column;
+		$$=build_subast(AST_Stmt_is_Exp_SEMI, $1, pnd);
+		logi("line %d:%d: missing ';'\n", @$.first_line, @$.last_column);
+	}
 ;
 
 /*definition of varible*/
@@ -138,6 +155,8 @@ OptTag:ID {$$=build_subast(AST_OptTag_is_ID, $1);}
 /*expression*/
 Exp:ID {$$=build_subast(AST_Exp_is_ID, $1);}
    |NUM {$$=build_subast(AST_Exp_is_NUM, $1);}
+   |ADD NUM {$$=build_subast(AST_Exp_is_ADD_NUM, $1, $2);}
+   |SUB NUM {$$=build_subast(AST_Exp_is_SUB_NUM, $1, $2);}
    |STRING {$$=build_subast(AST_Exp_is_STRING, $1);}
    |Exp ASSIGNOP Exp {$$=build_subast(AST_Exp_is_Exp_ASSIGNOP_Exp, $1, $2, $3);}
    |Exp DOT ID {$$=build_subast(AST_Exp_is_Exp_DOT_ID, $1, $2, $3);}

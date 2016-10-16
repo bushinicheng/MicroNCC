@@ -12,7 +12,7 @@ def get_symbol(stream):
 
 def get_rules(stream):
     collection=[(0, "AST_Undefined", "Undefined")]
-    stream = re.sub('(\s+{.*?}\s+)|(^\s+)', '', stream, flags=re.S|re.M)
+    stream = re.sub('(\s+(%[^\n]*?)?{.*?}\s+)|(^\s+)', '', stream, flags=re.S|re.M)
     pa=re.compile(r'^(\w+):(.*?);', re.S|re.M)
     result=pa.findall(stream)
     for items in result:

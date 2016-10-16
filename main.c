@@ -46,6 +46,10 @@ int main(int argc, char *argv[])
 	}
 
 	/*grammer:shift and reduce*/
+
+#if YYDEBUG == 1
+	yydebug = 1;
+#endif
 	yyparse();
 	if(is_print_ast) print_ast(astroot);
 	if(fp) fclose(fp);

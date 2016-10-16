@@ -1,6 +1,11 @@
 #ifndef __COMMON_H__
 #define __COMMON_H__
 
+/* some common macro will be defined in this file  */
+
+#define __DEBUG__
+
+
 /* some common header files will be included here. */
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,13 +16,13 @@
 
 #ifdef __YYLOG_C__
 #undef __YYLOG_C__
-#include "error.h"
 #endif
+#include "error.h"
 #include "debug.h"
 
-/* some common macro will be defined in this file  */
 
-#define __DEBUG__
+
+/*since bool isn't valid datatype in c*/
 
 typedef unsigned char bool;
 

@@ -45,40 +45,42 @@ extern int yydebug;
 # define YYTOKENTYPE
   enum yytokentype
   {
-    LT = 258,
-    LE = 259,
-    NE = 260,
-    EQ = 261,
-    GE = 262,
-    GT = 263,
-    ADD = 264,
-    SUB = 265,
-    MULT = 266,
-    DIV = 267,
-    RELOP = 268,
-    ASSIGNOP = 269,
-    LP = 270,
-    RP = 271,
-    LB = 272,
-    RB = 273,
-    LC = 274,
-    RC = 275,
-    DOT = 276,
-    COMMA = 277,
-    SEMI = 278,
-    POINTER = 279,
-    IF = 280,
-    ELSE = 281,
-    DO = 282,
-    WHILE = 283,
-    FOR = 284,
-    RETURN = 285,
-    INT = 286,
-    FLOAT = 287,
-    STRUCT = 288,
-    NUM = 289,
-    STRING = 290,
-    ID = 291
+    LOWWEST = 258,
+    LOWWER_THAN_ELSE = 259,
+    ELSE = 260,
+    LT = 261,
+    LE = 262,
+    NE = 263,
+    EQ = 264,
+    GE = 265,
+    GT = 266,
+    ADD = 267,
+    SUB = 268,
+    MULT = 269,
+    DIV = 270,
+    RELOP = 271,
+    ASSIGNOP = 272,
+    LP = 273,
+    RP = 274,
+    LB = 275,
+    RB = 276,
+    LC = 277,
+    RC = 278,
+    DOT = 279,
+    COMMA = 280,
+    SEMI = 281,
+    POINTER = 282,
+    IF = 283,
+    DO = 284,
+    WHILE = 285,
+    FOR = 286,
+    RETURN = 287,
+    INT = 288,
+    FLOAT = 289,
+    STRUCT = 290,
+    NUM = 291,
+    STRING = 292,
+    ID = 293
   };
 #endif
 
@@ -87,19 +89,33 @@ extern int yydebug;
 typedef union YYSTYPE YYSTYPE;
 union YYSTYPE
 {
-#line 11 "syntax.y" /* yacc.c:1909  */
+#line 17 "syntax.y" /* yacc.c:1909  */
 
 	Node *pnd;
 
-#line 95 "syntax.h" /* yacc.c:1909  */
+#line 97 "syntax.h" /* yacc.c:1909  */
 };
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1
 #endif
 
+/* Location type.  */
+#if ! defined YYLTYPE && ! defined YYLTYPE_IS_DECLARED
+typedef struct YYLTYPE YYLTYPE;
+struct YYLTYPE
+{
+  int first_line;
+  int first_column;
+  int last_line;
+  int last_column;
+};
+# define YYLTYPE_IS_DECLARED 1
+# define YYLTYPE_IS_TRIVIAL 1
+#endif
+
 
 extern YYSTYPE yylval;
-
+extern YYLTYPE yylloc;
 int yyparse (void);
 
 #endif /* !YY_YY_SYNTAX_H_INCLUDED  */

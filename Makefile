@@ -16,7 +16,8 @@ TEST_DIR=test/
 COMPILER=compiler
 
 #CMM=test/simple.cmm
-CMM=test/token.cmm
+#CMM=test/token.cmm
+CMM=test/testerr.cmm
 
 all:$(COMPILER)
 
@@ -33,13 +34,16 @@ $(COMPILER):$(YFILE) $(LFILE) $(CFILES) $(HFILES)
 ast.h:syntax.y
 	python genast.py > ast.h
 
-.PHONY:run run-ast test test-lex clean
+.PHONY:run run-ast run-rdu test test-lex clean
 
 run:$(COMPILER)
 	./$(COMPILER) $(CMM)
 
 run-ast:$(COMPILER)
 	./$(COMPILER) --print-ast $(CMM)
+
+run-rdu:$(COMPILER)
+	./$(COMPILER) --print-reduce $(CMM)
 
 test:$(COMPILER)
 	bash test.sh $(COMPILER)
