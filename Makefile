@@ -57,7 +57,6 @@ test-lex:
 clean:
 	rm -rf $(COMPILER)
 	rm -rf $(OBJ_DIR)
-	rm -rf $(TEST_DIR)*.err $(TEST_DIR)*.out
 
 count:
 	@printf "total lines: "

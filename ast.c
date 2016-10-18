@@ -62,9 +62,23 @@ void print_ast(Node *root)
 	if(root == NULL)
 		return;
 
+	static int stack[20], pstack = 0;
 	static int space = 0;
-	for(int i = 0; i < 2*space; i++)
-		logd(" ");
+
+	/* print leading space */
+	int j = 0;
+	for(int i = 0; i < 3*space-3; i++)
+	{
+		if(pstack > 0 && j<pstack && i==3*stack[j])
+		{
+			logd("|");
+			j ++;
+		}
+		else logd(" ");
+	}
+	if(space > 0) logd("+-");
+
+	/* print semanval or lexval */
 	if(root->semanval > 0)
 		logd("%s\n", parnodestruct[root->semanval].str_root);
 	else if(root->lexval >= 0)
@@ -95,9 +109,13 @@ void print_ast(Node *root)
 			logd("%s\n", str_lexval[root->lexval]);
 	}
 
+
+	/* recursively print ast */
 	space ++;
+	if(root->sibling) stack[pstack++] = space-2;
 	print_ast(root->child);
 	space --;
+	if(root->sibling) pstack --;
 	print_ast(root->sibling);
 }
 
@@ -106,12 +124,43 @@ int init_ast()
 #ifdef __DEBUG__
 	bool pass = true;
 	logd("[unit test]func:%s, line:%d...", __func__, __LINE__);
-	for(int i = 0; i < sizeof(parnodestruct)/sizeof(parnodestruct[0]); i++)
+	for(int i = 0;pass && i < sizeof(parnodestruct)/sizeof(parnodestruct[0]); i++)
 	{
 		if(parnodestruct[i].nr_child < 0 || parnodestruct[i].str_struct == NULL || parnodestruct[i].str_root == NULL)
 		{
-			loge("test failed at #%d of array parnodestruct.", i);
+			loge("\ntest failed at #%d of array parnodestruct.", i);
 			pass = false;
+			break;
+		}
+		
+		char *ptr = parnodestruct[i].str_struct;
+		while(*ptr) {
+			if( !( ('a'<= *ptr && *ptr<='z')
+				||('A'<= *ptr && *ptr<='Z')
+				||('0'<= *ptr && *ptr<='9') 
+				||('_' == *ptr) )
+				)
+			{
+				loge("\ntest failed at #%d of array parnodestruct.", i);
+				pass = false;
+				break;
+			}
+			ptr++;
+		}
+
+		ptr = parnodestruct[i].str_root;
+		while(*ptr) {
+			if( !( ('a'<= *ptr && *ptr<='z')
+				||('A'<= *ptr && *ptr<='Z')
+				||('0'<= *ptr && *ptr<='9') 
+				||('_' == *ptr) )
+				)
+			{
+				loge("\ntest failed at #%d of array parnodestruct.", i);
+				pass = false;
+				break;
+			}
+			ptr++;
 		}
 	}
 

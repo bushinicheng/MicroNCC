@@ -117,7 +117,7 @@ Stmt:Exp SEMI {$$=build_subast(AST_Stmt_is_Exp_SEMI, &@$, $1, $2);}
 	|Exp error SEMI {
 		yyclearin;
 		$$=build_subast(AST_Stmt_is_Exp_SEMI, &@$, $1, new_sym_node(SEMI, & @1));
-		logd("%d:%d: error: expected ';' here.\n", @$.first_line, @1.last_column);
+		logd("%d:%d: error: expected ';' here.\n", @2.first_line, @2.first_column);
 	}
 	|RETURN Exp error {
 		$$=build_subast(AST_Stmt_is_RETURN_Exp_SEMI, &@$, $1, $2, new_sym_node(SEMI, & @2));
@@ -163,7 +163,8 @@ VarDec:ID {$$=build_subast(AST_VarDec_is_ID, &@$, $1);}
 
 /*specifier and struct*/
 Specifier:TYPE {$$=build_subast(AST_Specifier_is_TYPE, &@$, $1);}
-		  |StructSpecifier {$$=build_subast(AST_Specifier_is_StructSpecifier, &@$, $1);}
+		 |TYPE MULT {$$=build_subast(AST_Specifier_is_TYPE_MULT, &@$, $1, $2);}
+		 |StructSpecifier {$$=build_subast(AST_Specifier_is_StructSpecifier, &@$, $1);}
 ;
 
 StructSpecifier:STRUCT Tag {$$=build_subast(AST_StructSpecifier_is_STRUCT_Tag, &@$, $1, $2);}
