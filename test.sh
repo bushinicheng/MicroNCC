@@ -1,8 +1,10 @@
 #!/bin/bash
 
-cd test
-exe=../$1
+exe=./$1
+dir=output
+mkdir -p ${dir}
 
-for file in `ls *.cmm`;do
-	cat $file | $exe 1>${file}.out 2>${file}.err
+for file in `find test -name "*.cmm"`;do
+	bname=`basename ${file}`
+	$exe $file 1>${dir}/${bname/cmm/out} 2>${dir}/${bname/cmm/err}
 done

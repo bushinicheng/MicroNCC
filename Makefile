@@ -11,7 +11,7 @@ CFILES=$(shell find . -name "*.c")
 HFILES=$(shell find . -name "*.h")
 CFLAGS=-O2 -std=c99
 
-OBJ_DIR=obj/
+OBJ_DIR=output/
 TEST_DIR=test/
 COMPILER=compiler
 
@@ -34,7 +34,7 @@ $(COMPILER):$(YFILE) $(LFILE) $(CFILES) $(HFILES)
 ast.h:syntax.y
 	python genast.py > ast.h
 
-.PHONY:run run-ast run-rdu test test-lex clean
+.PHONY:run run-ast run-rdu test test-lex clean count
 
 run:$(COMPILER)
 	./$(COMPILER) $(CMM)
@@ -58,3 +58,7 @@ clean:
 	rm -rf $(COMPILER)
 	rm -rf $(OBJ_DIR)
 	rm -rf $(TEST_DIR)*.err $(TEST_DIR)*.out
+
+count:
+	@printf "total lines: "
+	@find . -name "*.[chl]" | sed "s/.\/\(lexical.c\|syntax.c\)//g" | xargs cat | wc -l

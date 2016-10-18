@@ -15,8 +15,8 @@ int yyerror(const char *str, ...);
 }
 
 %nonassoc LOWWEST
-%nonassoc LOWWER_THAN_ELSE LOWWER_THAN_COMMA
-%nonassoc ELSE COMMA
+%nonassoc LOWWER_THAN_ELSE
+%nonassoc ELSE
 
 %token<pnd>
 	LT LE NE EQ GE GT
@@ -67,6 +67,7 @@ ExtDefList:ExtDef {$$=build_subast(AST_ExtDefList_is_ExtDef, &@$, $1);}
 ;
 
 ExtDef:Specifier FuncDec CompSt {$$=build_subast(AST_ExtDef_is_Specifier_FuncDec_CompSt, &@$, $1, $2, $3);}
+	  |Def {$$=build_subast(AST_ExtDef_is_Def, &@$, $1);}
 	  |StructSpecifier SEMI {$$=build_subast(AST_ExtDef_is_StructSpecifier_SEMI, &@$, $1, $2);}
 	  |StructSpecifier error {
 		$$=build_subast(AST_ExtDef_is_StructSpecifier_SEMI, &@$, $1, new_sym_node(SEMI, & @1));
@@ -86,11 +87,16 @@ ArgList:Arg COMMA ArgList {$$=build_subast(AST_ArgList_is_Arg_COMMA_ArgList, &@$
 Arg:Specifier ID {$$=build_subast(AST_Arg_is_Specifier_ID, &@$, $1, $2);}
 ;
 
-CompSt:LC DefList StmtList RC {$$=build_subast(AST_CompSt_is_LC_DefList_StmtList_RC, &@$, $1, $2, $3, $4);}
-	  |LC DefList StmtList error {
-		$$=build_subast(AST_CompSt_is_LC_DefList_StmtList_RC, &@$, $1, $2, $3, new_sym_node(RC, &@3));
+CompSt:LC StmtList RC {$$=build_subast(AST_CompSt_is_LC_StmtList_RC, &@$, $1, $2, $3);}
+	  |LC error StmtList RC {
+		yyclearin;
+		$$=build_subast(AST_CompSt_is_LC_StmtList_RC, &@$, $1, $3, $4);
+		logd("%d:%d: error: expected definition or statement here.\n", @2.first_line, @2.first_column);
+		}
+	  |LC StmtList error {
+		$$=build_subast(AST_CompSt_is_LC_StmtList_RC, &@$, $1, $2, new_sym_node(RC, &@2));
 		logd("%d:%d: error: missing '\x7d'\n", @3.last_line, @3.last_column);
-}
+		}
 ;
 
 /* statement in function */
@@ -99,6 +105,7 @@ StmtList:Stmt StmtList {$$=build_subast(AST_StmtList_is_Stmt_StmtList, &@$, $1, 
 ;
 
 Stmt:Exp SEMI {$$=build_subast(AST_Stmt_is_Exp_SEMI, &@$, $1, $2);}
+	|Def {$$=build_subast(AST_Stmt_is_Def, &@$, $1);}
 	|SEMI {}
 	|RETURN Exp SEMI {$$=build_subast(AST_Stmt_is_RETURN_Exp_SEMI, &@$, $1, $2, $3);}
 	|LC StmtList RC {$$=build_subast(AST_Stmt_is_LC_StmtList_RC, &@$, $1, $2, $3);}
@@ -107,9 +114,10 @@ Stmt:Exp SEMI {$$=build_subast(AST_Stmt_is_Exp_SEMI, &@$, $1, $2);}
 	|WHILE LP Exp RP Stmt {$$=build_subast(AST_Stmt_is_WHILE_LP_Exp_RP_Stmt, &@$, $1, $2, $3, $4, $5);}
 	|DO Stmt WHILE LP Exp RP SEMI {$$=build_subast(AST_Stmt_is_DO_Stmt_WHILE_LP_Exp_RP_SEMI, &@$, $1, $2, $3, $4, $5, $6, $7);}
 	|FOR LP Exp SEMI Exp SEMI Exp RP Stmt {$$=build_subast(AST_Stmt_is_FOR_LP_Exp_SEMI_Exp_SEMI_Exp_RP_Stmt, &@$, $1, $2, $3, $4, $5, $6, $7, $8, $9);}
-	|Exp error {
+	|Exp error SEMI {
+		yyclearin;
 		$$=build_subast(AST_Stmt_is_Exp_SEMI, &@$, $1, new_sym_node(SEMI, & @1));
-		logd("%d:%d: error: missing ';'\n", @$.first_line, @1.last_column);
+		logd("%d:%d: error: expected ';' here.\n", @$.first_line, @1.last_column);
 	}
 	|RETURN Exp error {
 		$$=build_subast(AST_Stmt_is_RETURN_Exp_SEMI, &@$, $1, $2, new_sym_node(SEMI, & @2));
@@ -135,10 +143,6 @@ Def:Specifier DecList SEMI {$$=build_subast(AST_Def_is_Specifier_DecList_SEMI, &
 
 DecList:Dec COMMA DecList {$$=build_subast(AST_DecList_is_Dec_COMMA_DecList, &@$, $1, $2, $3);}
 	   |Dec {$$=build_subast(AST_DecList_is_Dec, &@$, $1);}
-       |Dec error COMMA DecList {
-			$$=build_subast(AST_DecList_is_Dec_COMMA_DecList, &@$, $1, $3, $4);
-			yyerrlex(@$.first_line, @1.last_column+1, @2.last_column-@1.last_column, ERR_EXPECTED_COMMA);
-		}
 ;
 
 Dec:VarDec {$$=build_subast(AST_Dec_is_VarDec, &@$, $1);}
@@ -193,6 +197,7 @@ Exp:ID {$$=build_subast(AST_Exp_is_ID, &@$, $1);}
    |Exp GE Exp {$$=build_subast(AST_Exp_is_Exp_GE_Exp, &@$, $1, $2, $3);}
    |Exp LB Exp RB {$$=build_subast(AST_Exp_is_Exp_LB_Exp_RB, &@$, $1, $2, $3, $4);}
    |Exp LB Exp error {
+		yyclearin;
 		$$=build_subast(AST_Exp_is_Exp_LB_Exp_RB, &@$, $1, $2, $3, new_sym_node(RB, &@3));
 		logd("%d:%d: error: missing ']'\n", @$.first_line, @3.last_column);
 	}

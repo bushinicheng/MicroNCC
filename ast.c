@@ -67,7 +67,7 @@ void print_ast(Node *root)
 		logd(" ");
 	if(root->semanval > 0)
 		logd("%s\n", parnodestruct[root->semanval].str_root);
-	else
+	else if(root->lexval >= 0)
 	{
 		if(root->lexval == ID)
 			logd("%s:%s\n", str_lexval[root->lexval], root->exval.st);
