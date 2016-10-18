@@ -76,7 +76,7 @@ void print_ast(Node *root)
 		}
 		else logd(" ");
 	}
-	if(space > 0) logd("+-");
+	if(space > 0) logd("+--");
 
 	/* print semanval or lexval */
 	if(root->semanval > 0)
