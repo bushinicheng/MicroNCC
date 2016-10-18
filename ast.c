@@ -62,7 +62,7 @@ void print_ast(Node *root)
 	if(root == NULL)
 		return;
 
-	static int stack[20], pstack = 0;
+	static int stack[200], pstack = 0;
 	static int space = 0;
 
 	/* print leading space */
@@ -100,6 +100,9 @@ void print_ast(Node *root)
 				break;
 			case 'f':
 				logd("NUM:%f\n", root->exval.f);
+				break;
+			default:
+				logd("NUM:0\n");
 				break;
 			}
 		}
