@@ -116,6 +116,7 @@ void print_ast(Node *root)
 	/* recursively print ast */
 	space ++;
 	if(root->sibling) stack[pstack++] = space-2;
+	assert(pstack < 200);
 	print_ast(root->child);
 	space --;
 	if(root->sibling) pstack --;

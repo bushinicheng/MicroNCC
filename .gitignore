@@ -9,3 +9,6 @@ output/*
 *.output
 *.pyc
 test/case*
+*.doc
+*.docx
+*.pdf

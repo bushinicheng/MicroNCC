@@ -56,7 +56,7 @@ def genast():
         "\n\n#endif\n\n"+\
             get_func()+\
         "\n\n#endif"
-        print asth
+        print(asth)
 
 if __name__ == "__main__":
     genast()

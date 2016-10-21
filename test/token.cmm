@@ -13,6 +13,17 @@
 //a simple one-line comment/**/
 //same as the above
 
+int echo(char* str)
+{
+	int p = 0;
+	while(str[p])
+	{
+		putchar(str[p]);
+		p=p+1;
+	}
+	return 0;
+}
+
 int main(){
 	int oct1 = .3;
 	int hex1 = ~0x4512ad;//invalid token ~

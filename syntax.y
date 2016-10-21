@@ -50,6 +50,8 @@ int yyerror(const char *str, ...);
 	Specifier
 	StructSpecifier
 	FuncDec
+	DefArgList
+	DefArg
 	ArgList
 	Arg
 	CompSt
@@ -77,14 +79,14 @@ ExtDef:Specifier FuncDec CompSt {$$=build_subast(AST_ExtDef_is_Specifier_FuncDec
 
 /*definition of function*/
 FuncDec:ID LP RP {$$=build_subast(AST_FuncDec_is_ID_LP_RP, &@$, $1, $2, $3);}
-	  |ID LP ArgList RP {$$=build_subast(AST_FuncDec_is_ID_LP_ArgList_RP, &@$, $1, $2, $3, $4);}
+	  |ID LP DefArgList RP {$$=build_subast(AST_FuncDec_is_ID_LP_DefArgList_RP, &@$, $1, $2, $3, $4);}
 ;
 
-ArgList:Arg COMMA ArgList {$$=build_subast(AST_ArgList_is_Arg_COMMA_ArgList, &@$, $1, $2, $3);}
-	   |Arg {$$=build_subast(AST_ArgList_is_Arg, &@$, $1);}
+DefArgList:DefArg COMMA DefArgList {$$=build_subast(AST_DefArgList_is_DefArg_COMMA_DefArgList, &@$, $1, $2, $3);}
+	   |DefArg {$$=build_subast(AST_DefArgList_is_DefArg, &@$, $1);}
 ;
 
-Arg:Specifier ID {$$=build_subast(AST_Arg_is_Specifier_ID, &@$, $1, $2);}
+DefArg:Specifier ID {$$=build_subast(AST_DefArg_is_Specifier_ID, &@$, $1, $2);}
 ;
 
 CompSt:LC StmtList RC {$$=build_subast(AST_CompSt_is_LC_StmtList_RC, &@$, $1, $2, $3);}
@@ -177,8 +179,17 @@ Tag:ID {$$=build_subast(AST_Tag_is_ID, &@$, $1);}
 OptTag:ID {$$=build_subast(AST_OptTag_is_ID, &@$, $1);}
 ;
 
+/*function call*/
+ArgList:Arg COMMA ArgList {$$=build_subast(AST_ArgList_is_Arg_COMMA_ArgList, &@$, $1, $2, $3);}
+	   |Arg {$$=build_subast(AST_ArgList_is_Arg, &@$, $1);}
+;
+
+Arg:Exp {$$=build_subast(AST_Arg_is_Exp, &@$, $1);}
+;
+
 /*expression*/
 Exp:ID {$$=build_subast(AST_Exp_is_ID, &@$, $1);}
+   |ID LP ArgList RP {$$=build_subast(AST_Exp_is_ID_LP_ArgList_RP, &@$, $1, $2, $3, $4);}
    |NUM {$$=build_subast(AST_Exp_is_NUM, &@$, $1);}
    |ADD NUM {$$=build_subast(AST_Exp_is_ADD_NUM, &@$, $1, $2);}
    |SUB NUM {$$=build_subast(AST_Exp_is_SUB_NUM, &@$, $1, $2);}
