@@ -20,6 +20,7 @@ int yyerror(const char *str, ...);
 
 %token<pnd>
 	LT LE NE EQ GE GT
+	BITAND BITOR AND OR NOT
 	ADD SUB MULT DIV
 	RELOP ASSIGNOP 
 	LP RP LB RB LC RC
@@ -30,10 +31,15 @@ int yyerror(const char *str, ...);
 	ID
 
 %left ASSIGNOP
+%left OR
+%left AND
+%left BITOR
+%left BITAND
 %left EQ NE
 %left LT LE GE GT
 %left ADD SUB
 %left MULT DIV
+%right NOT
 %left DOT POINTER LB RB
 
 %type<pnd>
@@ -193,6 +199,7 @@ Exp:ID {$$=build_subast(AST_Exp_is_ID, &@$, $1);}
    |NUM {$$=build_subast(AST_Exp_is_NUM, &@$, $1);}
    |ADD NUM {$$=build_subast(AST_Exp_is_ADD_NUM, &@$, $1, $2);}
    |SUB NUM {$$=build_subast(AST_Exp_is_SUB_NUM, &@$, $1, $2);}
+   |NOT Exp {$$=build_subast(AST_Exp_is_NOT_Exp, &@$, $1, $2);}
    |STRING {$$=build_subast(AST_Exp_is_STRING, &@$, $1);}
    |Exp ASSIGNOP Exp {$$=build_subast(AST_Exp_is_Exp_ASSIGNOP_Exp, &@$, $1, $2, $3);}
    |Exp DOT ID {$$=build_subast(AST_Exp_is_Exp_DOT_ID, &@$, $1, $2, $3);}
@@ -207,6 +214,10 @@ Exp:ID {$$=build_subast(AST_Exp_is_ID, &@$, $1);}
    |Exp NE Exp {$$=build_subast(AST_Exp_is_Exp_NE_Exp, &@$, $1, $2, $3);}
    |Exp GT Exp {$$=build_subast(AST_Exp_is_Exp_GT_Exp, &@$, $1, $2, $3);}
    |Exp GE Exp {$$=build_subast(AST_Exp_is_Exp_GE_Exp, &@$, $1, $2, $3);}
+   |Exp AND Exp {$$=build_subast(AST_Exp_is_Exp_AND_Exp, &@$, $1, $2, $3);}
+   |Exp OR Exp {$$=build_subast(AST_Exp_is_Exp_OR_Exp, &@$, $1, $2, $3);}
+   |Exp BITAND Exp {$$=build_subast(AST_Exp_is_Exp_BITAND_Exp, &@$, $1, $2, $3);}
+   |Exp BITOR Exp {$$=build_subast(AST_Exp_is_Exp_BITOR_Exp, &@$, $1, $2, $3);}
    |Exp LB Exp RB {$$=build_subast(AST_Exp_is_Exp_LB_Exp_RB, &@$, $1, $2, $3, $4);}
    |Exp LB Exp error {
 		yyclearin;

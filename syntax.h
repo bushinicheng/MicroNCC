@@ -54,35 +54,40 @@ extern int yydebug;
     EQ = 264,
     GE = 265,
     GT = 266,
-    ADD = 267,
-    SUB = 268,
-    MULT = 269,
-    DIV = 270,
-    RELOP = 271,
-    ASSIGNOP = 272,
-    LP = 273,
-    RP = 274,
-    LB = 275,
-    RB = 276,
-    LC = 277,
-    RC = 278,
-    DOT = 279,
-    COMMA = 280,
-    SEMI = 281,
-    POINTER = 282,
-    IF = 283,
-    DO = 284,
-    WHILE = 285,
-    FOR = 286,
-    RETURN = 287,
-    TYPE = 288,
-    INT = 289,
-    CHAR = 290,
-    FLOAT = 291,
-    STRUCT = 292,
-    NUM = 293,
-    STRING = 294,
-    ID = 295
+    BITAND = 267,
+    BITOR = 268,
+    AND = 269,
+    OR = 270,
+    NOT = 271,
+    ADD = 272,
+    SUB = 273,
+    MULT = 274,
+    DIV = 275,
+    RELOP = 276,
+    ASSIGNOP = 277,
+    LP = 278,
+    RP = 279,
+    LB = 280,
+    RB = 281,
+    LC = 282,
+    RC = 283,
+    DOT = 284,
+    COMMA = 285,
+    SEMI = 286,
+    POINTER = 287,
+    IF = 288,
+    DO = 289,
+    WHILE = 290,
+    FOR = 291,
+    RETURN = 292,
+    TYPE = 293,
+    INT = 294,
+    CHAR = 295,
+    FLOAT = 296,
+    STRUCT = 297,
+    NUM = 298,
+    STRING = 299,
+    ID = 300
   };
 #endif
 
@@ -95,7 +100,7 @@ union YYSTYPE
 
 	Node *pnd;
 
-#line 99 "syntax.h" /* yacc.c:1909  */
+#line 104 "syntax.h" /* yacc.c:1909  */
 };
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1

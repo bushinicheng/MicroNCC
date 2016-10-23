@@ -76,6 +76,12 @@ invalidcomment   \/\*([^\*]|\*[^\/])*$
 "*"                 {tokout("MULT");	return symbol(MULT);}
 "/"                 {tokout("DIV");		return symbol(DIV);}
 
+"&"                 {tokout("BITAND");	return symbol(BITAND);}
+"|"                 {tokout("BITOR");	return symbol(BITOR);}
+"&&"                {tokout("AND");		return symbol(AND);}
+"||"                {tokout("OR");		return symbol(OR);}
+"!"                 {tokout("NOT");		return symbol(NOT);}
+
 "("                 {tokout("LP");		return symbol(LP);}
 ")"                 {tokout("RP");		return symbol(RP);}
 "["                 {tokout("LB");		return symbol(LB);}

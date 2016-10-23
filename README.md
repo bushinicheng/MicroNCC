@@ -9,7 +9,7 @@
 
 ##compiling environment
 * OS
- * ubuntu 15.10
+ * ubuntu 15.10 64bit
 * compiler
  * gcc version 5.2.1 20151010
 * related script
