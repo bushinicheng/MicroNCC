@@ -29,7 +29,7 @@ $(YHFILE) $(YCFILE):$(YFILE)
 
 $(COMPILER):$(YFILE) $(LFILE) $(CFILES) $(HFILES)
 	mkdir -p $(OBJ_DIR)
-	$(CC) $(CFILES) -o $(COMPILER) -lfl
+	$(CC) $(CFLAGS) $(CFILES) -o $(COMPILER) -lfl
 
 ast.h:syntax.y
 	python genast.py > ast.h

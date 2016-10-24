@@ -78,7 +78,7 @@ enum {
 	AST_Exp_is_Exp_BITAND_Exp,
 	AST_Exp_is_Exp_BITOR_Exp,
 	AST_Exp_is_Exp_LB_Exp_RB,
-	AST_Exp_is_Exp_LB_Exp_error,
+	AST_Exp_is_Exp_LB_Exp_error
 };
 
 #ifdef __AST_C__
@@ -166,7 +166,7 @@ static ParNodeStruct parnodestruct[] = {
 	[AST_Exp_is_Exp_BITAND_Exp] = {3, "AST_Exp_is_Exp_BITAND_Exp", "Exp"},
 	[AST_Exp_is_Exp_BITOR_Exp] = {3, "AST_Exp_is_Exp_BITOR_Exp", "Exp"},
 	[AST_Exp_is_Exp_LB_Exp_RB] = {4, "AST_Exp_is_Exp_LB_Exp_RB", "Exp"},
-	[AST_Exp_is_Exp_LB_Exp_error] = {4, "AST_Exp_is_Exp_LB_Exp_error", "Exp"},
+	[AST_Exp_is_Exp_LB_Exp_error] = {4, "AST_Exp_is_Exp_LB_Exp_error", "Exp"}
 };
 
 #include "syntax.h"
@@ -212,7 +212,7 @@ static char* str_lexval[] = {
 	[STRUCT] = "STRUCT",
 	[NUM] = "NUM",
 	[STRING] = "STRING",
-	[ID] = "ID",
+	[ID] = "ID"
 };
 
 #endif

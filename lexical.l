@@ -305,7 +305,7 @@ int init_component()
 #ifdef __DEBUG__
 	/* unit test of register_string */
 	logd("[unit test]func:%s, line:%d...", __func__, __LINE__);
-	char *ss[] = {
+	const char *ss[] = {
 		"\"Hello World!\"",
 		"\"prefix\"\"\\n\\r\\t\\\\suffix\"",
 		"\"prefix\" \r\n  \t  \"suffix\"",
@@ -313,7 +313,7 @@ int init_component()
 		"\"\\x48\\x65\\x6c\\x6c\\x6f\\x20\\x57\\x6f\\x72\\x6c\\x64\\x21\"",
 		"\"\\0110\\0145\\0154\\0154\\0157\\040\\0127\\0157\\0162\\0154\\0144\\041\""
 	};
-	char *ans[] = {
+	const char *ans[] = {
 		"Hello World!",
 		"prefix\n\r\t\\suffix",
 		"prefixsuffix",

@@ -9,6 +9,7 @@
 int yyparse();
 int init_ast();
 int init_component();
+int init_vector();
 void print_ast(Node*);
 void yyrestart(FILE *);
 extern Node *astroot;
@@ -22,6 +23,7 @@ int main(int argc, char *argv[])
 {
 	init_ast();
 	init_component();
+	init_vector();
 #ifdef __DEBUG_LEX__
 	while(yylex()>0);
 #else

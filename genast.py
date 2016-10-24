@@ -8,7 +8,7 @@ def get_symbol(stream):
     result=pa.findall(stream)
     token=[re.sub('/\*.*?\*/', '', i[1]) for i in result]
     token=re.findall('\w+', ' '.join(token))
-    return 'static char* str_lexval[] = {{\n{}\n}};'.format('\n'.join(['\t[{0}] = "{0}",'.format(i) for i in token]))
+    return 'static char* str_lexval[] = {{\n{}\n}};'.format(',\n'.join(['\t[{0}] = "{0}"'.format(i) for i in token]))
 
 def dep(stream):
     rets = ''
@@ -31,8 +31,8 @@ def get_rules(stream):
     for items in result:
         sym=items[0]
         collection.extend([(i.count(' ')+1 if i else 0, 'AST_{}_is_{}'.format(sym, i.replace(' ', '_') if i else 'None'), sym) for i in items[1].split('|')])
-    return 'enum {{\n{}\n}};'.format('\n'.join(['\t{},'.format(j) for i,j,k in collection])), \
-    'static ParNodeStruct parnodestruct[] = {{\n{}\n}};'.format('\n'.join(['\t[{1}] = {{{0}, "{1}", "{2}"}},'.format(i, j, k) for i,j,k in collection]))
+    return 'enum {{\n{}\n}};'.format(',\n'.join(['\t{}'.format(j) for i,j,k in collection])), \
+    'static ParNodeStruct parnodestruct[] = {{\n{}\n}};'.format(',\n'.join(['\t[{1}] = {{{0}, "{1}", "{2}"}}'.format(i, j, k) for i,j,k in collection]))
 
 def get_func():
     with open('ast.c') as fp:
