@@ -7,47 +7,52 @@
  * 1. the vector_init macro is'nt atmoic, 
  *    don't use it as a single statement.
  * 2. the action scope is binded to inputed varible p,
- *    any copy of p in other scope is useless.
+ *    any copy of p is invalid.
+ * 3. ...
  * */
 
 #define vector_init(type, p) \
-	struct { \
-		int __vector_stack_size, __vector_stack_pointer; \
-		type *__vector_stack; \
-	} __vector_##p; \
-	__vector_##p.__vector_stack_pointer = 0; \
-	__vector_##p.__vector_stack_size = 8; \
-	__vector_##p.__vector_stack = (type *)malloc(sizeof(type)*8);\
-	p = __vector_##p.__vector_stack;
+	static int __vector_initializer_of_##p = 0;\
+	static int __vector_pointer_of_##p = 0; \
+	static int __vector_size_of_##p = 16;\
+	if(__vector_initializer_of_##p == 0) \
+	{ \
+		p = (type *)malloc(sizeof(type)*__vector_size_of_##p); \
+		__vector_initializer_of_##p = 1; \
+	}
 
-#define vector_push(type, p, e) \
+#define vector_push(p, e) \
 	do { \
-		if(__vector_##p.__vector_stack_pointer < __vector_##p.__vector_stack_size) \
+		if(__vector_pointer_of_##p >= __vector_size_of_##p) \
 		{\
-			__vector_##p.__vector_stack[__vector_##p.__vector_stack_pointer ++] = e;\
-		}\
-		else \
-		{\
-			type *__new_p = (type *)malloc(sizeof(type)*__vector_##p.__vector_stack_size*2); \
-			for(int i = 0; i < __vector_##p.__vector_stack_pointer; i++)\
+			__vector_size_of_##p *= 2; \
+			__typeof__(e) *__new_p = (__typeof__(e) *)malloc(sizeof(__typeof__(e))*__vector_size_of_##p); \
+			for(int i = 0; i < __vector_pointer_of_##p; i++)\
 			{\
 				__new_p[i] = p[i];\
 			}\
 			free(p);\
-			__vector_##p.__vector_stack = __new_p; \
 			p = __new_p;\
-			__vector_##p.__vector_stack_size *= 2; \
-			__vector_##p.__vector_stack[__vector_##p.__vector_stack_pointer ++] = e;\
 		}\
+		p[__vector_pointer_of_##p ++] = (e);\
 	} while(0)
 
 #define vector_pop(p) \
 	do {\
-		if(__vector_##p.__vector_stack_pointer > 0) \
-			__vector_##p.__vector_stack_pointer --; \
+		if(__vector_pointer_of_##p > 0) \
+			__vector_pointer_of_##p --; \
 	}while(0)
 
+#define vector_top(p) \
+	p[__vector_pointer_of_##p - 1]
+
+#define vector_size(p) __vector_pointer_of_##p
+
 #define vector_free(p) \
-	free(p)
+	if(__vector_initializer_of_##p == 1) \
+	{ \
+		free(p); \
+		__vector_initializer_of_##p = 0; \
+	}
 
 #endif

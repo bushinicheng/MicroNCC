@@ -3,6 +3,13 @@
 
 import re
 
+def get_nonterminal(stream):
+    pa=re.compile(r'%(type)<.*?>(.*?)\n\n', re.S)
+    result=pa.findall(stream)
+    token=[re.sub('/\*.*?\*/', '', i[1]) for i in result]
+    token=re.findall('\w+', ' '.join(token))
+    return 'enum {{\n\tNone,\n{}\n}};'.format(',\n'.join(['\t{0}'.format(i) for i in token]))
+
 def get_symbol(stream):
     pa=re.compile(r'%(token)<.*?>(.*?)\n\n', re.S)
     result=pa.findall(stream)
@@ -24,7 +31,7 @@ def dep(stream):
     return rets
 
 def get_rules(stream):
-    collection=[(0, "AST_Undefined", "Undefined")]
+    collection=[(0, "AST_None", "None")]
     stream = re.sub('(\s+(%[^\n]*?)?{.*?}\s+)|(^\s+)', '', dep(stream), flags=re.S|re.M)
     pa=re.compile(r'^(\w+):(.*?);', re.S|re.M)
     result=pa.findall(stream)
@@ -32,7 +39,7 @@ def get_rules(stream):
         sym=items[0]
         collection.extend([(i.count(' ')+1 if i else 0, 'AST_{}_is_{}'.format(sym, i.replace(' ', '_') if i else 'None'), sym) for i in items[1].split('|')])
     return 'enum {{\n{}\n}};'.format(',\n'.join(['\t{}'.format(j) for i,j,k in collection])), \
-    'static ParNodeStruct parnodestruct[] = {{\n{}\n}};'.format(',\n'.join(['\t[{1}] = {{{0}, "{1}", "{2}"}}'.format(i, j, k) for i,j,k in collection]))
+    'static ParNodeStruct node_struct[] = {{\n{}\n}};'.format(',\n'.join(['\t[{1}] = {{{0}, {2}, "{1}", "{2}"}}'.format(i, j, k) for i,j,k in collection]))
 
 def get_func():
     with open('ast.c') as fp:
@@ -44,12 +51,25 @@ def genast():
     with open('syntax.y') as fp:
         stream=fp.read()
         sym=get_symbol(stream)
+        nonterm = get_nonterminal(stream)
         astenum, aststruct=get_rules(stream)
         asth=\
         "#ifndef __AST_H__\n"+\
         "#define __AST_H__\n\n"+\
+            nonterm+\
+            "\n\n"+\
             astenum+\
-        "\n\n#ifdef __AST_C__\n\ntypedef struct tagParNodeStruct {\n\tint nr_child;\n\tchar *str_struct;\n\tchar *str_root;\n} ParNodeStruct;\n\n"+\
+        """
+#ifdef __AST_C__
+        
+typedef struct tagParNodeStruct {
+    int nr_child;
+    int parent;
+    char *str_struct;
+    char *str_root;
+} ParNodeStruct;
+
+"""+\
             aststruct+\
         '\n\n#include "syntax.h"\n\n'+\
             sym+\

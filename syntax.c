@@ -1,8 +1,8 @@
-/* A Bison parser, made by GNU Bison 3.0.2.  */
+/* A Bison parser, made by GNU Bison 3.0.4.  */
 
 /* Bison implementation for Yacc-like parsers in C
 
-   Copyright (C) 1984, 1989-1990, 2000-2013 Free Software Foundation, Inc.
+   Copyright (C) 1984, 1989-1990, 2000-2015 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -44,7 +44,7 @@
 #define YYBISON 1
 
 /* Bison version.  */
-#define YYBISON_VERSION "3.0.2"
+#define YYBISON_VERSION "3.0.4"
 
 /* Skeleton name.  */
 #define YYSKELETON_NAME "yacc.c"
@@ -155,7 +155,7 @@ extern int yydebug;
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
-typedef union YYSTYPE YYSTYPE;
+
 union YYSTYPE
 {
 #line 13 "syntax.y" /* yacc.c:355  */
@@ -164,6 +164,8 @@ union YYSTYPE
 
 #line 166 "syntax.c" /* yacc.c:355  */
 };
+
+typedef union YYSTYPE YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1
 #endif
@@ -191,7 +193,7 @@ int yyparse (void);
 
 /* Copy the second part of user declarations.  */
 
-#line 195 "syntax.c" /* yacc.c:358  */
+#line 197 "syntax.c" /* yacc.c:358  */
 
 #ifdef short
 # undef short
@@ -1551,37 +1553,37 @@ yyreduce:
         case 2:
 #line 70 "syntax.y" /* yacc.c:1646  */
     {astroot=build_subast(AST_Program_is_ExtDefList, &(yyloc), (yyvsp[0].pnd));}
-#line 1555 "syntax.c" /* yacc.c:1646  */
+#line 1557 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 3:
 #line 73 "syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_ExtDefList_is_ExtDef, &(yyloc), (yyvsp[0].pnd));}
-#line 1561 "syntax.c" /* yacc.c:1646  */
+#line 1563 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 4:
 #line 74 "syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_ExtDefList_is_ExtDef_ExtDefList, &(yyloc), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 1567 "syntax.c" /* yacc.c:1646  */
+#line 1569 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 5:
 #line 77 "syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_ExtDef_is_Specifier_FuncDec_CompSt, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 1573 "syntax.c" /* yacc.c:1646  */
+#line 1575 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 6:
 #line 78 "syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_ExtDef_is_Def, &(yyloc), (yyvsp[0].pnd));}
-#line 1579 "syntax.c" /* yacc.c:1646  */
+#line 1581 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 7:
 #line 79 "syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_ExtDef_is_StructSpecifier_SEMI, &(yyloc), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 1585 "syntax.c" /* yacc.c:1646  */
+#line 1587 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 8:
@@ -1590,43 +1592,43 @@ yyreduce:
 		(yyval.pnd)=build_subast(AST_ExtDef_is_StructSpecifier_SEMI, &(yyloc), (yyvsp[-1].pnd), new_sym_node(SEMI, & (yylsp[-1])));
 		logd("%d:%d: error: missing ';'\n", (yyloc).first_line, (yylsp[-1]).last_column);
 		}
-#line 1594 "syntax.c" /* yacc.c:1646  */
+#line 1596 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 9:
 #line 87 "syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_FuncDec_is_ID_LP_RP, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 1600 "syntax.c" /* yacc.c:1646  */
+#line 1602 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 10:
 #line 88 "syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_FuncDec_is_ID_LP_DefArgList_RP, &(yyloc), (yyvsp[-3].pnd), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 1606 "syntax.c" /* yacc.c:1646  */
+#line 1608 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 11:
 #line 91 "syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_DefArgList_is_DefArg_COMMA_DefArgList, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 1612 "syntax.c" /* yacc.c:1646  */
+#line 1614 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 12:
 #line 92 "syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_DefArgList_is_DefArg, &(yyloc), (yyvsp[0].pnd));}
-#line 1618 "syntax.c" /* yacc.c:1646  */
+#line 1620 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 13:
 #line 95 "syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_DefArg_is_Specifier_ID, &(yyloc), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 1624 "syntax.c" /* yacc.c:1646  */
+#line 1626 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 14:
 #line 98 "syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_CompSt_is_LC_StmtList_RC, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 1630 "syntax.c" /* yacc.c:1646  */
+#line 1632 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 15:
@@ -1636,7 +1638,7 @@ yyreduce:
 		(yyval.pnd)=build_subast(AST_CompSt_is_LC_StmtList_RC, &(yyloc), (yyvsp[-3].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));
 		logd("%d:%d: error: expected definition or statement here.\n", (yylsp[-2]).first_line, (yylsp[-2]).first_column);
 		}
-#line 1640 "syntax.c" /* yacc.c:1646  */
+#line 1642 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 16:
@@ -1645,79 +1647,79 @@ yyreduce:
 		(yyval.pnd)=build_subast(AST_CompSt_is_LC_StmtList_RC, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), new_sym_node(RC, &(yylsp[-1])));
 		logd("%d:%d: error: missing '\x7d'\n", (yylsp[0]).last_line, (yylsp[0]).last_column);
 		}
-#line 1649 "syntax.c" /* yacc.c:1646  */
+#line 1651 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 17:
 #line 111 "syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_StmtList_is_Stmt_StmtList, &(yyloc), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 1655 "syntax.c" /* yacc.c:1646  */
+#line 1657 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 18:
 #line 112 "syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_StmtList_is_Stmt, &(yyloc), (yyvsp[0].pnd));}
-#line 1661 "syntax.c" /* yacc.c:1646  */
+#line 1663 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 19:
 #line 115 "syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Stmt_is_Exp_SEMI, &(yyloc), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 1667 "syntax.c" /* yacc.c:1646  */
+#line 1669 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 20:
 #line 116 "syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Stmt_is_Def, &(yyloc), (yyvsp[0].pnd));}
-#line 1673 "syntax.c" /* yacc.c:1646  */
+#line 1675 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 21:
 #line 117 "syntax.y" /* yacc.c:1646  */
     {}
-#line 1679 "syntax.c" /* yacc.c:1646  */
+#line 1681 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 22:
 #line 118 "syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Stmt_is_RETURN_Exp_SEMI, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 1685 "syntax.c" /* yacc.c:1646  */
+#line 1687 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 23:
 #line 119 "syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Stmt_is_LC_StmtList_RC, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 1691 "syntax.c" /* yacc.c:1646  */
+#line 1693 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 24:
 #line 120 "syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Stmt_is_IF_LP_Exp_RP_Stmt, &(yyloc), (yyvsp[-4].pnd), (yyvsp[-3].pnd), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 1697 "syntax.c" /* yacc.c:1646  */
+#line 1699 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 25:
 #line 121 "syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Stmt_is_IF_LP_Exp_RP_Stmt_ELSE_Stmt, &(yyloc), (yyvsp[-6].pnd), (yyvsp[-5].pnd), (yyvsp[-4].pnd), (yyvsp[-3].pnd), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 1703 "syntax.c" /* yacc.c:1646  */
+#line 1705 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 26:
 #line 122 "syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Stmt_is_WHILE_LP_Exp_RP_Stmt, &(yyloc), (yyvsp[-4].pnd), (yyvsp[-3].pnd), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 1709 "syntax.c" /* yacc.c:1646  */
+#line 1711 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 27:
 #line 123 "syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Stmt_is_DO_Stmt_WHILE_LP_Exp_RP_SEMI, &(yyloc), (yyvsp[-6].pnd), (yyvsp[-5].pnd), (yyvsp[-4].pnd), (yyvsp[-3].pnd), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 1715 "syntax.c" /* yacc.c:1646  */
+#line 1717 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 28:
 #line 124 "syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Stmt_is_FOR_LP_Exp_SEMI_Exp_SEMI_Exp_RP_Stmt, &(yyloc), (yyvsp[-8].pnd), (yyvsp[-7].pnd), (yyvsp[-6].pnd), (yyvsp[-5].pnd), (yyvsp[-4].pnd), (yyvsp[-3].pnd), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 1721 "syntax.c" /* yacc.c:1646  */
+#line 1723 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 29:
@@ -1727,7 +1729,7 @@ yyreduce:
 		(yyval.pnd)=build_subast(AST_Stmt_is_Exp_SEMI, &(yyloc), (yyvsp[-2].pnd), new_sym_node(SEMI, & (yylsp[-2])));
 		logd("%d:%d: error: expected ';' here.\n", (yylsp[-1]).first_line, (yylsp[-1]).first_column);
 	}
-#line 1731 "syntax.c" /* yacc.c:1646  */
+#line 1733 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 30:
@@ -1736,7 +1738,7 @@ yyreduce:
 		(yyval.pnd)=build_subast(AST_Stmt_is_RETURN_Exp_SEMI, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), new_sym_node(SEMI, & (yylsp[-1])));
 		logd("%d:%d: error: missing ';'\n", (yyloc).first_line, (yylsp[-1]).last_column);
 	}
-#line 1740 "syntax.c" /* yacc.c:1646  */
+#line 1742 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 31:
@@ -1745,25 +1747,25 @@ yyreduce:
 		(yyval.pnd)=build_subast(AST_Stmt_is_LC_StmtList_RC, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), new_sym_node(RC, &(yylsp[-1])));
 		logd("%d:%d: error: missing '\x7d'\n", (yyloc).first_line, (yylsp[-1]).last_column);
 	}
-#line 1749 "syntax.c" /* yacc.c:1646  */
+#line 1751 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 32:
 #line 141 "syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_DefList_is_Def_DefList, &(yyloc), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 1755 "syntax.c" /* yacc.c:1646  */
+#line 1757 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 33:
 #line 142 "syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_DefList_is_Def, &(yyloc), (yyvsp[0].pnd));}
-#line 1761 "syntax.c" /* yacc.c:1646  */
+#line 1763 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 34:
 #line 145 "syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Def_is_Specifier_DecList_SEMI, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 1767 "syntax.c" /* yacc.c:1646  */
+#line 1769 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 35:
@@ -1772,37 +1774,37 @@ yyreduce:
 		(yyval.pnd)=build_subast(AST_Def_is_Specifier_DecList_SEMI, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), new_sym_node(SEMI, & (yylsp[-1])));
 		logd("%d:%d: error: missing ';'\n", (yyloc).first_line, (yyloc).last_column);
 	}
-#line 1776 "syntax.c" /* yacc.c:1646  */
+#line 1778 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 36:
 #line 152 "syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_DecList_is_Dec_COMMA_DecList, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 1782 "syntax.c" /* yacc.c:1646  */
+#line 1784 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 37:
 #line 153 "syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_DecList_is_Dec, &(yyloc), (yyvsp[0].pnd));}
-#line 1788 "syntax.c" /* yacc.c:1646  */
+#line 1790 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 38:
 #line 156 "syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Dec_is_VarDec, &(yyloc), (yyvsp[0].pnd));}
-#line 1794 "syntax.c" /* yacc.c:1646  */
+#line 1796 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 39:
 #line 157 "syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Dec_is_VarDec_ASSIGNOP_Exp, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 1800 "syntax.c" /* yacc.c:1646  */
+#line 1802 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 40:
 #line 160 "syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_VarDec_is_ID, &(yyloc), (yyvsp[0].pnd));}
-#line 1806 "syntax.c" /* yacc.c:1646  */
+#line 1808 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 41:
@@ -1816,217 +1818,217 @@ yyreduce:
 		}
 		(yyval.pnd)=build_subast(AST_VarDec_is_VarDec_LB_NUM_RB, &(yyloc), (yyvsp[-3].pnd), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));
 	}
-#line 1820 "syntax.c" /* yacc.c:1646  */
+#line 1822 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 42:
 #line 173 "syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Specifier_is_TYPE, &(yyloc), (yyvsp[0].pnd));}
-#line 1826 "syntax.c" /* yacc.c:1646  */
+#line 1828 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 43:
 #line 174 "syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Specifier_is_TYPE_MULT, &(yyloc), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 1832 "syntax.c" /* yacc.c:1646  */
+#line 1834 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 44:
 #line 175 "syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Specifier_is_StructSpecifier, &(yyloc), (yyvsp[0].pnd));}
-#line 1838 "syntax.c" /* yacc.c:1646  */
+#line 1840 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 45:
 #line 178 "syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_StructSpecifier_is_STRUCT_Tag, &(yyloc), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 1844 "syntax.c" /* yacc.c:1646  */
+#line 1846 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 46:
 #line 179 "syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_StructSpecifier_is_STRUCT_OptTag_LC_DefList_RC, &(yyloc), (yyvsp[-4].pnd), (yyvsp[-3].pnd), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 1850 "syntax.c" /* yacc.c:1646  */
+#line 1852 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 47:
 #line 182 "syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Tag_is_ID, &(yyloc), (yyvsp[0].pnd));}
-#line 1856 "syntax.c" /* yacc.c:1646  */
+#line 1858 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 48:
 #line 185 "syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_OptTag_is_ID, &(yyloc), (yyvsp[0].pnd));}
-#line 1862 "syntax.c" /* yacc.c:1646  */
+#line 1864 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 49:
 #line 189 "syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_ArgList_is_Arg_COMMA_ArgList, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 1868 "syntax.c" /* yacc.c:1646  */
+#line 1870 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 50:
 #line 190 "syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_ArgList_is_Arg, &(yyloc), (yyvsp[0].pnd));}
-#line 1874 "syntax.c" /* yacc.c:1646  */
+#line 1876 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 51:
 #line 193 "syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Arg_is_Exp, &(yyloc), (yyvsp[0].pnd));}
-#line 1880 "syntax.c" /* yacc.c:1646  */
+#line 1882 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 52:
 #line 197 "syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_ID, &(yyloc), (yyvsp[0].pnd));}
-#line 1886 "syntax.c" /* yacc.c:1646  */
+#line 1888 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 53:
 #line 198 "syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_ID_LP_ArgList_RP, &(yyloc), (yyvsp[-3].pnd), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 1892 "syntax.c" /* yacc.c:1646  */
+#line 1894 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 54:
 #line 199 "syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_NUM, &(yyloc), (yyvsp[0].pnd));}
-#line 1898 "syntax.c" /* yacc.c:1646  */
+#line 1900 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 55:
 #line 200 "syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_ADD_NUM, &(yyloc), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 1904 "syntax.c" /* yacc.c:1646  */
+#line 1906 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 56:
 #line 201 "syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_SUB_NUM, &(yyloc), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 1910 "syntax.c" /* yacc.c:1646  */
+#line 1912 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 57:
 #line 202 "syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_NOT_Exp, &(yyloc), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 1916 "syntax.c" /* yacc.c:1646  */
+#line 1918 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 58:
 #line 203 "syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_STRING, &(yyloc), (yyvsp[0].pnd));}
-#line 1922 "syntax.c" /* yacc.c:1646  */
+#line 1924 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 59:
 #line 204 "syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_Exp_ASSIGNOP_Exp, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 1928 "syntax.c" /* yacc.c:1646  */
+#line 1930 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 60:
 #line 205 "syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_Exp_DOT_ID, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 1934 "syntax.c" /* yacc.c:1646  */
+#line 1936 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 61:
 #line 206 "syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_Exp_POINTER_ID, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 1940 "syntax.c" /* yacc.c:1646  */
+#line 1942 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 62:
 #line 207 "syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_Exp_ADD_Exp, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 1946 "syntax.c" /* yacc.c:1646  */
+#line 1948 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 63:
 #line 208 "syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_Exp_SUB_Exp, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 1952 "syntax.c" /* yacc.c:1646  */
+#line 1954 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 64:
 #line 209 "syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_Exp_MULT_Exp, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 1958 "syntax.c" /* yacc.c:1646  */
+#line 1960 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 65:
 #line 210 "syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_Exp_DIV_Exp, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 1964 "syntax.c" /* yacc.c:1646  */
+#line 1966 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 66:
 #line 211 "syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_Exp_EQ_Exp, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 1970 "syntax.c" /* yacc.c:1646  */
+#line 1972 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 67:
 #line 212 "syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_Exp_LT_Exp, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 1976 "syntax.c" /* yacc.c:1646  */
+#line 1978 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 68:
 #line 213 "syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_Exp_LE_Exp, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 1982 "syntax.c" /* yacc.c:1646  */
+#line 1984 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 69:
 #line 214 "syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_Exp_NE_Exp, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 1988 "syntax.c" /* yacc.c:1646  */
+#line 1990 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 70:
 #line 215 "syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_Exp_GT_Exp, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 1994 "syntax.c" /* yacc.c:1646  */
+#line 1996 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 71:
 #line 216 "syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_Exp_GE_Exp, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2000 "syntax.c" /* yacc.c:1646  */
+#line 2002 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 72:
 #line 217 "syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_Exp_AND_Exp, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2006 "syntax.c" /* yacc.c:1646  */
+#line 2008 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 73:
 #line 218 "syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_Exp_OR_Exp, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2012 "syntax.c" /* yacc.c:1646  */
+#line 2014 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 74:
 #line 219 "syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_Exp_BITAND_Exp, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2018 "syntax.c" /* yacc.c:1646  */
+#line 2020 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 75:
 #line 220 "syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_Exp_BITOR_Exp, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2024 "syntax.c" /* yacc.c:1646  */
+#line 2026 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 76:
 #line 221 "syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_Exp_LB_Exp_RB, &(yyloc), (yyvsp[-3].pnd), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2030 "syntax.c" /* yacc.c:1646  */
+#line 2032 "syntax.c" /* yacc.c:1646  */
     break;
 
   case 77:
@@ -2036,11 +2038,11 @@ yyreduce:
 		(yyval.pnd)=build_subast(AST_Exp_is_Exp_LB_Exp_RB, &(yyloc), (yyvsp[-3].pnd), (yyvsp[-2].pnd), (yyvsp[-1].pnd), new_sym_node(RB, &(yylsp[-1])));
 		logd("%d:%d: error: missing ']'\n", (yyloc).first_line, (yylsp[-1]).last_column);
 	}
-#line 2040 "syntax.c" /* yacc.c:1646  */
+#line 2042 "syntax.c" /* yacc.c:1646  */
     break;
 
 
-#line 2044 "syntax.c" /* yacc.c:1646  */
+#line 2046 "syntax.c" /* yacc.c:1646  */
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires

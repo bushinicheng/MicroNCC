@@ -1,4 +1,5 @@
 #include "common.h"
+#include "vector.h"
 
 #define __AST_C__
 #include "ast.h"
@@ -40,15 +41,16 @@ Node* __attribute__((noinline)) build_subast(int nodetype, YYLTYPE *yyinfo, ...)
 	parnd->column = yyinfo->first_column;
 	prev_child->sibling = NULL;
 	parnd->semanval = nodetype;
+	parnd->syntaxval = node_struct[nodetype].parent;
 	if(is_print_reduce_step)
-		logd("%s\n", parnodestruct[nodetype].str_struct);
-	for(int i = 1; i < parnodestruct[nodetype].nr_child; i++)
+		logd("%s\n", node_struct[nodetype].str_struct);
+	for(int i = 1; i < node_struct[nodetype].nr_child; i++)
 	{
 		Node *post_child = va_arg(vlist, PNode);
 		prev_child->sibling = post_child;
 		prev_child = post_child;
 	}
-	if(!parnodestruct[nodetype].nr_child)
+	if(!node_struct[nodetype].nr_child)
 		first_child = NULL;
 	else
 		prev_child->sibling = NULL;
@@ -62,14 +64,16 @@ void print_ast(Node *root)
 	if(root == NULL)
 		return;
 
-	static int stack[200], pstack = 0;
+	static int *stack;
 	static int space = 0;
+	vector_init(int, stack);
 
 	/* print leading space */
 	int j = 0;
 	for(int i = 0; i < 3*space-3; i++)
 	{
-		if(pstack > 0 && j<pstack && i==3*stack[j])
+		int size = vector_size(stack);
+		if(size > 0 && j<size && i==3*stack[j])
 		{
 			logd("|");
 			j ++;
@@ -80,7 +84,7 @@ void print_ast(Node *root)
 
 	/* print semanval or lexval */
 	if(root->semanval > 0)
-		logd("%s\n", parnodestruct[root->semanval].str_root);
+		logd("%s\n", node_struct[root->semanval].str_root);
 	else if(root->lexval >= 0)
 	{
 		if(root->lexval == ID)
@@ -115,12 +119,14 @@ void print_ast(Node *root)
 
 	/* recursively print ast */
 	space ++;
-	if(root->sibling) stack[pstack++] = space-2;
-	assert(pstack < 200);
+	if(root->sibling) vector_push(stack, space-2);
 	print_ast(root->child);
 	space --;
-	if(root->sibling) pstack --;
+	if(root->sibling) vector_pop(stack);
 	print_ast(root->sibling);
+
+	if(space == 0)
+		vector_free(stack);
 }
 
 int init_ast()
@@ -128,16 +134,16 @@ int init_ast()
 #ifdef __DEBUG__
 	bool pass = true;
 	logd("[unit test]func:%s, line:%d...", __func__, __LINE__);
-	for(int i = 0;pass && i < sizeof(parnodestruct)/sizeof(parnodestruct[0]); i++)
+	for(int i = 0;pass && i < sizeof(node_struct)/sizeof(node_struct[0]); i++)
 	{
-		if(parnodestruct[i].nr_child < 0 || parnodestruct[i].str_struct == NULL || parnodestruct[i].str_root == NULL)
+		if(node_struct[i].nr_child < 0 || node_struct[i].str_struct == NULL || node_struct[i].str_root == NULL)
 		{
-			loge("\ntest failed at #%d of array parnodestruct.", i);
+			loge("\ntest failed at #%d of array node_struct.", i);
 			pass = false;
 			break;
 		}
 		
-		char *ptr = parnodestruct[i].str_struct;
+		char *ptr = node_struct[i].str_struct;
 		while(*ptr) {
 			if( !( ('a'<= *ptr && *ptr<='z')
 				||('A'<= *ptr && *ptr<='Z')
@@ -145,14 +151,14 @@ int init_ast()
 				||('_' == *ptr) )
 				)
 			{
-				loge("\ntest failed at #%d of array parnodestruct.", i);
+				loge("\ntest failed at #%d of array node_struct.", i);
 				pass = false;
 				break;
 			}
 			ptr++;
 		}
 
-		ptr = parnodestruct[i].str_root;
+		ptr = node_struct[i].str_root;
 		while(*ptr) {
 			if( !( ('a'<= *ptr && *ptr<='z')
 				||('A'<= *ptr && *ptr<='Z')
@@ -160,7 +166,7 @@ int init_ast()
 				||('_' == *ptr) )
 				)
 			{
-				loge("\ntest failed at #%d of array parnodestruct.", i);
+				loge("\ntest failed at #%d of array node_struct.", i);
 				pass = false;
 				break;
 			}
@@ -174,4 +180,9 @@ int init_ast()
 		logd("\n");
 #endif
 	return 0;
+}
+
+Node *get_child(Node *par, int semanval)
+{
+	return NULL;
 }

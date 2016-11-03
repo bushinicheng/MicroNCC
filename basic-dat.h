@@ -5,13 +5,17 @@
  *
  */
 
-typedef struct tagNodeInfo {
-	int lexval;
-	union {
-		int i;float f;double llf;void *p;
-		int st;
-	} val;
-} NodeInfo;
+enum {
+	SpecTypeNone,
+	SpecTypeVoid,
+	SpecTypeChar,
+	SpecTypeInt,
+	SpecTypeUnsigned,
+	SpecTypeFloat,
+	SpecTypeStruct,
+	SpecTypeUnion,
+	SpecTypeFunc
+};
 
 typedef struct tagDebugInfo {
 	int error;
@@ -19,13 +23,21 @@ typedef struct tagDebugInfo {
 	int last_line, last_column;
 } DebugInfo;
 
+typedef struct tagSpec {
+	char *id;
+	int type;
+	struct tagSpec *sibling;
+	struct tagSpec *child;
+} Spec;
+
 typedef struct tagNode {
 	struct tagNode *sibling;
 	struct tagNode *child;
 
 	/* lex structure */
 	int lexval;//token defined in lexical.l
-	int semanval;//semantic value like `Program`
+	int syntaxval;//syntax value like `Program`
+	int semanval;//semantic value like `AST_Exp_is_ID`
 	int specval;//spec token like `float` or `int` of token `NUM`
 	union {
 		int i;float f;double llf;void *p;
