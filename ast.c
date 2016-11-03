@@ -32,31 +32,39 @@ Node* new_sym_node(int lexval, YYLTYPE *yyinfo)
 
 Node* __attribute__((noinline)) build_subast(int nodetype, YYLTYPE *yyinfo, ...)
 {
-	va_list vlist;
-	va_start(vlist, yyinfo);
-	Node *parnd = new_node();
-	Node *first_child = va_arg(vlist, PNode);
-	Node *prev_child = first_child;
-	parnd->lineno = curlineno = yyinfo->first_line;
-	parnd->column = yyinfo->first_column;
-	prev_child->sibling = NULL;
-	parnd->semanval = nodetype;
-	parnd->syntaxval = node_struct[nodetype].parent;
 	if(is_print_reduce_step)
 		logd("%s\n", node_struct[nodetype].str_struct);
+
+	va_list vlist;
+	va_start(vlist, yyinfo);
+	Node *parent_node = new_node();
+	Node *first_child = va_arg(vlist, PNode);
+	Node *prev_child = first_child;
+
+	/*debug info*/
+	parent_node->semanval = nodetype;
+	parent_node->syntaxval = node_struct[nodetype].parent;
+	parent_node->lineno = curlineno = yyinfo->first_line;
+	parent_node->column = yyinfo->first_column;
+
 	for(int i = 1; i < node_struct[nodetype].nr_child; i++)
 	{
 		Node *post_child = va_arg(vlist, PNode);
 		prev_child->sibling = post_child;
+		prev_child->parent = parent_node;
 		prev_child = post_child;
 	}
+
 	if(!node_struct[nodetype].nr_child)
 		first_child = NULL;
 	else
+	{
 		prev_child->sibling = NULL;
-	parnd->child = first_child;
+		prev_child->parent = parent_node;
+	}
+	parent_node->child = first_child;
 	va_end(vlist);
-	return parnd;
+	return parent_node;
 }
 
 void print_ast(Node *root)

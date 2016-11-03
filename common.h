@@ -9,6 +9,7 @@
 /* some common header files will be included here. */
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
 #include <assert.h>
 #include <stdarg.h>
@@ -21,8 +22,7 @@
 #include "debug.h"
 #include "basic-dat.h"
 #include "syntax.h"
-
-
+#include "vector.h"
 
 /*since bool isn't valid datatype in c*/
 

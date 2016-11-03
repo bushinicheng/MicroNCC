@@ -11,15 +11,21 @@
  * 3. ...
  * */
 
-#define vector_init(type, p) \
+#define vector_init_def(p) \
 	static int __vector_initializer_of_##p = 0;\
 	static int __vector_pointer_of_##p = 0; \
-	static int __vector_size_of_##p = 16;\
+	static int __vector_size_of_##p = 16;
+
+#define vector_init_mem(type, p) \
 	if(__vector_initializer_of_##p == 0) \
 	{ \
 		p = (type *)malloc(sizeof(type)*__vector_size_of_##p); \
 		__vector_initializer_of_##p = 1; \
 	}
+
+#define vector_init(type, p) \
+	vector_init_def(p); \
+	vector_init_mem(type, p);
 
 #define vector_push(p, e) \
 	do { \

@@ -61,8 +61,6 @@ int yyerror(const char *str, ...);
 	ArgList
 	Arg
 	CompSt
-	Tag
-	OptTag
 	Exp
 
 %%
@@ -175,14 +173,9 @@ Specifier:TYPE {$$=build_subast(AST_Specifier_is_TYPE, &@$, $1);}
 		 |StructSpecifier {$$=build_subast(AST_Specifier_is_StructSpecifier, &@$, $1);}
 ;
 
-StructSpecifier:STRUCT Tag {$$=build_subast(AST_StructSpecifier_is_STRUCT_Tag, &@$, $1, $2);}
-			   |STRUCT OptTag LC DefList RC {$$=build_subast(AST_StructSpecifier_is_STRUCT_OptTag_LC_DefList_RC, &@$, $1, $2, $3, $4, $5);}
-;
-
-Tag:ID {$$=build_subast(AST_Tag_is_ID, &@$, $1);}
-;
-
-OptTag:ID {$$=build_subast(AST_OptTag_is_ID, &@$, $1);}
+StructSpecifier:STRUCT ID {$$=build_subast(AST_StructSpecifier_is_STRUCT_ID, &@$, $1, $2);}
+			   |STRUCT LC DefList RC {$$=build_subast(AST_StructSpecifier_is_STRUCT_LC_DefList_RC, &@$, $1, $2, $3, $4);}
+			   |STRUCT ID LC DefList RC {$$=build_subast(AST_StructSpecifier_is_STRUCT_ID_LC_DefList_RC, &@$, $1, $2, $3, $4, $5);}
 ;
 
 /*function call*/
@@ -199,6 +192,8 @@ Exp:ID {$$=build_subast(AST_Exp_is_ID, &@$, $1);}
    |NUM {$$=build_subast(AST_Exp_is_NUM, &@$, $1);}
    |ADD NUM {$$=build_subast(AST_Exp_is_ADD_NUM, &@$, $1, $2);}
    |SUB NUM {$$=build_subast(AST_Exp_is_SUB_NUM, &@$, $1, $2);}
+   |MULT Exp {$$=build_subast(AST_Exp_is_MULT_Exp, &@$, $1, $2);}
+   |BITAND Exp {$$=build_subast(AST_Exp_is_BITAND_Exp, &@$, $1, $2);}
    |NOT Exp {$$=build_subast(AST_Exp_is_NOT_Exp, &@$, $1, $2);}
    |STRING {$$=build_subast(AST_Exp_is_STRING, &@$, $1);}
    |Exp ASSIGNOP Exp {$$=build_subast(AST_Exp_is_Exp_ASSIGNOP_Exp, &@$, $1, $2, $3);}

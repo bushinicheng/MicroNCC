@@ -14,8 +14,18 @@ enum {
 	SpecTypeFloat,
 	SpecTypeStruct,
 	SpecTypeUnion,
-	SpecTypeFunc
+	SpecTypeFunc,
+	SpecTypeArray,
+	SpecTypePointer
 };
+
+typedef struct tagSpec {
+	char *id;
+	int type;
+	int width;
+	struct tagSpec *sibling;
+	struct tagSpec *child;
+} Spec;
 
 typedef struct tagDebugInfo {
 	int error;
@@ -23,16 +33,10 @@ typedef struct tagDebugInfo {
 	int last_line, last_column;
 } DebugInfo;
 
-typedef struct tagSpec {
-	char *id;
-	int type;
-	struct tagSpec *sibling;
-	struct tagSpec *child;
-} Spec;
-
 typedef struct tagNode {
 	struct tagNode *sibling;
 	struct tagNode *child;
+	struct tagNode *parent;
 
 	/* lex structure */
 	int lexval;//token defined in lexical.l
@@ -43,6 +47,10 @@ typedef struct tagNode {
 		int i;float f;double llf;void *p;
 		char* st;
 	} exval;
+
+	/*type*/
+	Spec *idtype;
+	uintptr_t raddr;
 
 	/* for debugging */
 	int error;
