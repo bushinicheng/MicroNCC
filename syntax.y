@@ -30,6 +30,7 @@ int yyerror(const char *str, ...);
 	NUM STRING
 	ID
 
+%left COMMA
 %left ASSIGNOP
 %left OR
 %left AND
@@ -42,6 +43,7 @@ int yyerror(const char *str, ...);
 %left MULT DIV
 %right NOT
 %left DOT POINTER LB RB
+%left LP RP
 
 %type<pnd>
 	Program
@@ -155,7 +157,7 @@ Def:Specifier DecList SEMI {$$=build_subast(AST_Def_is_Specifier_DecList_SEMI, &
 	}
 ;
 
-DecList:Dec COMMA DecList {$$=build_subast(AST_DecList_is_Dec_COMMA_DecList, &@$, $1, $2, $3);}
+DecList:Dec COMMA DecList %prec ASSIGNOP {$$=build_subast(AST_DecList_is_Dec_COMMA_DecList, &@$, $1, $2, $3);}
 	   |Dec {$$=build_subast(AST_DecList_is_Dec, &@$, $1);}
 ;
 
@@ -164,7 +166,7 @@ Dec:VarDec {$$=build_subast(AST_Dec_is_VarDec, &@$, $1);}
 ;
 
 VarDec:ID {$$=build_subast(AST_VarDec_is_ID, &@$, $1);}
-      |MULT ID {$$=build_subast(AST_VarDec_is_MULT_ID, &@$, $1, $2);}
+      |MULT VarDec {$$=build_subast(AST_VarDec_is_MULT_VarDec, &@$, $1, $2);}
 	  |VarDec LB NUM RB {
 		if($3->specval == 'f')
 		{
@@ -191,7 +193,7 @@ ArgList:Arg COMMA ArgList {$$=build_subast(AST_ArgList_is_Arg_COMMA_ArgList, &@$
 	   |Arg {$$=build_subast(AST_ArgList_is_Arg, &@$, $1);}
 ;
 
-Arg:Exp {$$=build_subast(AST_Arg_is_Exp, &@$, $1);}
+Arg:Exp %prec ASSIGNOP {$$=build_subast(AST_Arg_is_Exp, &@$, $1);}
 ;
 
 /*expression*/
@@ -206,6 +208,7 @@ Exp:ID {$$=build_subast(AST_Exp_is_ID, &@$, $1);}
    |NOT Exp {$$=build_subast(AST_Exp_is_NOT_Exp, &@$, $1, $2);}
    |STRING {$$=build_subast(AST_Exp_is_STRING, &@$, $1);}
    |Exp ASSIGNOP Exp {$$=build_subast(AST_Exp_is_Exp_ASSIGNOP_Exp, &@$, $1, $2, $3);}
+   |Exp COMMA Exp {$$=build_subast(AST_Exp_is_Exp_COMMA_Exp, &@$, $1, $2, $3);}
    |Exp DOT ID {$$=build_subast(AST_Exp_is_Exp_DOT_ID, &@$, $1, $2, $3);}
    |Exp POINTER ID {$$=build_subast(AST_Exp_is_Exp_POINTER_ID, &@$, $1, $2, $3);}
    |Exp ADD Exp {$$=build_subast(AST_Exp_is_Exp_ADD_Exp, &@$, $1, $2, $3);}
@@ -222,6 +225,7 @@ Exp:ID {$$=build_subast(AST_Exp_is_ID, &@$, $1);}
    |Exp OR Exp {$$=build_subast(AST_Exp_is_Exp_OR_Exp, &@$, $1, $2, $3);}
    |Exp BITAND Exp {$$=build_subast(AST_Exp_is_Exp_BITAND_Exp, &@$, $1, $2, $3);}
    |Exp BITOR Exp {$$=build_subast(AST_Exp_is_Exp_BITOR_Exp, &@$, $1, $2, $3);}
+   |LP Exp RP {$$=build_subast(AST_Exp_is_LP_Exp_RP, &@$, $1, $2, $3);}
    |Exp LB Exp RB {$$=build_subast(AST_Exp_is_Exp_LB_Exp_RB, &@$, $1, $2, $3, $4);}
    |Exp LB Exp error {
 		yyclearin;

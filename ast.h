@@ -65,7 +65,7 @@ enum {
 	AST_Dec_is_VarDec,
 	AST_Dec_is_VarDec_ASSIGNOP_Exp,
 	AST_VarDec_is_ID,
-	AST_VarDec_is_MULT_ID,
+	AST_VarDec_is_MULT_VarDec,
 	AST_VarDec_is_VarDec_LB_NUM_RB,
 	AST_Specifier_is_TYPE,
 	AST_Specifier_is_StructSpecifier,
@@ -86,6 +86,7 @@ enum {
 	AST_Exp_is_NOT_Exp,
 	AST_Exp_is_STRING,
 	AST_Exp_is_Exp_ASSIGNOP_Exp,
+	AST_Exp_is_Exp_COMMA_Exp,
 	AST_Exp_is_Exp_DOT_ID,
 	AST_Exp_is_Exp_POINTER_ID,
 	AST_Exp_is_Exp_ADD_Exp,
@@ -102,6 +103,7 @@ enum {
 	AST_Exp_is_Exp_OR_Exp,
 	AST_Exp_is_Exp_BITAND_Exp,
 	AST_Exp_is_Exp_BITOR_Exp,
+	AST_Exp_is_LP_Exp_RP,
 	AST_Exp_is_Exp_LB_Exp_RB,
 	AST_Exp_is_Exp_LB_Exp_error
 };
@@ -155,7 +157,7 @@ static ParNodeStruct node_struct[] = {
 	[AST_Dec_is_VarDec] = {1, Dec, "AST_Dec_is_VarDec", "Dec"},
 	[AST_Dec_is_VarDec_ASSIGNOP_Exp] = {3, Dec, "AST_Dec_is_VarDec_ASSIGNOP_Exp", "Dec"},
 	[AST_VarDec_is_ID] = {1, VarDec, "AST_VarDec_is_ID", "VarDec"},
-	[AST_VarDec_is_MULT_ID] = {2, VarDec, "AST_VarDec_is_MULT_ID", "VarDec"},
+	[AST_VarDec_is_MULT_VarDec] = {2, VarDec, "AST_VarDec_is_MULT_VarDec", "VarDec"},
 	[AST_VarDec_is_VarDec_LB_NUM_RB] = {4, VarDec, "AST_VarDec_is_VarDec_LB_NUM_RB", "VarDec"},
 	[AST_Specifier_is_TYPE] = {1, Specifier, "AST_Specifier_is_TYPE", "Specifier"},
 	[AST_Specifier_is_StructSpecifier] = {1, Specifier, "AST_Specifier_is_StructSpecifier", "Specifier"},
@@ -176,6 +178,7 @@ static ParNodeStruct node_struct[] = {
 	[AST_Exp_is_NOT_Exp] = {2, Exp, "AST_Exp_is_NOT_Exp", "Exp"},
 	[AST_Exp_is_STRING] = {1, Exp, "AST_Exp_is_STRING", "Exp"},
 	[AST_Exp_is_Exp_ASSIGNOP_Exp] = {3, Exp, "AST_Exp_is_Exp_ASSIGNOP_Exp", "Exp"},
+	[AST_Exp_is_Exp_COMMA_Exp] = {3, Exp, "AST_Exp_is_Exp_COMMA_Exp", "Exp"},
 	[AST_Exp_is_Exp_DOT_ID] = {3, Exp, "AST_Exp_is_Exp_DOT_ID", "Exp"},
 	[AST_Exp_is_Exp_POINTER_ID] = {3, Exp, "AST_Exp_is_Exp_POINTER_ID", "Exp"},
 	[AST_Exp_is_Exp_ADD_Exp] = {3, Exp, "AST_Exp_is_Exp_ADD_Exp", "Exp"},
@@ -192,6 +195,7 @@ static ParNodeStruct node_struct[] = {
 	[AST_Exp_is_Exp_OR_Exp] = {3, Exp, "AST_Exp_is_Exp_OR_Exp", "Exp"},
 	[AST_Exp_is_Exp_BITAND_Exp] = {3, Exp, "AST_Exp_is_Exp_BITAND_Exp", "Exp"},
 	[AST_Exp_is_Exp_BITOR_Exp] = {3, Exp, "AST_Exp_is_Exp_BITOR_Exp", "Exp"},
+	[AST_Exp_is_LP_Exp_RP] = {3, Exp, "AST_Exp_is_LP_Exp_RP", "Exp"},
 	[AST_Exp_is_Exp_LB_Exp_RB] = {4, Exp, "AST_Exp_is_Exp_LB_Exp_RB", "Exp"},
 	[AST_Exp_is_Exp_LB_Exp_error] = {4, Exp, "AST_Exp_is_Exp_LB_Exp_error", "Exp"}
 };
