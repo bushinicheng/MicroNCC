@@ -15,6 +15,7 @@ enum {
 	SpecTypeStruct,
 	SpecTypeUnion,
 	SpecTypeFunc,
+	SpecTypeDef,
 	SpecTypeArray,
 	SpecTypePointer
 };
@@ -26,6 +27,12 @@ typedef struct tagSpec {
 	struct tagSpec *sibling;
 	struct tagSpec *child;
 } Spec;
+
+typedef struct tagIdSet {
+	char *id;
+	char *idtype;
+	Spec *type;
+} IdSet;
 
 typedef struct tagDebugInfo {
 	int error;

@@ -4,7 +4,7 @@
 #define __YYLOG_C__
 #include "error.h"
 
-int yyerrlex(int lineno, int column, int tokenlen, enum ErrorType errortype)
+int yydebug(int lineno, int column, int tokenlen, enum ErrorType errortype)
 {
 	extern char yylinetext[1024];
 	printf("%d:%d: %s\n", lineno, column, ErrorReason[errortype]);
@@ -20,6 +20,17 @@ int yyerrlex(int lineno, int column, int tokenlen, enum ErrorType errortype)
 		printf("^");
 	printf("\n");
 	return 0;
+}
+
+int yyerr(const char *format, ...)
+{
+	int done;
+	va_list arg;
+	extern int curlineno;
+	va_start(arg, format);
+	done = vfprintf(stderr, format, arg);
+	va_end(arg);
+	return done;
 }
 
 /*for compatibility*/

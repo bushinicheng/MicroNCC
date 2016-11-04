@@ -6,8 +6,14 @@ enum ErrorType {
 	ERR_INVALID_OCT,
 	ERR_INVALID_HEX,
 	ERR_INVALID_DEC,
-	ERR_EXPECTED_COMMA,
 	ERR_UNKNOWN_TOKEN,
+	ERR_NULL_DECLARATION,
+	ERR_EXPECTED_COMMA,
+	ERR_EXPECTED_SEMI,
+	ERR_EXPECTED_STATEMENT,
+	ERR_MISSING_SEMI,
+	ERR_MISSING_RC,
+	ERR_MISSING_RB,
 };
 
 #ifdef __YYLOG_C__
@@ -16,14 +22,21 @@ static const char *ErrorReason[] = {
 	[ERR_INVALID_NUM] = "error type A: invalid number.",
 	[ERR_INVALID_OCT] = "error type A: invalid oct number.",
 	[ERR_INVALID_HEX] = "error type A: invalid hex number.",
-	[ERR_INVALID_DEC] = "error type A: invalid dec number.",
-	[ERR_EXPECTED_COMMA] = "expected ',' here.",
 	[ERR_UNKNOWN_TOKEN] = "error type A: invalid character.",
+	[ERR_NULL_DECLARATION] = "warning: declaration does not declare anything.",
+	[ERR_EXPECTED_COMMA] = "expected ',' here.",
+	[ERR_EXPECTED_SEMI] = "expected ';' here.",
+	[ERR_EXPECTED_STATEMENT] = "error type B: expected definition or statement here.",
+	[ERR_MISSING_SEMI] = "error type B: missing ';'",
+	[ERR_MISSING_RC] = "error type B: missing '}'",
+	[ERR_MISSING_RB] = "error type B: missing ']'",
 };
 
 #endif
 
-int yyerrlex(int, int, int, enum ErrorType);
+int yydebug(int, int, int, enum ErrorType);
+int yyerr(const char *, ...);
+int yyerror(const char *, ...);
 int yylog(FILE *fp, const char *tag, const char *, ...);
 
 /*output style*/

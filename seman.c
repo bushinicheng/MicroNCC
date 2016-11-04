@@ -4,16 +4,43 @@
 #define MAX_SIZE (2*1024*1024)
 
 static Spec spec[MAX_SIZE];
-static int spec_p = 0;
 
-static Spec **typepool;
-vector_init_def(typepool);
+static IdSet *actionscope;
+vector_init_def(actionscope);
+
+Spec *new_spec()
+{
+	static int spec_ptr = -1;
+	spec_ptr ++;
+	assert(spec_ptr < MAX_SIZE);
+	return &spec[spec_ptr];
+}
 
 Spec* register_type_struct(Node *root)
 {
 	assert(root->semanval == AST_StructSpecifier_is_STRUCT_LC_DefList_RC
 		|| root->semanval == AST_StructSpecifier_is_STRUCT_ID_LC_DefList_RC);
-	return NULL;
+
+	Node *deflist = NULL;
+	Spec *newtype = new_spec();
+	newtype->type = SpecTypeStruct;
+	if(root->semanval == AST_StructSpecifier_is_STRUCT_LC_DefList_RC)
+	{
+		deflist = root->child->sibling->sibling;
+		newtype->id = NULL;
+	}
+	else if(root->semanval == AST_StructSpecifier_is_STRUCT_ID_LC_DefList_RC)
+	{
+		deflist = root->child->sibling->sibling->sibling;
+		newtype->id = root->child->sibling->exval.st;
+	}
+
+	while(deflist != NULL)
+	{
+	}
+
+
+	return newtype;
 }
 
 Spec* register_type_array(Node *root)
@@ -45,31 +72,31 @@ int seman_analysis(Node *root)
 	 * */
 	if(!root) return 0;
 
-#define TYPEPOOL_ERASE_RIGHT \
+#define ACTIONSCOPE_ERASE_RIGHT \
 	do { \
-		while(vector_top(typepool) != barrier) \
-			vector_pop(typepool); \
-		vector_pop(typepool); \
+		while(vector_top(actionscope).id != NULL) \
+			vector_pop(actionscope); \
+		vector_pop(actionscope); \
 	} while(0);
 	
 	Spec specifier;
-	Spec *barrier = NULL;
-	vector_push(typepool, barrier);
+	IdSet barrier = {NULL, NULL};
+	vector_push(actionscope, barrier);
 
 	switch(root->semanval)
 	{
 		/*action scope: {StmtList} and FuncDec*/
 		case AST_Stmt_is_LC_StmtList_RC:
-			vector_push(typepool, barrier);
+			vector_push(actionscope, barrier);
 			seman_analysis(root->child);
-			TYPEPOOL_ERASE_RIGHT;
+			ACTIONSCOPE_ERASE_RIGHT;
 			break;
 		case AST_ExtDef_is_Specifier_FuncDec_CompSt:
-			vector_push(typepool, barrier);
+			vector_push(actionscope, barrier);
 			/*id type: function*/
 			register_type_func(root);
 			seman_analysis(root->child);
-			TYPEPOOL_ERASE_RIGHT;
+			ACTIONSCOPE_ERASE_RIGHT;
 			break;
 
 		/*special type*/
@@ -152,5 +179,5 @@ int seman_analysis(Node *root)
 
 void init_seman()
 {
-	vector_init_mem(Spec*, typepool);
+	vector_init_mem(IdSet, actionscope);
 }

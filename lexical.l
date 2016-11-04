@@ -8,7 +8,7 @@
 #define STRBUF_SIZE (1024*1024*2)
 
 char strbuf[STRBUF_SIZE]; 
-static int strbuf_p = 0;;
+static int strbuf_ptr = 0;;
 
 /*function declaration*/
 int strcnt(const char *strin, char ch);
@@ -78,6 +78,7 @@ invalidcomment   \/\*([^\*]|\*[^\/])*$
 
 "&"                 {tokout("BITAND");	return symbol(BITAND);}
 "|"                 {tokout("BITOR");	return symbol(BITOR);}
+"~"                 {tokout("BITNOR");	return symbol(BITNOR);}
 "&&"                {tokout("AND");		return symbol(AND);}
 "||"                {tokout("OR");		return symbol(OR);}
 "!"                 {tokout("NOT");		return symbol(NOT);}
@@ -111,7 +112,7 @@ return              {tokout("RETURN");	return symbol(RETURN);}
 
 {invalidnum}        {
 						tokout("NUM:v");
-						yyerrlex(yylineno, yycolumn-yyleng, yyleng, ERR_INVALID_NUM);
+						yydebug(yylineno, yycolumn-yyleng, yyleng, ERR_INVALID_NUM);
 						return symbol(NUM);
 					}
 {string}            {tokout("STR");		return reg(STRING);}
@@ -130,7 +131,7 @@ return              {tokout("RETURN");	return symbol(RETURN);}
 					}
 .					{
 						tokout("UB");
-						yyerrlex(yylineno, yycolumn-yyleng, yyleng, ERR_UNKNOWN_TOKEN);
+						yydebug(yylineno, yycolumn-yyleng, yyleng, ERR_UNKNOWN_TOKEN);
 					}
 
 %%
@@ -261,43 +262,43 @@ int next_number(char **str, int base)
 /* return value is the start position of registered string */
 char* register_string(const char *str)
 {
-	int ret_p = strbuf_p;
+	int ret_ptr = strbuf_ptr;
 	char *p = (char *)str;
 	bool in_str = true;
 #ifdef __DEBUG__
-	assert(strbuf_p + strlen(str) < STRBUF_SIZE);
+	assert(strbuf_ptr + strlen(str) < STRBUF_SIZE);
 #endif
 	while(*(++p)) //since the first char is always `"`
 	{
 		if(*p == '"') {in_str = !in_str;continue;}
 		if(!in_str)	continue;
 		if(*p != '\\')
-			strbuf[strbuf_p ++] = *p;
+			strbuf[strbuf_ptr ++] = *p;
 		else
 			switch(*(++p))
 			{
-				case '\\':strbuf[strbuf_p ++] = '\\';break;
-				case 'n' :strbuf[strbuf_p ++] = '\n';break;
-				case 'r' :strbuf[strbuf_p ++] = '\r';break;
-				case 't' :strbuf[strbuf_p ++] = '\t';break;
-				case 'b' :strbuf[strbuf_p ++] = '\b';break;
+				case '\\':strbuf[strbuf_ptr ++] = '\\';break;
+				case 'n' :strbuf[strbuf_ptr ++] = '\n';break;
+				case 'r' :strbuf[strbuf_ptr ++] = '\r';break;
+				case 't' :strbuf[strbuf_ptr ++] = '\t';break;
+				case 'b' :strbuf[strbuf_ptr ++] = '\b';break;
 				case 'x' :
-				case 'X' :p++;strbuf[strbuf_p ++] = next_number(&p, 16);p--;break;
-				case '0' :p++;strbuf[strbuf_p ++] = next_number(&p, 8);p--;break;
-				default  :strbuf[strbuf_p ++] = *p;break;
+				case 'X' :p++;strbuf[strbuf_ptr ++] = next_number(&p, 16);p--;break;
+				case '0' :p++;strbuf[strbuf_ptr ++] = next_number(&p, 8);p--;break;
+				default  :strbuf[strbuf_ptr ++] = *p;break;
 			}
 	}
-	strbuf[strbuf_p ++] = 0;
-	return &strbuf[ret_p];
+	strbuf[strbuf_ptr ++] = 0;
+	return &strbuf[ret_ptr];
 }
 
 char* register_id(const char *text)
 {
-	int ret_p = strbuf_p;
+	int ret_ptr = strbuf_ptr;
 	int len = strlen(text);
-	strcat(&strbuf[strbuf_p], text);
-	strbuf_p += len + 1;
-	return &strbuf[ret_p];
+	strcat(&strbuf[strbuf_ptr], text);
+	strbuf_ptr += len + 1;
+	return &strbuf[ret_ptr];
 }
 
 int init_component()

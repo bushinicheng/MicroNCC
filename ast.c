@@ -15,10 +15,10 @@ extern bool is_print_reduce_step;
 
 Node* new_node()
 {
-	static int ndpool_p = -1;
-	assert(ndpool_p < MAX_SIZE);
-	ndpool_p ++;
-	return &ndpool[ndpool_p];
+	static int ndpool_ptr = -1;
+	assert(ndpool_ptr < MAX_SIZE);
+	ndpool_ptr ++;
+	return &ndpool[ndpool_ptr];
 }
 
 Node* new_sym_node(int lexval, YYLTYPE *yyinfo)

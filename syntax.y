@@ -20,7 +20,7 @@ int yyerror(const char *str, ...);
 
 %token<pnd>
 	LT LE NE EQ GE GT
-	BITAND BITOR AND OR NOT
+	BITAND BITOR BITNOR AND OR NOT
 	ADD SUB MULT DIV
 	RELOP ASSIGNOP 
 	LP RP LB RB LC RC
@@ -35,6 +35,7 @@ int yyerror(const char *str, ...);
 %left AND
 %left BITOR
 %left BITAND
+%left BITNOR
 %left EQ NE
 %left LT LE GE GT
 %left ADD SUB
@@ -74,11 +75,6 @@ ExtDefList:ExtDef {$$=build_subast(AST_ExtDefList_is_ExtDef, &@$, $1);}
 
 ExtDef:Specifier FuncDec CompSt {$$=build_subast(AST_ExtDef_is_Specifier_FuncDec_CompSt, &@$, $1, $2, $3);}
 	  |Def {$$=build_subast(AST_ExtDef_is_Def, &@$, $1);}
-	  |StructSpecifier SEMI {$$=build_subast(AST_ExtDef_is_StructSpecifier_SEMI, &@$, $1, $2);}
-	  |StructSpecifier error {
-		$$=build_subast(AST_ExtDef_is_StructSpecifier_SEMI, &@$, $1, new_sym_node(SEMI, & @1));
-		logd("%d:%d: error: missing ';'\n", @$.first_line, @1.last_column);
-		}
 ;
 
 /*definition of function*/
@@ -97,11 +93,11 @@ CompSt:LC StmtList RC {$$=build_subast(AST_CompSt_is_LC_StmtList_RC, &@$, $1, $2
 	  |LC error StmtList RC {
 		yyclearin;
 		$$=build_subast(AST_CompSt_is_LC_StmtList_RC, &@$, $1, $3, $4);
-		logd("%d:%d: error: expected definition or statement here.\n", @2.first_line, @2.first_column);
+		yydebug(@2.first_line, @2.last_column, 1, ERR_EXPECTED_STATEMENT);
 		}
 	  |LC StmtList error {
 		$$=build_subast(AST_CompSt_is_LC_StmtList_RC, &@$, $1, $2, new_sym_node(RC, &@2));
-		logd("%d:%d: error: missing '\x7d'\n", @3.last_line, @3.last_column);
+		yyerr("%d:%d: error: missing '\x7d'\n", @2.last_line, @2.last_column);
 		}
 ;
 
@@ -123,15 +119,15 @@ Stmt:Exp SEMI {$$=build_subast(AST_Stmt_is_Exp_SEMI, &@$, $1, $2);}
 	|Exp error SEMI {
 		yyclearin;
 		$$=build_subast(AST_Stmt_is_Exp_SEMI, &@$, $1, new_sym_node(SEMI, & @1));
-		logd("%d:%d: error: expected ';' here.\n", @2.first_line, @2.first_column);
+		yydebug(@2.first_line, @2.first_column, 1, ERR_EXPECTED_SEMI);
 	}
 	|RETURN Exp error {
 		$$=build_subast(AST_Stmt_is_RETURN_Exp_SEMI, &@$, $1, $2, new_sym_node(SEMI, & @2));
-		logd("%d:%d: error: missing ';'\n", @$.first_line, @2.last_column);
+		yydebug(@2.first_line, @2.last_column, 1, ERR_MISSING_SEMI);
 	}
 	|LC StmtList error {
 		$$=build_subast(AST_Stmt_is_LC_StmtList_RC, &@$, $1, $2, new_sym_node(RC, &@2));
-		logd("%d:%d: error: missing '\x7d'\n", @$.first_line, @2.last_column);
+		yyerr("%d:%d: error: missing '\x7d'\n", @$.first_line, @2.last_column);
 	}
 ;
 
@@ -141,9 +137,21 @@ DefList:Def DefList {$$=build_subast(AST_DefList_is_Def_DefList, &@$, $1, $2);}
 ;
 
 Def:Specifier DecList SEMI {$$=build_subast(AST_Def_is_Specifier_DecList_SEMI, &@$, $1, $2, $3);}
+   |Specifier SEMI {
+		if($1->child->semanval != AST_StructSpecifier_is_STRUCT_LC_DefList_RC
+		&& $1->child->semanval != AST_StructSpecifier_is_STRUCT_ID_LC_DefList_RC)
+		{
+			yydebug(@1.first_line, @1.last_column, 1, ERR_NULL_DECLARATION);
+		}
+		$$=build_subast(AST_Def_is_Specifier_SEMI, &@$, $1, $2);
+	}
+   |Specifier error {
+		$$=build_subast(AST_Def_is_Specifier_SEMI, &@$, $1, new_sym_node(SEMI, & @1));
+		yydebug(@$.first_line, @1.last_column, 1, ERR_MISSING_SEMI);
+		}
    |Specifier DecList error {
 		$$=build_subast(AST_Def_is_Specifier_DecList_SEMI, &@$, $1, $2, new_sym_node(SEMI, & @2));
-		logd("%d:%d: error: missing ';'\n", @$.first_line, @$.last_column);
+		yydebug(@2.first_line, @2.last_column, 1, ERR_MISSING_SEMI);
 	}
 ;
 
@@ -156,12 +164,13 @@ Dec:VarDec {$$=build_subast(AST_Dec_is_VarDec, &@$, $1);}
 ;
 
 VarDec:ID {$$=build_subast(AST_VarDec_is_ID, &@$, $1);}
+      |MULT ID {$$=build_subast(AST_VarDec_is_MULT_ID, &@$, $1, $2);}
 	  |VarDec LB NUM RB {
 		if($3->specval == 'f')
 		{
 			$3->specval = 'i';
 			$3->exval.i = $3->exval.f;
-			logd("%d: error type A: invalid dim\n", @$.first_line);
+			yyerr("%d: error type A: invalid dim\n", @$.first_line);
 		}
 		$$=build_subast(AST_VarDec_is_VarDec_LB_NUM_RB, &@$, $1, $2, $3, $4);
 	}
@@ -169,7 +178,6 @@ VarDec:ID {$$=build_subast(AST_VarDec_is_ID, &@$, $1);}
 
 /*specifier and struct*/
 Specifier:TYPE {$$=build_subast(AST_Specifier_is_TYPE, &@$, $1);}
-		 |TYPE MULT {$$=build_subast(AST_Specifier_is_TYPE_MULT, &@$, $1, $2);}
 		 |StructSpecifier {$$=build_subast(AST_Specifier_is_StructSpecifier, &@$, $1);}
 ;
 
@@ -194,6 +202,7 @@ Exp:ID {$$=build_subast(AST_Exp_is_ID, &@$, $1);}
    |SUB NUM {$$=build_subast(AST_Exp_is_SUB_NUM, &@$, $1, $2);}
    |MULT Exp {$$=build_subast(AST_Exp_is_MULT_Exp, &@$, $1, $2);}
    |BITAND Exp {$$=build_subast(AST_Exp_is_BITAND_Exp, &@$, $1, $2);}
+   |BITNOR Exp {$$=build_subast(AST_Exp_is_BITNOR_Exp, &@$, $1, $2);}
    |NOT Exp {$$=build_subast(AST_Exp_is_NOT_Exp, &@$, $1, $2);}
    |STRING {$$=build_subast(AST_Exp_is_STRING, &@$, $1);}
    |Exp ASSIGNOP Exp {$$=build_subast(AST_Exp_is_Exp_ASSIGNOP_Exp, &@$, $1, $2, $3);}
@@ -217,6 +226,6 @@ Exp:ID {$$=build_subast(AST_Exp_is_ID, &@$, $1);}
    |Exp LB Exp error {
 		yyclearin;
 		$$=build_subast(AST_Exp_is_Exp_LB_Exp_RB, &@$, $1, $2, $3, new_sym_node(RB, &@3));
-		logd("%d:%d: error: missing ']'\n", @$.first_line, @3.last_column);
+		yydebug(@3.first_line, @3.last_column, 1, ERR_MISSING_RB);
 	}
 ;
