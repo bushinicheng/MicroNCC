@@ -102,6 +102,7 @@ for                 {tokout("FOR");		return symbol(FOR);}
 int                 {tokout("INT");		return type(INT);}
 char                {tokout("CHAR");	return type(CHAR);}
 float               {tokout("FLOAT");	return type(FLOAT);}
+enum                {tokout("ENUM");	return symbol(ENUM);}
 struct              {tokout("STRUCT");	return symbol(STRUCT);}
 return              {tokout("RETURN");	return symbol(RETURN);}
 

@@ -151,7 +151,7 @@ int init_ast()
 			break;
 		}
 		
-		char *ptr = node_struct[i].str_struct;
+		const char *ptr = node_struct[i].str_struct;
 		while(*ptr) {
 			if( !( ('a'<= *ptr && *ptr<='z')
 				||('A'<= *ptr && *ptr<='Z')

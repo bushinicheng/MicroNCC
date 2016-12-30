@@ -85,10 +85,11 @@ extern int yydebug;
     INT = 295,
     CHAR = 296,
     FLOAT = 297,
-    STRUCT = 298,
-    NUM = 299,
-    STRING = 300,
-    ID = 301
+    ENUM = 298,
+    STRUCT = 299,
+    NUM = 300,
+    STRING = 301,
+    ID = 302
   };
 #endif
 
@@ -101,7 +102,7 @@ union YYSTYPE
 
 	Node *pnd;
 
-#line 105 "syntax.h" /* yacc.c:1909  */
+#line 106 "syntax.h" /* yacc.c:1909  */
 };
 
 typedef union YYSTYPE YYSTYPE;

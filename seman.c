@@ -39,7 +39,6 @@ Spec* register_type_struct(Node *root)
 	{
 	}
 
-
 	return newtype;
 }
 

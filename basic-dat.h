@@ -5,27 +5,53 @@
  *
  */
 
+//basic data type
 enum {
-	SpecTypeNone,
+	SpecTypeConst,
 	SpecTypeVoid,
 	SpecTypeChar,
 	SpecTypeInt,
 	SpecTypeUnsigned,
 	SpecTypeFloat,
+	//the above is no need to spec
 	SpecTypeStruct,
 	SpecTypeUnion,
 	SpecTypeFunc,
-	SpecTypeDef,
-	SpecTypeArray,
-	SpecTypePointer
+	SpecTypeArray
 };
 
-typedef struct tagSpec {
+struct tagSpec;
+
+typedef struct tagSinArg {
+	struct tagSpec *type;
 	char *id;
-	int type;
+} SinArg;
+
+typedef struct tagArgs {
+	SinArg *arglist;
+	size_t argv;
+} Args;
+
+typedef struct tagSpec {
+	int btype;
 	int width;
-	struct tagSpec *sibling;
-	struct tagSpec *child;
+	union {
+		struct {
+			struct tagSpec *ret;
+			Args *args;
+		} func;//func type
+
+		struct {
+			size_t *dim;
+			size_t size;//dimension
+		} array;//for array
+
+		struct {
+			char *id;
+			struct Spec *spec;
+			size_t size;
+		};//for structture
+	} type;
 } Spec;
 
 typedef struct tagIdSet {
@@ -49,15 +75,23 @@ typedef struct tagNode {
 	int lexval;//token defined in lexical.l
 	int syntaxval;//syntax value like `Program`
 	int semanval;//semantic value like `AST_Exp_is_ID`
-	int specval;//spec token like `float` or `int` of token `NUM`
+
+	/*type*/
+	Spec *idtype;//const or not const all don't have idval
+	//for variable
+	int base_type;//0 for code area
+				  //1 for global data
+				  //2 for local stack
+	uintptr_t base_addr;
+	size_t var_size;//structure need size
+
+	//for constant, such as "hello", 12, 5.1
+	int idvaltype;
 	union {
 		int i;float f;double llf;void *p;
 		char* st;
-	} exval;
-
-	/*type*/
-	Spec *idtype;
-	uintptr_t raddr;
+		uintptr_t da;//may be structure or function
+	} idval;
 
 	/* for debugging */
 	int error;
@@ -66,5 +100,6 @@ typedef struct tagNode {
 
 extern Node* astroot;
 extern DebugInfo debug;
+
 
 #endif

@@ -70,8 +70,8 @@ enum {
 	AST_Specifier_is_TYPE,
 	AST_Specifier_is_StructSpecifier,
 	AST_StructSpecifier_is_STRUCT_ID,
-	AST_StructSpecifier_is_STRUCT_LC_DefList_RC,
-	AST_StructSpecifier_is_STRUCT_ID_LC_DefList_RC,
+	AST_StructSpecifier_is_STRUCT_LC_DefArgList_RC,
+	AST_StructSpecifier_is_STRUCT_ID_LC_DefArgList_RC,
 	AST_ArgList_is_Arg_COMMA_ArgList,
 	AST_ArgList_is_Arg,
 	AST_Arg_is_Exp,
@@ -112,8 +112,8 @@ enum {
 typedef struct tagParNodeStruct {
     int nr_child;
     int parent;
-    char *str_struct;
-    char *str_root;
+    const char *str_struct;
+    const char *str_root;
 } ParNodeStruct;
 
 static ParNodeStruct node_struct[] = {
@@ -162,8 +162,8 @@ static ParNodeStruct node_struct[] = {
 	[AST_Specifier_is_TYPE] = {1, Specifier, "AST_Specifier_is_TYPE", "Specifier"},
 	[AST_Specifier_is_StructSpecifier] = {1, Specifier, "AST_Specifier_is_StructSpecifier", "Specifier"},
 	[AST_StructSpecifier_is_STRUCT_ID] = {2, StructSpecifier, "AST_StructSpecifier_is_STRUCT_ID", "StructSpecifier"},
-	[AST_StructSpecifier_is_STRUCT_LC_DefList_RC] = {4, StructSpecifier, "AST_StructSpecifier_is_STRUCT_LC_DefList_RC", "StructSpecifier"},
-	[AST_StructSpecifier_is_STRUCT_ID_LC_DefList_RC] = {5, StructSpecifier, "AST_StructSpecifier_is_STRUCT_ID_LC_DefList_RC", "StructSpecifier"},
+	[AST_StructSpecifier_is_STRUCT_LC_DefArgList_RC] = {4, StructSpecifier, "AST_StructSpecifier_is_STRUCT_LC_DefArgList_RC", "StructSpecifier"},
+	[AST_StructSpecifier_is_STRUCT_ID_LC_DefArgList_RC] = {5, StructSpecifier, "AST_StructSpecifier_is_STRUCT_ID_LC_DefArgList_RC", "StructSpecifier"},
 	[AST_ArgList_is_Arg_COMMA_ArgList] = {3, ArgList, "AST_ArgList_is_Arg_COMMA_ArgList", "ArgList"},
 	[AST_ArgList_is_Arg] = {1, ArgList, "AST_ArgList_is_Arg", "ArgList"},
 	[AST_Arg_is_Exp] = {1, Arg, "AST_Arg_is_Exp", "Arg"},
@@ -241,6 +241,7 @@ static char* str_lexval[] = {
 	[INT] = "INT",
 	[CHAR] = "CHAR",
 	[FLOAT] = "FLOAT",
+	[ENUM] = "ENUM",
 	[STRUCT] = "STRUCT",
 	[NUM] = "NUM",
 	[STRING] = "STRING",

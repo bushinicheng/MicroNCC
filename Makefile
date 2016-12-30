@@ -9,7 +9,7 @@ YCFILE=$(YFILE:.y=.c)
 YHFILE=$(YFILE:.y=.h)
 CFILES=$(shell find . -name "*.c")
 HFILES=$(shell find . -name "*.h")
-CFLAGS=-O2 -std=c99
+CFLAGS=-O2 -std=c11
 
 OBJ_DIR=output/
 TEST_DIR=test/

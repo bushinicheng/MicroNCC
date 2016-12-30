@@ -65,8 +65,8 @@ def genast():
 typedef struct tagParNodeStruct {
     int nr_child;
     int parent;
-    char *str_struct;
-    char *str_root;
+    const char *str_struct;
+    const char *str_root;
 } ParNodeStruct;
 
 """+\

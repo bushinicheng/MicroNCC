@@ -26,7 +26,7 @@ int yyerror(const char *str, ...);
 	LP RP LB RB LC RC
 	DOT COMMA SEMI POINTER
 	IF ELSE DO WHILE FOR RETURN /* inline key words */
-	TYPE INT CHAR FLOAT STRUCT /* inline specifier */
+	TYPE INT CHAR FLOAT ENUM STRUCT /* inline specifier */
 	NUM STRING
 	ID
 
@@ -184,8 +184,8 @@ Specifier:TYPE {$$=build_subast(AST_Specifier_is_TYPE, &@$, $1);}
 ;
 
 StructSpecifier:STRUCT ID {$$=build_subast(AST_StructSpecifier_is_STRUCT_ID, &@$, $1, $2);}
-			   |STRUCT LC DefList RC {$$=build_subast(AST_StructSpecifier_is_STRUCT_LC_DefList_RC, &@$, $1, $2, $3, $4);}
-			   |STRUCT ID LC DefList RC {$$=build_subast(AST_StructSpecifier_is_STRUCT_ID_LC_DefList_RC, &@$, $1, $2, $3, $4, $5);}
+			   |STRUCT LC DefArgList RC {$$=build_subast(AST_StructSpecifier_is_STRUCT_LC_DefList_RC, &@$, $1, $2, $3, $4);}
+			   |STRUCT ID LC DefArgList RC {$$=build_subast(AST_StructSpecifier_is_STRUCT_ID_LC_DefList_RC, &@$, $1, $2, $3, $4, $5);}
 ;
 
 /*function call*/
