@@ -2,19 +2,24 @@
 #coding:utf-8
 
 import re
+xxxx = []
 
 def get_nonterminal(stream):
+    global xxxx
     pa=re.compile(r'%(type)<.*?>(.*?)\n\n', re.S)
     result=pa.findall(stream)
     token=[re.sub('/\*.*?\*/', '', i[1]) for i in result]
     token=re.findall('\w+', ' '.join(token))
-    return 'enum {{\n\tNone,\n{}\n}};'.format(',\n'.join(['\t{0}'.format(i) for i in token]))
+    xxxx = token
+    return 'enum {{\n\tNONTERMINALBEGIN = 512,\n{}\n}};'.format(',\n'.join(['\t{0}'.format(i) for i in token]))
 
 def get_symbol(stream):
+    global xxxx
     pa=re.compile(r'%(token)<.*?>(.*?)\n\n', re.S)
     result=pa.findall(stream)
     token=[re.sub('/\*.*?\*/', '', i[1]) for i in result]
     token=re.findall('\w+', ' '.join(token))
+    token.extend(xxxx);
     return 'static char* str_lexval[] = {{\n{}\n}};'.format(',\n'.join(['\t[{0}] = "{0}"'.format(i) for i in token]))
 
 def dep(stream):
@@ -31,7 +36,7 @@ def dep(stream):
     return rets
 
 def get_rules(stream):
-    collection=[(0, "AST_None", "None")]
+    collection=[(0, "AST_NONTERMINALBEGIN", "NONTERMINALBEGIN")]
     stream = re.sub('(\s+(%[^\n]*?)?{.*?}\s+)|(^\s+)', '', dep(stream), flags=re.S|re.M)
     pa=re.compile(r'^(\w+):(.*?);', re.S|re.M)
     result=pa.findall(stream)
@@ -39,7 +44,7 @@ def get_rules(stream):
         sym=items[0]
         collection.extend([(i.count(' ')+1 if i else 0, 'AST_{}_is_{}'.format(sym, i.replace(' ', '_') if i else 'None'), sym) for i in items[1].split('|')])
     return 'enum {{\n{}\n}};'.format(',\n'.join(['\t{}'.format(j) for i,j,k in collection])), \
-    'static ParNodeStruct node_struct[] = {{\n{}\n}};'.format(',\n'.join(['\t[{1}] = {{{0}, {2}, "{1}", "{2}"}}'.format(i, j, k) for i,j,k in collection]))
+    'static ReduceRules rules[] = {{\n{}\n}};'.format(',\n'.join(['\t[{1}] = {{{0}, {2}, "{1}", "{2}"}}'.format(i, j, k) for i,j,k in collection]))
 
 def get_func():
     with open('ast.c') as fp:
@@ -50,8 +55,8 @@ def get_func():
 def genast():
     with open('syntax.y') as fp:
         stream=fp.read()
-        sym=get_symbol(stream)
         nonterm = get_nonterminal(stream)
+        sym=get_symbol(stream)
         astenum, aststruct=get_rules(stream)
         asth=\
         "#ifndef __AST_H__\n"+\
@@ -60,20 +65,15 @@ def genast():
             "\n\n"+\
             astenum+\
         """
-#ifdef __AST_C__
-        
-typedef struct tagParNodeStruct {
+
+typedef struct tagReduceRules {
     int nr_child;
-    int parent;
-    const char *str_struct;
+    int root_type;
+    const char *str_rule;
     const char *str_root;
-} ParNodeStruct;
+} ReduceRules;
 
 """+\
-            aststruct+\
-        '\n\n#include "syntax.h"\n\n'+\
-            sym+\
-        "\n\n#endif\n\n"+\
             get_func()+\
         "\n\n#endif"
         print(asth)

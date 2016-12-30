@@ -5,7 +5,6 @@
 
 #define __DEBUG__
 
-
 /* some common header files will be included here. */
 #include <stdio.h>
 #include <stdlib.h>
@@ -20,9 +19,10 @@
 #endif
 #include "error.h"
 #include "debug.h"
-#include "basic-dat.h"
-#include "syntax.h"
 #include "vector.h"
+#include "node.h"
+#include "syntax.h"
+#include "ast.h"
 
 /*since bool isn't valid datatype in c*/
 

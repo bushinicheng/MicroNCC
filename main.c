@@ -2,8 +2,6 @@
 #include <string.h>
 #include <unistd.h>
 #include "common.h"
-#include "basic-dat.h"
-#include "syntax.h"
 #include "ast.h"
 
 int yyparse();
@@ -24,12 +22,15 @@ int main(int argc, char *argv[])
 	init_ast();
 	init_component();
 	init_vector();
-#ifdef __DEBUG_LEX__
-	while(yylex()>0);
-#else
 	char ch;
 	FILE *fp = NULL;
 
+#ifdef __DEBUG_LEX__
+	logd("[LOG]: enter debug mode, while(yylex())\n");
+	while(yylex()>0);
+#else
+
+	logd("[LOG]: parse arguments.\n");
 	for(int i = 1; i < argc; i++)
 	{
 		if(strcmp(argv[i], "--print-ast") == 0)
@@ -46,15 +47,17 @@ int main(int argc, char *argv[])
 			}
 		}
 	}
-
 	/*grammer:shift and reduce*/
 
 #if YYDEBUG == 1
 	yydebug = 1;
 #endif
+	logd("[LOG]: call yyparse.\n");
 	yyparse();
+	logd("[LOG]: call print_ast.\n");
 	if(is_print_ast) print_ast(astroot);
 	if(fp) fclose(fp);
 #endif
+	logd("[LOG]: normal exit.\n");
     return 0;
 }

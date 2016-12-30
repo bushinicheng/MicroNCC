@@ -1,8 +1,5 @@
 %{
 #include "common.h"
-#include "basic-dat.h"
-#include "syntax.h"
-#include "ast.h"
 
 /*data structure for registering string and identifier*/
 #define STRBUF_SIZE (1024*1024*2)
@@ -16,6 +13,7 @@ int next_number(char **str, int base);
 char* register_string(const char *str);
 char* register_id(const char *text);
 int init_component();
+int fileno(FILE *stream);
 
 /*lexerr*/
 #define MAX_SIZE 1024
@@ -39,10 +37,10 @@ extern YYLTYPE yylloc;
 		yycolumn += yyleng; \
 	} while(0);
 
-static int symbol(int lexval);
+static int symbol(int syntaxval);
 static int type(int specval);
 static int num(int specval);
-static int reg(int lexval);
+static int reg(int syntaxval);
 
 %}
 
@@ -137,35 +135,35 @@ return              {tokout("RETURN");	return symbol(RETURN);}
 
 %%
 
-static int symbol(int lexval)
+static int symbol(int syntaxval)
 {
 	Node *pnd = new_node();
-	pnd->lexval = lexval;
+	pnd->token = syntaxval;
 	pnd->lineno = yylineno;
 	pnd->column = yycolumn;
 	yylval.pnd = pnd;
-	return lexval;
+	return syntaxval;
 }
 
 static int type(int specval)
 {
-	int lexval = TYPE;
+	int syntaxval = TYPE;
 	Node *pnd = new_node();
-	pnd->lexval = lexval;
-	pnd->specval = specval;
+	pnd->token = syntaxval;
+	pnd->suptype = specval;
 	pnd->lineno = yylineno;
 	pnd->column = yycolumn;
 	yylval.pnd = pnd;
-	return lexval;
+	return syntaxval;
 }
 
 static int num(int specval)
 {
-	int lexval = NUM;
+	int syntaxval = NUM;
 	char *pstr = yytext;
 	Node *pnd = new_node();
-	pnd->lexval = lexval;
-	pnd->specval = specval;
+	pnd->token = NUM;
+	pnd->suptype = specval;
 	pnd->lineno = yylineno;
 	pnd->column = yycolumn;
 	yylval.pnd = pnd;
@@ -173,43 +171,43 @@ static int num(int specval)
 	switch(specval)
 	{
 	case 'i':
-		pnd->exval.i = next_number(&pstr, 10);
+		pnd->supval.i = next_number(&pstr, 10);
 		break;
 	case 'o':
 		pstr++;
-		pnd->exval.i = next_number(&pstr, 8);
+		pnd->supval.i = next_number(&pstr, 8);
 		break;
 	case 'x':
 		pstr+=2;
-		pnd->exval.i = next_number(&pstr, 16);
+		pnd->supval.i = next_number(&pstr, 16);
 		break;
 	case 'f':
-		pnd->exval.f = atof(pstr);
+		pnd->supval.f = atof(pstr);
 		break;
 	}
 
-	return lexval;
+	return syntaxval;
 }
 
-static int reg(int lexval)
+static int reg(int syntaxval)
 {
 	Node *pnd = new_node();
-	pnd->lexval = lexval;
+	pnd->token = syntaxval;
 	pnd->lineno = yylineno;
 	pnd->column = yycolumn;
 	yylval.pnd = pnd;
 
-	switch(lexval)
+	switch(syntaxval)
 	{
 	case ID:
-		pnd->exval.st = register_id(yytext);
+		pnd->supval.st = register_id(yytext);
 		break;
 	case STRING:
-		pnd->exval.st = register_string(yytext);
+		pnd->supval.st = register_string(yytext);
 		break;
 	}
 
-	return lexval;
+	return syntaxval;
 }
 
 int double_buffer(void **buf, int size)
