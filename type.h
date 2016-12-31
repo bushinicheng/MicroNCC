@@ -23,30 +23,31 @@ typedef struct tagSinArg {
 	char *varname;
 } SinArg;
 
-typedef struct tagArgs {
-	SinArg *arglist;
-	size_t argv;
-} Args;
-
 typedef struct tagSpec {
 	int btype;
 	int width;
+	int plevel;//default to be zero
 	union {
 		struct {
 			struct tagSpec *ret;
-			Args *args;
+			SinArg *arglist;
+			size_t argv;
 		} func;//func type
 
 		struct {
+			struct tagSpec *spec;//actual spec,such as `struct A`
 			size_t *dim;
 			size_t size;//dimension
 		} array;//for array
 
 		struct {
-			char *id;
-			struct tagSpec *spec;
+			char *struc_name;
+			struct {
+				char *var_name;
+				struct tagSpec *spec;
+			} *varlist;
 			size_t size;
-		};//for structture
+		} struc;//for structure
 	} type;
 } Spec;
 

@@ -33,6 +33,7 @@ enum {
 	AST_BlockList_is_Block_BlockList,
 	AST_Block_is_Specifier_FuncDec_CompSt,
 	AST_Block_is_StructDec_IdList_SEMI,
+	AST_Block_is_StructDec_SEMI,
 	AST_Block_is_VarDef,
 	AST_IdList_is_ID_COMMA_IdList,
 	AST_IdList_is_ID,
@@ -115,6 +116,7 @@ typedef struct tagReduceRules {
 Node* new_node();
 Node* new_sym_node(int lexval, YYLTYPE *yyinfo);
 Node* __attribute__((noinline)) build_subast(int nodetype, YYLTYPE *yyinfo, ...);
+void __attribute__((noinline)) make_node(Node*, int, int, ...);
 void print_ast(Node *root);
 int init_ast();
 

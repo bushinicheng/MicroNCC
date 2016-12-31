@@ -14,9 +14,6 @@
 #include <stdarg.h>
 #include <malloc.h>
 
-#ifdef __YYLOG_C__
-#undef __YYLOG_C__
-#endif
 #include "error.h"
 #include "debug.h"
 #include "vector.h"
@@ -30,5 +27,8 @@ typedef unsigned char bool;
 
 #define true 1
 #define false 0
+
+void *get_memory_pointer();
+void require_memory(size_t size);
 
 #endif

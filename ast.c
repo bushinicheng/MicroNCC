@@ -7,6 +7,7 @@ static ReduceRules rules[] = {
 	[AST_BlockList_is_Block] = {1, BlockList, "AST_BlockList_is_Block", "BlockList"},
 	[AST_BlockList_is_Block_BlockList] = {2, BlockList, "AST_BlockList_is_Block_BlockList", "BlockList"},
 	[AST_Block_is_Specifier_FuncDec_CompSt] = {3, Block, "AST_Block_is_Specifier_FuncDec_CompSt", "Block"},
+	[AST_Block_is_StructDec_SEMI] = {2, Block, "AST_Block_is_StructDec_SEMI", "Block"},
 	[AST_Block_is_StructDec_IdList_SEMI] = {3, Block, "AST_Block_is_StructDec_IdList_SEMI", "Block"},
 	[AST_Block_is_VarDef] = {1, Block, "AST_Block_is_VarDef", "Block"},
 	[AST_IdList_is_ID_COMMA_IdList] = {3, IdList, "AST_IdList_is_ID_COMMA_IdList", "IdList"},
@@ -155,6 +156,41 @@ Node *astroot = NULL;
 
 extern bool is_print_reduce_step;
 
+void __attribute__((noinline)) make_node(Node *root, int reduce_rule, int token, ...) {
+	va_list vlist;
+	va_start(vlist, token);
+
+	root->reduce_rule = reduce_rule;
+	root->token = token;
+
+	Node *first_child = va_arg(vlist, PNode);
+	Node *prev_child = first_child;
+
+	if(token == AST_NONTERMINALBEGIN) {
+		root->parent = NULL;
+		root->child = NULL;
+		root->sibling = NULL;
+	}
+
+	/*debug info*/
+	for(int i = 1; i < rules[reduce_rule].nr_child; i++)
+	{
+		Node *post_child = va_arg(vlist, PNode);
+		prev_child->sibling = post_child;
+		prev_child->parent = root;
+		prev_child = post_child;
+	}
+
+	if(!rules[reduce_rule].nr_child)
+		first_child = NULL;
+	else {
+		prev_child->sibling = NULL;
+		prev_child->parent = root;
+	}
+	root->child = first_child;
+	va_end(vlist);
+}
+
 Node* new_node()
 {
 	static int ndpool_ptr = -1;
@@ -189,8 +225,7 @@ Node* __attribute__((noinline)) build_subast(int nodetype, YYLTYPE *yyinfo, ...)
 	parent_node->lineno = curlineno = yyinfo->first_line;
 	parent_node->column = yyinfo->first_column;
 
-	for(int i = 1; i < rules[nodetype].nr_child; i++)
-	{
+	for(int i = 1; i < rules[nodetype].nr_child; i++) {
 		Node *post_child = va_arg(vlist, PNode);
 		prev_child->sibling = post_child;
 		prev_child->parent = parent_node;
@@ -199,8 +234,7 @@ Node* __attribute__((noinline)) build_subast(int nodetype, YYLTYPE *yyinfo, ...)
 
 	if(!rules[nodetype].nr_child)
 		first_child = NULL;
-	else
-	{
+	else {
 		prev_child->sibling = NULL;
 		prev_child->parent = parent_node;
 	}
@@ -235,10 +269,8 @@ void print_ast(Node *root)
 	/* print semanval or lexval */
 	if(root->token == ID)
 		logd("%s:%s\n", str_lexval[root->token], root->supval.st);
-	else if(root->token == NUM)
-	{
-		switch(root->suptype)
-		{
+	else if(root->token == NUM) {
+		switch(root->suptype) {
 		case 'i':
 			logd("NUM:%d\n", root->supval.i);
 			break;

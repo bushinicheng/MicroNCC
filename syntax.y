@@ -78,6 +78,7 @@ BlockList:Block {$$=build_subast(AST_BlockList_is_Block, &@$, $1);}
 
 Block:Specifier FuncDec CompSt {$$=build_subast(AST_Block_is_Specifier_FuncDec_CompSt, &@$, $1, $2, $3);}
 	 |StructDec IdList SEMI {$$=build_subast(AST_Block_is_StructDec_IdList_SEMI, &@$, $1, $2, $3);}
+	 |StructDec SEMI {$$=build_subast(AST_Block_is_StructDec_SEMI, &@$, $1, $2);}
 	 |VarDef {$$=build_subast(AST_Block_is_VarDef, &@$, $1);}
 ;
 

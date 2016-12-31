@@ -6,6 +6,7 @@
 
 int yyparse();
 int init_ast();
+int init_spec();
 int init_component();
 int init_vector();
 void print_ast(Node*);
@@ -22,6 +23,7 @@ int main(int argc, char *argv[])
 	init_ast();
 	init_component();
 	init_vector();
+	init_spec();
 	char ch;
 	FILE *fp = NULL;
 
