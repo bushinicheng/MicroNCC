@@ -1,6 +1,7 @@
-#include <stdio.h>
-#include <stdarg.h>
-#include "debug.h"
+#include "common.h"
+
+void *get_memory_pointer();
+void require_memory(size_t size);
 
 static const char *ErrorReason[] = {
 	[ERR_INVALID_NUM] = "error type A: invalid number.",
@@ -15,6 +16,15 @@ static const char *ErrorReason[] = {
 	[ERR_MISSING_RC] = "error type B: missing '}'",
 	[ERR_MISSING_RB] = "error type B: missing ']'",
 };
+
+char *sformat(const char *format, ...) {
+	char *ret_str = (char *)get_memory_pointer();
+	va_list ap;
+	va_start(ap, format);
+	int len = vsprintf(ret_str, format, ap);
+	require_memory(len + 1);
+	return ret_str;
+}
 
 int yydebug(int lineno, int column, int tokenlen, enum ErrorType errortype)
 {

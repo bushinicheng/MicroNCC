@@ -5,6 +5,7 @@
 //#define YYDEBUG 1
 
 int __attribute__((noinline)) set_break();
+char *sformat(const char *format, ...);
 
 /*output style*/
 #define YYLOG_STYLE_NORMAL    "0"

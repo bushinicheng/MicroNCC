@@ -10,8 +10,8 @@ static ReduceRules rules[] = {
 	[AST_Block_is_StructDec_SEMI] = {2, Block, "AST_Block_is_StructDec_SEMI", "Block"},
 	[AST_Block_is_StructDec_IdList_SEMI] = {3, Block, "AST_Block_is_StructDec_IdList_SEMI", "Block"},
 	[AST_Block_is_VarDef] = {1, Block, "AST_Block_is_VarDef", "Block"},
-	[AST_IdList_is_ID_COMMA_IdList] = {3, IdList, "AST_IdList_is_ID_COMMA_IdList", "IdList"},
-	[AST_IdList_is_ID] = {1, IdList, "AST_IdList_is_ID", "IdList"},
+	[AST_IdList_is_VarDec_COMMA_IdList] = {3, IdList, "AST_IdList_is_VarDec_COMMA_IdList", "IdList"},
+	[AST_IdList_is_VarDec] = {1, IdList, "AST_IdList_is_VarDec", "IdList"},
 	[AST_StructDec_is_STRUCT_ID_LC_StructDecVarList_RC] = {5, StructDec, "AST_StructDec_is_STRUCT_ID_LC_StructDecVarList_RC", "StructDec"},
 	[AST_StructDecVarList_is_StructDecVar_StructDecVarList] = {2, StructDecVarList, "AST_StructDecVarList_is_StructDecVar_StructDecVarList", "StructDecVarList"},
 	[AST_StructDecVarList_is_StructDecVar] = {1, StructDecVarList, "AST_StructDecVarList_is_StructDecVar", "StructDecVarList"},
@@ -21,7 +21,7 @@ static ReduceRules rules[] = {
 	[AST_FuncDec_is_ID_LP_FuncDefArgList_RP] = {4, FuncDec, "AST_FuncDec_is_ID_LP_FuncDefArgList_RP", "FuncDec"},
 	[AST_FuncDefArgList_is_FuncDefArg_COMMA_FuncDefArgList] = {3, FuncDefArgList, "AST_FuncDefArgList_is_FuncDefArg_COMMA_FuncDefArgList", "FuncDefArgList"},
 	[AST_FuncDefArgList_is_FuncDefArg] = {1, FuncDefArgList, "AST_FuncDefArgList_is_FuncDefArg", "FuncDefArgList"},
-	[AST_FuncDefArg_is_Specifier_ID] = {2, FuncDefArg, "AST_FuncDefArg_is_Specifier_ID", "FuncDefArg"},
+	[AST_FuncDefArg_is_Specifier_VarDec] = {2, FuncDefArg, "AST_FuncDefArg_is_Specifier_VarDec", "FuncDefArg"},
 	[AST_CompSt_is_LC_StmtList_RC] = {3, CompSt, "AST_CompSt_is_LC_StmtList_RC", "CompSt"},
 	[AST_StmtList_is_Stmt_StmtList] = {2, StmtList, "AST_StmtList_is_Stmt_StmtList", "StmtList"},
 	[AST_StmtList_is_Stmt] = {1, StmtList, "AST_StmtList_is_Stmt", "StmtList"},
@@ -308,6 +308,10 @@ void print_ast(Node *root)
 	if(root->sibling) pstack --;
 	print_ast(root->sibling);
 	call_depth --;
+}
+
+Node *find_node_by_rule(Node *root, int rule, int skip) {
+	return NULL;
 }
 
 int init_ast()

@@ -90,7 +90,8 @@ typedef struct tagNode {
 
 Spec *find_type_of_spec(struct tagNode *root);
 Spec *register_type_function(struct tagNode *root);
-Spec *register_type_complex_var(struct tagNode *root);
 Spec *register_type_struct(struct tagNode *root);
+Spec *register_type_complex_var(Node *root, char **varname);
+Spec *register_complex_var_with_type(Spec *type, Node *root, char **varname);
 
 #endif

@@ -82,8 +82,8 @@ Block:Specifier FuncDec CompSt {$$=build_subast(AST_Block_is_Specifier_FuncDec_C
 	 |VarDef {$$=build_subast(AST_Block_is_VarDef, &@$, $1);}
 ;
 
-IdList:ID COMMA IdList {$$=build_subast(AST_IdList_is_ID_COMMA_IdList, &@$, $1, $2, $3);}
-	  |ID {$$=build_subast(AST_IdList_is_ID, &@$, $1);}
+IdList:VarDec COMMA IdList {$$=build_subast(AST_IdList_is_VarDec_COMMA_IdList, &@$, $1, $2, $3);}
+	  |VarDec {$$=build_subast(AST_IdList_is_VarDec, &@$, $1);}
 ;
 
 /*only for Struct Spec*/
@@ -107,7 +107,7 @@ FuncDefArgList:FuncDefArg COMMA FuncDefArgList {$$=build_subast(AST_FuncDefArgLi
 	          |FuncDefArg {$$=build_subast(AST_FuncDefArgList_is_FuncDefArg, &@$, $1);}
 ;
 
-FuncDefArg:Specifier ID {$$=build_subast(AST_FuncDefArg_is_Specifier_ID, &@$, $1, $2);}
+FuncDefArg:Specifier VarDec {$$=build_subast(AST_FuncDefArg_is_Specifier_VarDec, &@$, $1, $2);}
 ;
 
 CompSt:LC StmtList RC {$$=build_subast(AST_CompSt_is_LC_StmtList_RC, &@$, $1, $2, $3);}

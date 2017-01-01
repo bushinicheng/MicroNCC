@@ -21,4 +21,6 @@ int yyerr(const char *, ...);
 int yyerror(const char *, ...);//called only by YACC
 int yylog(FILE *fp, const char *tag, const char *, ...);
 
+bool check_dupset(char *dupreason, void *set, size_t len, size_t nitsize, off_t off);
+
 #endif

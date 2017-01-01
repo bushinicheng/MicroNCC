@@ -9,13 +9,54 @@ typedef struct tagVarElement {
 } VarElement;
 
 static int asptr, actionlevel;
-VarElement actionscope[1024];
+VarElement actionscope[102400];//action scope of variable
 
-int check_duplication(char *varname) {
+
+
+/* IN[0]: char *
+ *   specify the output string, assume
+ *   duplicate element as given parameter
+ * IN[1]: void *
+ *   set of struct contains id
+ * IN[2]: size_t
+ *   the length of set
+ * IN[3]: size_t
+ *   size of a single element
+ * IN[4]: off_t
+ *   offset of id in a single element
+ * OUT[0]:bool
+ *   true if duplicate, else false
+ */
+bool check_dupset(char *dupformat, void *set, size_t len, size_t unitsize, off_t off) {
+	//assume ith id: ((char**)(set + i * unitsize + off))[0]
+	
+	for(int i = 0; i < len; i++) {
+		char *sa = ((char**)(set + i * unitsize + off))[0];
+		for(int j = 0; j < i; j++) {
+			char *sb = ((char**)(set + j * unitsize + off))[0];
+			if(strcmp(sa, sb) == 0) {
+				printf(dupformat, sa);
+				is_syntax_error = 1;
+			}
+		}
+	}
+
+	return true;
+}
+
+
+/* IN[0]:  char *
+ *   variable name
+ * OUT[0]: bool
+ *   true if duplicate, else false
+ * function:
+ *   check the duplication of current action scope
+ */
+bool find_duplication(char *varname) {
 	int i = asptr - 1;
 	while(i >= 0 && actionscope[i].varname != NULL) {
 		if(strcmp(varname, actionscope[i].varname) == 0)
-			return 1;
+			return true;
 		i --;
 	}
 
@@ -31,19 +72,34 @@ VarElement *find_variable(char *varname) {
 	return NULL;
 }
 
+
+/* function:
+ *   split the action scope
+ */
 void push_barrier() {
 	actionscope[asptr].varname = NULL;
 	actionscope[asptr].type = NULL;
 	actionlevel ++;
 }
 
+
+/*
+ * function:
+ *   register a variable in actionscope array
+ */
 void push_variable(char *varname, Spec *type) {
 	assert(varname != NULL && type != NULL);
-	check_duplication(varname);
+	find_duplication(varname);
 	actionscope[asptr].varname = varname;
 	actionscope[asptr].type = type;
+	asptr ++;
 }
 
+
+/*
+ * function:
+ *   clear current scope
+ */
 void pop_scope() {
 	if(asptr > 0) asptr --;
 	if(actionlevel > 0) actionlevel --;
@@ -62,8 +118,9 @@ int analyse_statement(Node *root) {
 
 int analyse_function(Node *root, Spec *functype) {
 	if(root == NULL) return 0;
-	push_barrier();
 	assert(root->reduce_rule = AST_Block_is_Specifier_FuncDec_CompSt);
+
+	push_barrier();
 }
 
 int analyse_vardef(Node *root) {
@@ -73,7 +130,7 @@ int analyse_vardef(Node *root) {
 	Node *declist = root->child->sibling;
 	while(1) {
 		Node *vardec = declist->child->child;
-		Spec *type = register_type_complex_var(vardec);
+		Spec *type = register_type_complex_var(vardec, NULL);
 		while(vardec->child->token != ID) {
 			if(vardec->reduce_rule == AST_VarDec_is_MULT_VarDec)
 				vardec = vardec->child->sibling;
