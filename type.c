@@ -20,6 +20,7 @@ size_t get_size_of_btype(int btype) {
 		case SpecTypeInt:      return 4;
 		case SpecTypeUnsigned: return 4;
 		case SpecTypeFloat:    return 4;
+		case SpecTypePointer:  return 4;
 	}
 
 	return 0;
@@ -57,7 +58,18 @@ Spec *find_type_of_spec(Node *root) {
 	return NULL;
 }
 
-/* root=>FuncDec
+
+
+
+/* IN[0]:struct tagNode *
+ *   a pointer point to ast node
+ *   STRICT: root->token == FuncDec
+ * function:
+ *   register the type of function, including type of arguments
+ *   and type of return value
+ *
+ *
+ * root=>FuncDec
  *
  * Block:Specifier FuncDec CompSt
  *
@@ -74,6 +86,7 @@ Spec *find_type_of_spec(Node *root) {
  * */
 Spec *register_type_function(Node *root) {
 	Spec *newspec = &specpool[specptr++];
+	assert(root->token == FuncDec);
 	newspec->btype = SpecTypeFunc;
 	newspec->width = 0;
 	newspec->type.func.ret = find_type_of_spec(root->parent->child);
@@ -104,7 +117,17 @@ Spec *register_type_function(Node *root) {
 	return newspec;
 }
 
-/* root=>VarDec
+
+
+
+/* IN[0]:struct tagNode *
+ *   a pointer point to ast node
+ *   STRICT: root->token == VarDec
+ * function:
+ *   register the type of target array or pointer variable
+ *
+ *
+ * root=>VarDec
  *       and VarDec !=> ID
  *
  * VarDef: Specifier DecList SEMI;
@@ -122,7 +145,7 @@ Spec *register_type_function(Node *root) {
 Spec *register_type_complex_var(Node *root) {
 	Spec *newspec = &specpool[specptr++];
 	newspec->btype = SpecTypeArray;
-	newspec->width = 4;//just init
+	newspec->width = 1;
 	assert(root->token == VarDec);
 	Node *vardef = root;
 	while(vardef->reduce_rule != AST_VarDef_is_Specifier_DecList_SEMI) {
@@ -147,12 +170,26 @@ Spec *register_type_complex_var(Node *root) {
 		root = root->child;
 	}
 
+	if(newspec->plevel == 0)//pure array
+		newspec->width = newspec->type.array.spec->width * newspec->width;
+	else//pointer array
+		newspec->width = newspec->type.array.spec->width * get_size_of_btype(SpecTypePointer);
+
 	require_memory(sizeof(size_t) * newspec->type.array.size);
 
 	return newspec;
 }
 
-/* root=>StructDec
+
+
+/* IN[0]:struct tagNode *
+ *   a pointer point to ast node
+ *   STRICT: root->token == StructDec
+ * function:
+ *   register the struct type
+ *
+ *
+ * root=>StructDec
  *
  * Block:StructDec IdList SEMI
  *
@@ -199,13 +236,18 @@ Spec *register_type_struct(Node *root) {
 		Node *idlist = dvl->child->child->sibling;
 		if(type_node->token == Specifier)
 			cur_type = find_type_of_spec(type_node);
-		else
+		else {
 			cur_type = register_type_struct(type_node);
+			cur_type->aslevel = newspec->aslevel + 1;
+		}
 
 		while(1) {
+			//TODO:round the size of width to 4
 			newspec->type.struc.varlist[newspec->type.struc.size].spec = cur_type;
-			newspec->type.struc.varlist[newspec->type.struc.size].var_name = idlist->child->supval.st;
+			newspec->type.struc.varlist[newspec->type.struc.size].varname = idlist->child->supval.st;
+			newspec->type.struc.varlist[newspec->type.struc.size].offset = newspec->width;
 			newspec->type.struc.size ++;
+			newspec->width += cur_type->width;
 
 			if(!idlist->child->sibling) break;
 			else idlist = idlist->child->sibling->sibling;
@@ -219,6 +261,14 @@ Spec *register_type_struct(Node *root) {
 	return newspec;
 }
 
+
+
+/* IN[0]:struct tagSpec *
+ *   the type pointer to specpool
+ * function:
+ *   dumps the spec structure
+ *   for debugging
+ */
 void print_spec(Spec *type) {
 	static int indent = 0;
 	switch(type->btype) {
@@ -233,14 +283,14 @@ void print_spec(Spec *type) {
 		int i;
 		for(int j = 0; j < indent - 2; j++)
 			printf(" ");
-		printf("struct %s {\n", type->type.struc.struc_name);
+		printf("struct %s:%d {\n", type->type.struc.struc_name, type->aslevel);
 		Spec *old_spec = type->type.struc.varlist[0].spec;
 		for(int j = 0; j < indent + 2; j++)
 			printf(" ");
 		indent += 2;
 		print_spec(type->type.struc.varlist[0].spec);
 		indent -= 2;
-		printf("%s", type->type.struc.varlist[0].var_name);
+		printf("%s(%d)", type->type.struc.varlist[0].varname, type->type.struc.varlist[0].offset);
 		for(i = 1; i < type->type.struc.size; i++) {
 			if(old_spec != type->type.struc.varlist[i].spec) {
 				printf(";\n");
@@ -249,10 +299,10 @@ void print_spec(Spec *type) {
 				indent += 2;
 				print_spec(type->type.struc.varlist[i].spec);
 				indent -= 2;
-				printf("%s", type->type.struc.varlist[i].var_name);
+				printf("%s(%d)", type->type.struc.varlist[i].varname, type->type.struc.varlist[i].offset);
 			}
 			else
-				printf(", %s", type->type.struc.varlist[i].var_name);
+				printf(", %s(%d)", type->type.struc.varlist[i].varname, type->type.struc.varlist[i].offset);
 			old_spec = type->type.struc.varlist[i].spec;
 		}
 
@@ -299,6 +349,7 @@ void init_spec() {
 	btype_register(SpecTypeInt,      4);
 	btype_register(SpecTypeUnsigned, 4);
 	btype_register(SpecTypeFloat,    4);
+	btype_register(SpecTypePointer,  4);
 
 #ifdef __DEBUG__
 	STATE_TEST_START;
@@ -331,7 +382,7 @@ void init_spec() {
 		UNIT_TEST_FAIL;
 	}
 
-	/*******testcase 2 int func(int a, char b, int c)********/
+	/********testcase 2 int func(int a, char b, int c)********/
 	extern Node *astroot;
 	void yy_scan_string(char *);
 	yy_scan_string("int func(int a, char b, int c){return 0;}");
@@ -349,7 +400,7 @@ void init_spec() {
 		UNIT_TEST_FAIL;
 	}
 
-	/******testcase 3*********/
+	/******testcase 3 int main(){int x,**a[12][34][56];}******/
 	yy_scan_string("int main(){int x,**a[12][34][56];}");
 	yyparse();
 	retspec = register_type_complex_var(astroot->child->child->child->sibling->sibling->child->sibling->child->child->child->sibling->child->sibling->sibling->child->child);
@@ -363,6 +414,12 @@ void init_spec() {
 		logd("test failed at #03.\n");
 		UNIT_TEST_FAIL;
 	}
+
+	/****************testcase 4(hard to check)****************/
+	yy_scan_string("struct A {int a, b, c;struct B {int x, y;float z;} d, e, f;struct C {float _89;struct nested_in_C {int na, nb;float nc;} p_p;} xx;float oatt;} ;int *****array[123][12][4564][678];int init = 0;int main(struct A x) {int a[10][123][345][657];return 0;}");
+	yyparse();
+	retspec = register_type_struct(astroot->child->child->child);
+	//print_spec(retspec);//checked by human
 
 	UNIT_TEST_END;
 	

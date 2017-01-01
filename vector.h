@@ -4,7 +4,7 @@
 #include <malloc.h>
 
 /* WARNING:
- * 1. the vector_init macro is'nt atmoic, 
+ * 1. the vector_init macro isn't atmoic, 
  *    don't use it as a single statement.
  * 2. the action scope is binded to inputed varible p,
  *    any copy of p is invalid.

@@ -9,7 +9,8 @@ enum {
 	SpecTypeInt,
 	SpecTypeUnsigned,
 	SpecTypeFloat,
-	//the above is no need to spec
+	SpecTypePointer,
+	//the above must be registered firstly
 	SpecTypeStruct,
 	SpecTypeUnion,
 	SpecTypeFunc,
@@ -26,7 +27,9 @@ typedef struct tagSinArg {
 typedef struct tagSpec {
 	int btype;
 	int width;
-	int plevel;//default to be zero
+	int plevel;//pointer level, default to be zero(not pointer)
+	bool aslevel;//default to be zero
+			//0 for global declaration, 1 for local decalration
 	union {
 		struct {
 			struct tagSpec *ret;
@@ -36,14 +39,15 @@ typedef struct tagSpec {
 
 		struct {
 			struct tagSpec *spec;//actual spec,such as `struct A`
-			size_t *dim;
-			size_t size;//dimension
+			size_t *dim;//dimension array:a[2][3][4]=>[2,3,4]
+			size_t size;//length of(dim)
 		} array;//for array
 
 		struct {
 			char *struc_name;
 			struct {
-				char *var_name;
+				char *varname;
+				off_t offset;//offset of current var in struct
 				struct tagSpec *spec;
 			} *varlist;
 			size_t size;
@@ -75,8 +79,8 @@ typedef struct tagNode {
 	int suptype;//such as INT for TYPE or float for NUM
 	union {
 		int i;float f;double llf;void *p;
-		char* st;//may be the address of string or id
-		uintptr_t da;//may be structure or function
+		char* st;// the address of string or id
+		uintptr_t da;//dest addr of structure or function
 	} supval;
 
 	/* for debugging */

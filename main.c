@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
 	while(yylex()>0);
 #else
 
-	logd("parse arguments={%d, %s}.\n", argc, dumps_argv(argc, argv));
+	logd("parse arguments={%d, %s}.\n", argc - 1, dumps_argv(argc, argv));
 	for(int i = 1; i < argc; i++)
 	{
 		if(strcmp(argv[i], "--print-ast") == 0)

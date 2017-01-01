@@ -14,19 +14,21 @@
 #include <stdarg.h>
 #include <malloc.h>
 
+/*since bool isn't valid datatype in c*/
+/*define some basic type*/
+typedef unsigned off_t;
+typedef unsigned char bool;
+
+#define true 1
+#define false 0
+
+/*other header files*/
 #include "error.h"
 #include "debug.h"
 #include "vector.h"
 #include "node.h"
 #include "syntax.h"
 #include "ast.h"
-
-/*since bool isn't valid datatype in c*/
-
-typedef unsigned char bool;
-
-#define true 1
-#define false 0
 
 void *get_memory_pointer();
 void require_memory(size_t size);

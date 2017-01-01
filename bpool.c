@@ -1,6 +1,7 @@
 #include "common.h"
 
 /* memory can be alloced without size
+ * act like variable-length array
  */
 
 #define POOL_SIZE (16*1024*1024)

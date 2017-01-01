@@ -18,7 +18,7 @@ enum ErrorType {
 
 int yydebug(int, int, int, enum ErrorType);
 int yyerr(const char *, ...);
-int yyerror(const char *, ...);
+int yyerror(const char *, ...);//called only by YACC
 int yylog(FILE *fp, const char *tag, const char *, ...);
 
 #endif

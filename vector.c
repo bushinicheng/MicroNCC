@@ -38,7 +38,7 @@ int init_vector()
 	}
 
 	UNIT_TEST_ASSERT(pans == vector_size(pvt), \
-			"\ntest failed: conflicting vector size..");
+			"\ntest failed: inconsistent vector size..");
 
 	vector_free(pvt);
 
