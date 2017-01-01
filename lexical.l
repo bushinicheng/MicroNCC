@@ -304,7 +304,7 @@ int init_component()
 {
 #ifdef __DEBUG__
 	/* unit test of register_string */
-	logd("[unit test]func:%s, line:%d...", __func__, __LINE__);
+	UNIT_TEST_START;
 	const char *ss[] = {
 		"\"Hello World!\"",
 		"\"prefix\"\"\\n\\r\\t\\\\suffix\"",
@@ -322,24 +322,14 @@ int init_component()
 		"Hello World!"
 	};
 
-	bool pass = true;
 	int test_len = sizeof(ss)/sizeof(ss[0]);
 	for(int i = 0; i < test_len; i++)
 	{
 		char* p = register_string(ss[i]);
-		if(strcmp(p, ans[i]) != 0)
-		{
-			loge("\ntest failed at case #%d.", i);
-			loge("\nshould be '%s' but got '%s'", ans[i], p);
-			pass = false;
-			break;
-		}
+		UNIT_TEST_ASSERT(strcmp(p, ans[i]) == 0, "\nfail at case #%d, should be '%s' but got '%s'\n", i, ans[i], p);
 	}
 
-	if(pass)
-		logG("PASS\n");
-	else
-		logd("\n");
+	UNIT_TEST_END;
 #endif
 	return 0;
 }

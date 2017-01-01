@@ -18,6 +18,19 @@ bool is_print_ast = false;
 bool is_print_reduce_step = false;
 bool is_file = false;
 
+char *dumps_argv(int argc, char *argv[]) {
+	static char ret[1024];
+	ret[0] = '[';
+	for(int i = 1; i < argc; i++) {
+		strcat(ret, "\"");
+		strcat(ret, argv[i]);
+		strcat(ret, "\"");
+		if(i != argc - 1)
+			strcat(ret, ",");
+	}
+	strcat(ret, "]");
+}
+
 int main(int argc, char *argv[])
 {
 	init_ast();
@@ -28,11 +41,11 @@ int main(int argc, char *argv[])
 	FILE *fp = NULL;
 
 #ifdef __DEBUG_LEX__
-	logd("[LOG]: enter debug mode, while(yylex())\n");
+	logd("enter debug mode, while(yylex()>0)\n");
 	while(yylex()>0);
 #else
 
-	logd("[LOG]: parse arguments.\n");
+	logd("parse arguments={%d, %s}.\n", argc, dumps_argv(argc, argv));
 	for(int i = 1; i < argc; i++)
 	{
 		if(strcmp(argv[i], "--print-ast") == 0)
@@ -54,12 +67,12 @@ int main(int argc, char *argv[])
 #if YYDEBUG == 1
 	yydebug = 1;
 #endif
-	logd("[LOG]: call yyparse.\n");
+	logd("call yyparse().\n");
 	yyparse();
-	logd("[LOG]: call print_ast.\n");
+	logd("call print_ast(astroot), is_print_ast=%d.\n", is_print_ast);
 	if(is_print_ast) print_ast(astroot);
 	if(fp) fclose(fp);
 #endif
-	logd("[LOG]: normal exit.\n");
+	logd("normal exit.\n");
     return 0;
 }

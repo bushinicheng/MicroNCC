@@ -153,6 +153,7 @@ static char* str_lexval[] = {
 int curlineno;
 static Node ndpool[MAX_SIZE];
 Node *astroot = NULL;
+static int ndpool_ptr;
 
 extern bool is_print_reduce_step;
 
@@ -193,7 +194,6 @@ void __attribute__((noinline)) make_node(Node *root, int reduce_rule, int token,
 
 Node* new_node()
 {
-	static int ndpool_ptr = -1;
 	assert(ndpool_ptr < MAX_SIZE);
 	ndpool_ptr ++;
 	return &ndpool[ndpool_ptr];
@@ -211,7 +211,7 @@ Node* new_sym_node(int lexval, YYLTYPE *yyinfo)
 Node* __attribute__((noinline)) build_subast(int nodetype, YYLTYPE *yyinfo, ...)
 {
 	if(is_print_reduce_step)
-		logd("%s\n", rules[nodetype].str_rule);
+		printf("%s\n", rules[nodetype].str_rule);
 
 	va_list vlist;
 	va_start(vlist, yyinfo);
@@ -248,118 +248,100 @@ void print_ast(Node *root)
 	if(root == NULL)
 		return;
 
-	static int *stack;
-	static int space = 0;
-	vector_init(int, stack);
+	static int call_depth = 0;
+	static int *stack = NULL;
+	static int space = 0, pstack = 0;
+
+	if(call_depth == 0)
+		stack = get_memory_pointer();
+
+	//inc call_depth
+	call_depth ++;
 
 	/* print leading space */
 	int j = 0;
 	for(int i = 0; i < 3*space-3; i++)
 	{
-		int size = vector_size(stack);
+		int size = pstack;
 		if(size > 0 && j<size && i==3*stack[j])
 		{
-			logd("|");
+			printf("|");
 			j ++;
 		}
-		else logd(" ");
+		else printf(" ");
 	}
-	if(space > 0) logd("+--");
+	if(space > 0) printf("+--");
 
 	/* print semanval or lexval */
 	if(root->token == ID)
-		logd("%s:%s\n", str_lexval[root->token], root->supval.st);
+		printf("%s:%s\n", str_lexval[root->token], root->supval.st);
 	else if(root->token == NUM) {
 		switch(root->suptype) {
 		case 'i':
-			logd("NUM:%d\n", root->supval.i);
+			printf("NUM:%d\n", root->supval.i);
 			break;
 		case 'o':
-			logd("NUM:0%o\n", root->supval.i);
+			printf("NUM:0%o\n", root->supval.i);
 			break;
 		case 'x':
-			logd("NUM:0x%x\n", root->supval.i);
+			printf("NUM:0x%x\n", root->supval.i);
 			break;
 		case 'f':
-			logd("NUM:%f\n", root->supval.f);
+			printf("NUM:%f\n", root->supval.f);
 			break;
 		default:
-			logd("NUM:0\n");
+			printf("NUM:0\n");
 			break;
 		}
 	}
 	else if(root->token == TYPE)
-		logd("TYPE:%s\n", str_lexval[root->suptype]);
+		printf("TYPE:%s\n", str_lexval[root->suptype]);
 	else
-		logd("%s\n", str_lexval[root->token]);
+		printf("%s\n", str_lexval[root->token]);
 
 
 	/* recursively print ast */
 	space ++;
-	if(root->sibling) vector_push(stack, space-2);
+	if(root->sibling) stack[pstack++] = space-2;
 	print_ast(root->child);
 	space --;
-	if(root->sibling) vector_pop(stack);
+	if(root->sibling) pstack --;
 	print_ast(root->sibling);
-
-	if(space == 0)
-		vector_free(stack);
+	call_depth --;
 }
 
 int init_ast()
 {
+	astroot = NULL;
+	ndpool_ptr = -1;
 #ifdef __DEBUG__
-	bool pass = true;
-	logd("[unit test]func:%s, line:%d...", __func__, __LINE__);
-	for(int i = 0;pass && i < sizeof(rules)/sizeof(rules[0]); i++)
+	STATE_TEST_START;
+	for(int i = 0;i < sizeof(rules)/sizeof(rules[0]); i++)
 	{
-		if(rules[i].nr_child < 0 || rules[i].str_rule == NULL || rules[i].str_root == NULL)
-		{
-			loge("\ntest failed at #%d of array rules.", i);
-			pass = false;
-			break;
-		}
+		STATE_TEST_AVOID(rules[i].nr_child < 0 || rules[i].str_rule == NULL || rules[i].str_root == NULL);
 		
 		const char *ptr = rules[i].str_rule;
 		while(*ptr) {
-			if( !( ('a'<= *ptr && *ptr<='z')
+			STATE_TEST_AVOID( !( ('a'<= *ptr && *ptr<='z')
 				||('A'<= *ptr && *ptr<='Z')
 				||('0'<= *ptr && *ptr<='9') 
 				||('_' == *ptr) )
-				)
-			{
-				loge("\ntest failed at #%d of array rules.", i);
-				pass = false;
-				break;
-			}
+					);
 			ptr++;
 		}
 
 		ptr = rules[i].str_root;
 		while(*ptr) {
-			if( !( ('a'<= *ptr && *ptr<='z')
+			STATE_TEST_AVOID( !( ('a'<= *ptr && *ptr<='z')
 				||('A'<= *ptr && *ptr<='Z')
 				||('0'<= *ptr && *ptr<='9') 
 				||('_' == *ptr) )
-				)
-			{
-				loge("\ntest failed at #%d of array rules.", i);
-				pass = false;
-				break;
-			}
+				);
 			ptr++;
 		}
 	}
 
-	if(pass)
-		logG("PASS\n");
-	else
-		logd("\n");
+	STATE_TEST_END;
 #endif
 	return 0;
-}
-
-Node *get_child(Node *par, int semanval)
-{
-	return NULL;
 }

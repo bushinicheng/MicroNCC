@@ -10,10 +10,9 @@ int init_vector()
 {
 #ifdef __DEBUG__
 	srand(time(NULL));
-	bool pass = true;
+	UNIT_TEST_START;
 	const int test_size = 5000;
 	int ans[test_size], pans = 0;
-	logd("[unit test]func:%s, line:%d...", __func__, __LINE__);
 	VectorTest *pvt, vt;
 	vector_init(VectorTest, pvt);
 	for(int i = 0; i < test_size; i++)
@@ -34,24 +33,16 @@ int init_vector()
 	/*test push operation*/
 	for(int i = 0; i < pans; i++)
 	{
-		if(pvt[i].num != ans[i])
-		{
-			logd("\ntest failed at case #%d.", i);
-			loge("\nshould be '%d' but got '%d'", ans[i], pvt[i].num);
-			pass = false;
-			break;
-		}
+		UNIT_TEST_ASSERT((pvt[i].num == ans[i]), \
+			"\nfail at case #%d, should be '%d' but got '%d'", i, ans[i], pvt[i].num);
 	}
 
-	if(pans != vector_size(pvt))
-		logd("\ntest failed: conflicting vector size..");
+	UNIT_TEST_ASSERT(pans == vector_size(pvt), \
+			"\ntest failed: conflicting vector size..");
 
 	vector_free(pvt);
 
-	if(pass)
-		logG("PASS\n");
-	else
-		logd("\n");
+	UNIT_TEST_END;
 
 #endif
 	return 0;

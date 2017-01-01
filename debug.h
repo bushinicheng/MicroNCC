@@ -34,31 +34,84 @@ int __attribute__((noinline)) set_break();
 	yylog(stderr, "\033[" YYLOG_STYLE_NORMAL ";" YYLOG_COLOR_BLUE "m", __VA_ARGS__)
 
 #define logi(...) \
-	yylog(stderr, "\033[" YYLOG_STYLE_NORMAL ";" YYLOG_COLOR_WHITE "m", __VA_ARGS__)
+	yylog(stderr, "\033[" YYLOG_STYLE_NORMAL ";" YYLOG_COLOR_NORMAL "m", __VA_ARGS__)
 
 //#ifdef __DEBUG__
 #define logd(...) \
-	yylog(stderr, "\033[0m", __VA_ARGS__)
+	yylog(stderr, "\033[0m[LOG] ", __VA_ARGS__)
 //#else
 //#define logd(...) do{}while(0)
 //#endif
 
 #define logG(...) \
-	yylog(stderr, "\033[" YYLOG_STYLE_NORMAL ";" YYLOG_COLOR_GREEN "m", __VA_ARGS__)
+	fprintf(stderr, "\033[" YYLOG_STYLE_NORMAL ";" YYLOG_COLOR_GREEN "m"); \
+	fprintf(stderr, __VA_ARGS__); \
+	fprintf(stderr, "\033[0m");
 
-#define STATE_TEST_START \
-	bool __state_test_pass__ = true; \
-	logd("[state test]func:%s, line:%d...", __func__, __LINE__);
 
-#define STATE_TEST_EQUAL(a, b) \
-	if((a) != (b)) {\
+
+#define __TEST_START__(info)\
+	logi("[%-5s test]func:%s, line:%d...", #info, __func__, __LINE__);
+
+#define __TEST_AVOID__(info, cond) \
+	if(cond) {\
 		logd("test failed at line #%d\n", __LINE__); \
-		__state_test_pass__ = false;\
-		goto __state_test_end__;\
+		goto __##info##_test_fail__;\
 	}
 
+#define __TEST_EQUAL__(info, a, b) \
+	if((a) != (b)) {\
+		logd("test failed at line #%d\n", __LINE__); \
+		goto __##info##_test_fail__;\
+	}
+
+#define __TEST_FAIL__(info) \
+	goto __##info##_test_fail__;\
+
+#define __TEST_ASSERT__(info, cond, ...) \
+	if(!(cond)) { \
+		logd(__VA_ARGS__); \
+		goto __##info##_test_fail__;\
+	}
+
+#define __TEST_END__(info) \
+__##info##_test_end__: \
+	logG("PASS"); \
+__##info##_test_fail__: \
+	logG("\n");
+
+
+#define STATE_TEST_START \
+	__TEST_START__(state);
+
+#define STATE_TEST_AVOID(cond) \
+	__TEST_AVOID__(state, cond);
+
+#define STATE_TEST_EQUAL(a, b) \
+	__TEST_EQUAL__(state, a, b);
+
 #define STATE_TEST_END \
-__state_test_end__: \
-	if(__state_test_pass__) logG("PASS\n");
+	__TEST_END__(state);
+
+
+
+#define UNIT_TEST_START \
+	__TEST_START__(unit);
+
+#define UNIT_TEST_AVOID(cond) \
+	__TEST_AVOID__(unit, cond);
+
+#define UNIT_TEST_ASSERT(cond, ...) \
+	__TEST_ASSERT__(unit, cond, __VA_ARGS__);
+
+#define UNIT_TEST_EQUAL(a, b) \
+	__TEST_EQUAL__(unit, a, b);
+
+#define UNIT_TEST_FAIL \
+	__TEST_FAIL__(unit);
+
+#define UNIT_TEST_END \
+	__TEST_END__(unit);
+
 
 #endif

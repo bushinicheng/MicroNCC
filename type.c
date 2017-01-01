@@ -1,5 +1,4 @@
 #include "common.h"
-#include "type.h"
 #include <memory.h>
 
 //firstly need a pool for memory alloc
@@ -287,6 +286,7 @@ void print_spec(Spec *type) {
 }
 
 void init_spec() {
+	specptr = 0;
 #define btype_register(b, w) do {\
 	specpool[specptr].btype = b;\
 	specpool[specptr].width = w;\
@@ -307,11 +307,11 @@ void init_spec() {
 	}
 	STATE_TEST_END;
 
+	UNIT_TEST_START;
 	/*unit test start*/
 	uintptr_t utptr = 0;
 	Node utpool[1024];
 	Spec *retspec;
-	logd("[unit test]func:%s, line:%d...", __func__, __LINE__);
 	/***********testcase 1 int func()*************/
 	utpool[0].supval.st = "func";
 	make_node(&utpool[0], AST_NONTERMINALBEGIN, ID);
@@ -328,7 +328,7 @@ void init_spec() {
 	|| retspec->type.func.arglist != NULL
 	|| retspec->type.func.ret->btype != SpecTypeInt) {
 		logd("test failed at #01.\n");
-		goto __unit_test_fail__;
+		UNIT_TEST_FAIL;
 	}
 
 	/*******testcase 2 int func(int a, char b, int c)********/
@@ -346,10 +346,10 @@ void init_spec() {
 	|| strcmp(retspec->type.func.arglist[2].varname, "c") != 0
 	|| retspec->type.func.ret->btype != SpecTypeInt) {
 		logd("test failed at #02.\n");
-		goto __unit_test_fail__;
+		UNIT_TEST_FAIL;
 	}
 
-	/******testcase 3 (unable to check)*********/
+	/******testcase 3*********/
 	yy_scan_string("int main(){int x,**a[12][34][56];}");
 	yyparse();
 	retspec = register_type_complex_var(astroot->child->child->child->sibling->sibling->child->sibling->child->child->child->sibling->child->sibling->sibling->child->child);
@@ -361,11 +361,10 @@ void init_spec() {
 	|| retspec->type.array.dim[2] != 12
 	|| retspec->type.array.spec->btype != SpecTypeInt) {
 		logd("test failed at #03.\n");
-		goto __unit_test_fail__;
+		UNIT_TEST_FAIL;
 	}
 
-	logG("PASS\n");
-__unit_test_fail__:
+	UNIT_TEST_END;
 	
 #endif
 	return;
