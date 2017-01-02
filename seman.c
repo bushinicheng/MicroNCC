@@ -375,7 +375,7 @@ int analyse_expression(Node *root) {
 		case AST_Exp_is_Exp_DIV_Exp:
 		case AST_Exp_is_Exp_BITAND_Exp:
 		case AST_Exp_is_Exp_BITOR_Exp:
-			//SpecTypeVoid, SpecTypeBool, SpecTypeInt,
+			//SpecType, SpecTypeBool, SpecTypeInt,
 			//SpecTypeUnsigned, SpecTypeFloat, SpecTypePointer,
 			//'i', 'p', 's' is OK
 			exp = get_child_node_w(root, Exp);
