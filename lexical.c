@@ -2292,6 +2292,7 @@ static int reg(int syntaxval)
 		pnd->idtype->type.cons.supval.st = register_id(yytext);
 		break;
 	case STRING:
+		pnd->idtype->type.cons.suptype = 's';
 		pnd->idtype->type.cons.supval.st = register_string(yytext);
 		break;
 	}

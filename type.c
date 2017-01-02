@@ -118,10 +118,16 @@ Spec *copy_type(Spec *s) {
 	return t;
 }
 
+
 char *type_format(Spec *type) {
+	//haven't been test
 	if(!type) return NULL;
 	switch(type->btype) {
-		case SpecTypeConst:    return "constant";
+		case SpecTypeConst: 
+			if(type->type.cons.suptype == 's')
+				return "string";
+			else
+				return "constant";
 		case SpecTypeVoid:     return "void";
 		case SpecTypeChar:     return "char";
 		case SpecTypeInt:      return "int";
@@ -129,9 +135,30 @@ char *type_format(Spec *type) {
 		case SpecTypeFloat:    return "float";
 		case SpecTypePointer:  return "pointer";
 		case SpecTypeStruct:   return sformat("struct %s", type->type.struc.struc_name);
-		case SpecTypeFunc:     assert(0);
-		case SpecTypeArray:    assert(0);
 	}
+
+	if(type->btype == SpecTypeFunc)	{
+		char **args_str = (char **)get_memory_pointer();
+		require_memory(type->type.func.argv * sizeof(char *));
+		char *ret_str = type_format(type->type.func.ret);
+		for(int i = type->type.func.argv - 1; i >= 0; i++) {
+			args_str[i] = type_format(type->type.func.arglist[i].type);
+		}
+		return sformat("%s (%s)", ret_str, strjoin(args_str, type->type.func.argv, ", "));
+	} else if(type->btype == SpecTypeComplex) {
+		char *rawtype_str = type_format(type->type.comp.spec);
+		char *star_str = strmul("*", type->type.comp.plevel);
+
+		int arr_size = 0;
+		char *arr_str = (char *)get_memory_pointer();
+		char *p = arr_str;
+		for(int i = 0; i < type->type.comp.size; i++) {
+			arr_size += sprintf(&p[arr_size], "[%lu]", type->type.comp.dim[i]);
+		}
+		require_memory(arr_size + 1);
+		return sformat("%s %s%s", rawtype_str, star_str, arr_str);
+	}
+
 	return NULL;
 }
 
@@ -279,7 +306,7 @@ Spec *register_complex_var_with_type(Spec *type, Node *root, char **varname) {
 	assert(root->token == VarDec);
 	Spec *newspec = new_spec();
 	newspec->type.comp.plevel = 0;
-	newspec->btype = SpecTypeArray;
+	newspec->btype = SpecTypeComplex;
 	newspec->width = 1;
 	Node *vardef = root;
 	newspec->type.comp.spec = type;
@@ -317,7 +344,6 @@ Spec *register_complex_var_with_type(Spec *type, Node *root, char **varname) {
 	}else{//pointer array
 		newspec->width = newspec->width * get_size_of_btype(SpecTypePointer);
 	}
-
 
 	return newspec;
 }
@@ -553,7 +579,6 @@ void init_spec() {
 		btype_register(SpecTypeInt,      4); \
 		btype_register(SpecTypeUnsigned, 4); \
 		btype_register(SpecTypeFloat,    4); \
-		btype_register(SpecTypePointer,  4); \
 	} while(0)
 
 #ifdef __DEBUG__
@@ -585,9 +610,9 @@ void init_spec() {
 	UNIT_TEST_EQUAL(retspec->type.func.arglist[0].type->btype, SpecTypeInt);
 	UNIT_TEST_EQUAL(retspec->type.func.arglist[1].type->btype, SpecTypeChar);
 	UNIT_TEST_EQUAL(retspec->type.func.arglist[2].type->btype, SpecTypeInt);
-	UNIT_TEST_EQUAL(strcmp(retspec->type.func.arglist[0].varname, "a"), 0);
-	UNIT_TEST_EQUAL(strcmp(retspec->type.func.arglist[1].varname, "b"), 0);
-	UNIT_TEST_EQUAL(strcmp(retspec->type.func.arglist[2].varname, "c"), 0);
+	UNIT_TEST_STR_EQUAL(retspec->type.func.arglist[0].varname, "a");
+	UNIT_TEST_STR_EQUAL(retspec->type.func.arglist[1].varname, "b");
+	UNIT_TEST_STR_EQUAL(retspec->type.func.arglist[2].varname, "c");
 	UNIT_TEST_EQUAL(retspec->type.func.ret->btype, SpecTypeInt);
 
 
@@ -596,7 +621,9 @@ void init_spec() {
 	yy_scan_string("int main(){int **a[12][34][56];}");
 	yyparse();
 	retspec = register_type_complex_var(find_child_node(astroot, VarDec), NULL);
-	UNIT_TEST_EQUAL(retspec->btype, SpecTypeArray);
+	logw("%s\n", type_format(retspec));
+	UNIT_TEST_STR_EQUAL(type_format(retspec), "int **[12][34][56]");
+	UNIT_TEST_EQUAL(retspec->btype, SpecTypeComplex);
 	UNIT_TEST_EQUAL(retspec->type.comp.plevel, 2);
 	UNIT_TEST_EQUAL(retspec->type.comp.size, 3);
 	UNIT_TEST_EQUAL(retspec->type.comp.dim[0], 56);
@@ -627,19 +654,20 @@ void init_spec() {
 	yyparse();
 	register_type_struct(find_child_node(astroot, StructDec));
 	retspec = register_type_function(find_child_node(astroot, FuncDec));
+	UNIT_TEST_STR_EQUAL(type_format(retspec), "int (struct A *[45][78], struct A)");
 	UNIT_TEST_EQUAL(retspec->type.func.argv, 2);
 	UNIT_TEST_EQUAL(retspec->type.func.ret->btype, SpecTypeInt);
-	UNIT_TEST_EQUAL(retspec->type.func.arglist[0].type->btype, SpecTypeArray);
+	UNIT_TEST_EQUAL(retspec->type.func.arglist[0].type->btype, SpecTypeComplex);
 	UNIT_TEST_EQUAL(retspec->type.func.arglist[0].type->type.comp.plevel, 1);
 	UNIT_TEST_EQUAL(retspec->type.func.arglist[0].type->width, (get_size_of_btype(SpecTypePointer) * 45 * 78));
 	UNIT_TEST_EQUAL(retspec->type.func.arglist[1].type->btype, SpecTypeStruct);
-	UNIT_TEST_EQUAL(strcmp(retspec->type.func.arglist[1].type->type.struc.struc_name, "A"), 0);
+	UNIT_TEST_STR_EQUAL(retspec->type.func.arglist[1].type->type.struc.struc_name, "A");
 	UNIT_TEST_EQUAL(retspec->type.func.arglist[1].type->type.struc.size, 1);
-	UNIT_TEST_EQUAL(strcmp(retspec->type.func.arglist[1].type->type.struc.varlist[0].varname, "a"), 0);
+	UNIT_TEST_STR_EQUAL(retspec->type.func.arglist[1].type->type.struc.varlist[0].varname, "a");
 	UNIT_TEST_EQUAL(retspec->type.func.arglist[1].type->type.struc.varlist[0].offset, 0);
 	UNIT_TEST_EQUAL(retspec->type.func.arglist[1].type->type.struc.varlist[0].spec->btype, SpecTypeInt);
-	UNIT_TEST_EQUAL(strcmp(retspec->type.func.arglist[0].varname, "a"), 0);
-	UNIT_TEST_EQUAL(strcmp(retspec->type.func.arglist[1].varname, "b"), 0);
+	UNIT_TEST_STR_EQUAL(retspec->type.func.arglist[0].varname, "a");
+	UNIT_TEST_STR_EQUAL(retspec->type.func.arglist[1].varname, "b");
 	UNIT_TEST_EQUAL(retspec->type.func.ret->btype, SpecTypeInt);
 
 
@@ -652,6 +680,7 @@ void init_spec() {
 	//print_spec(retspec);//checked by human
 
 	UNIT_TEST_END;
+
 
 	STATE_TEST_START;
 	STATE_RESET;

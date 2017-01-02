@@ -33,5 +33,7 @@ typedef unsigned char bool;
 
 void *get_memory_pointer();
 void require_memory(size_t size);
+char *strjoin(char **strlist, int size, char *delim);
+char *strmul(char *str, int dup);
 
 #endif

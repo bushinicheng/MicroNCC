@@ -10,13 +10,13 @@ enum {
 	SpecTypeInt,
 	SpecTypeUnsigned,
 	SpecTypeFloat,
+	//the above must be registered firstly
+	SpecTypeArray,
 	SpecTypePointer,
 	SpecTypeComplex,
-	//the above must be registered firstly
 	SpecTypeStruct,
 	SpecTypeUnion,
 	SpecTypeFunc,
-	SpecTypeArray
 };
 
 struct tagSpec;

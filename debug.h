@@ -49,15 +49,17 @@ char *sformat(const char *format, ...);
 //#define logd(...) do{}while(0)
 //#endif
 
-#define logG(...) \
+#define logG(...) do { \
 	fprintf(stderr, "\033[" YYLOG_STYLE_NORMAL ";" YYLOG_COLOR_GREEN "m"); \
 	fprintf(stderr, __VA_ARGS__); \
-	fprintf(stderr, "\033[0m");
+	fprintf(stderr, "\033[0m"); \
+} while(0)
 
-#define logR(...) \
+#define logR(...) do { \
 	fprintf(stderr, "\033[" YYLOG_STYLE_NORMAL ";" YYLOG_COLOR_RED "m"); \
 	fprintf(stderr, __VA_ARGS__); \
-	fprintf(stderr, "\033[0m");
+	fprintf(stderr, "\033[0m"); \
+} while(0)
 
 
 #define __TEST_START__(info)\
@@ -72,6 +74,13 @@ char *sformat(const char *format, ...);
 
 #define __TEST_EQUAL__(info, a, b) \
 	if((a) != (b)) {\
+		logR("FAIL\n"); \
+		logw(#a " <> " #b ", test failed!"); \
+		goto __##info##_test_fail__;\
+	}
+
+#define __TEST_STR_EQUAL__(info, a, b) \
+	if(strcmp((a), (b)) != 0) {\
 		logR("FAIL\n"); \
 		logw(#a " <> " #b ", test failed!"); \
 		goto __##info##_test_fail__;\
@@ -118,6 +127,9 @@ __##info##_test_fail__: \
 
 #define UNIT_TEST_EQUAL(a, b) \
 	__TEST_EQUAL__(unit, a, b);
+
+#define UNIT_TEST_STR_EQUAL(a, b) \
+	__TEST_STR_EQUAL__(unit, a, b);
 
 #define UNIT_TEST_FAIL \
 	__TEST_FAIL__(unit);
