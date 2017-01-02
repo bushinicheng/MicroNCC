@@ -111,7 +111,7 @@ return              {tokout("RETURN");	return symbol(RETURN);}
 
 {invalidnum}        {
 						tokout("NUM:v");
-						yydebug(yylineno, yycolumn-yyleng, yyleng, ERR_INVALID_NUM);
+						yydebug(yylineno, yycolumn-yyleng, yyleng, ErrorInvalidNUM);
 						return symbol(NUM);
 					}
 {string}            {tokout("STR");		return reg(STRING);}
@@ -130,7 +130,7 @@ return              {tokout("RETURN");	return symbol(RETURN);}
 					}
 .					{
 						tokout("UB");
-						yydebug(yylineno, yycolumn-yyleng, yyleng, ERR_UNKNOWN_TOKEN);
+						yydebug(yylineno, yycolumn-yyleng, yyleng, ErrorUnknownToken);
 					}
 
 %%

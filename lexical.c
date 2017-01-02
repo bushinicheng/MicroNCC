@@ -1131,7 +1131,7 @@ YY_RULE_SETUP
 #line 112 "lexical.l"
 {
 						tokout("NUM:v");
-						yydebug(yylineno, yycolumn-yyleng, yyleng, ERR_INVALID_NUM);
+						yydebug(yylineno, yycolumn-yyleng, yyleng, ErrorInvalidNUM);
 						return symbol(NUM);
 					}
 	YY_BREAK
@@ -1193,7 +1193,7 @@ YY_RULE_SETUP
 #line 131 "lexical.l"
 {
 						tokout("UB");
-						yydebug(yylineno, yycolumn-yyleng, yyleng, ERR_UNKNOWN_TOKEN);
+						yydebug(yylineno, yycolumn-yyleng, yyleng, ErrorUnknownToken);
 					}
 	YY_BREAK
 case 52:

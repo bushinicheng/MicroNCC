@@ -2,6 +2,7 @@
 #coding:utf-8
 
 import re
+
 xxxx = []
 
 def get_nonterminal(stream):
@@ -9,8 +10,8 @@ def get_nonterminal(stream):
     pa=re.compile(r'%(type)<.*?>(.*?)\n\n', re.S)
     result=pa.findall(stream)
     token=[re.sub('/\*.*?\*/', '', i[1]) for i in result]
-    token=re.findall('\w+', ' '.join(token))
     xxxx = token
+    token=re.findall('\w+', ' '.join(token))
     return 'enum {{\n\tNONTERMINALBEGIN = 512,\n{}\n}};'.format(',\n'.join(['\t{0}'.format(i) for i in token]))
 
 def get_symbol(stream):
@@ -18,8 +19,8 @@ def get_symbol(stream):
     pa=re.compile(r'%(token)<.*?>(.*?)\n\n', re.S)
     result=pa.findall(stream)
     token=[re.sub('/\*.*?\*/', '', i[1]) for i in result]
+    token.extend(xxxx)
     token=re.findall('\w+', ' '.join(token))
-    token.extend(xxxx);
     return 'static char* str_lexval[] = {{\n{}\n}};'.format(',\n'.join(['\t[{0}] = "{0}"'.format(i) for i in token]))
 
 def dep(stream):
@@ -65,15 +66,21 @@ def genast():
             "\n\n"+\
             astenum+\
         """
-
+        
 typedef struct tagReduceRules {
     int nr_child;
     int root_type;
-    const char *str_rule;
-    const char *str_root;
+    char *str_rule;
+    char *str_root;
 } ReduceRules;
 
+#ifdef __AST_C__
+
 """+\
+            aststruct+\
+            "\n\n" + \
+            sym+\
+        "\n\n#endif\n\n"+\
             get_func()+\
         "\n\n#endif"
         print(asth)

@@ -26,16 +26,21 @@ char *sformat(const char *format, ...);
 #define YYLOG_COLOR_NORMAL   "38"
 
 #define logf(...) \
-	yylog(stderr, "\033[" YYLOG_STYLE_BACK ";" YYLOG_COLOR_YELLOW "m", __VA_ARGS__)
+	yylog(stderr, "\033[" YYLOG_STYLE_BACK ";" YYLOG_COLOR_PURPLE "m", __VA_ARGS__)
 
 #define loge(...) \
 	yylog(stderr, "\033[" YYLOG_STYLE_BOLD ";" YYLOG_COLOR_RED "m", __VA_ARGS__)
 
-#define logw(...) \
-	yylog(stderr, "\033[" YYLOG_STYLE_NORMAL ";" YYLOG_COLOR_BLUE "m", __VA_ARGS__)
+#define logw(...) do { \
+		yylog(stderr, "\033[" YYLOG_STYLE_NORMAL ";" YYLOG_COLOR_YELLOW "m[WARNING] \033[0m", "line:%d, file:%s, ", __LINE__, __FILE__); \
+		yylog(stderr, "\033[" YYLOG_STYLE_BOLD ";" YYLOG_COLOR_WHITE "m", __VA_ARGS__); \
+	} while(0)
 
 #define logi(...) \
 	yylog(stderr, "\033[" YYLOG_STYLE_NORMAL ";" YYLOG_COLOR_NORMAL "m", __VA_ARGS__)
+
+#define logl() \
+	yylog(stderr, "\033[" YYLOG_STYLE_NORMAL ";" YYLOG_COLOR_BLUE "m[DEBUG] \033[0m", "line: %-3d, func:%s\n", __LINE__, __func__)
 
 //#ifdef __DEBUG__
 #define logd(...) \
@@ -49,6 +54,10 @@ char *sformat(const char *format, ...);
 	fprintf(stderr, __VA_ARGS__); \
 	fprintf(stderr, "\033[0m");
 
+#define logR(...) \
+	fprintf(stderr, "\033[" YYLOG_STYLE_NORMAL ";" YYLOG_COLOR_RED "m"); \
+	fprintf(stderr, __VA_ARGS__); \
+	fprintf(stderr, "\033[0m");
 
 
 #define __TEST_START__(info)\
@@ -56,13 +65,15 @@ char *sformat(const char *format, ...);
 
 #define __TEST_AVOID__(info, cond) \
 	if(cond) {\
-		logd("test failed at line #%d\n", __LINE__); \
+		logR("FAIL\n"); \
+		logw(#cond " should not be true, test failed!"); \
 		goto __##info##_test_fail__;\
 	}
 
 #define __TEST_EQUAL__(info, a, b) \
 	if((a) != (b)) {\
-		logd("test failed at line #%d\n", __LINE__); \
+		logR("FAIL\n"); \
+		logw(#a " <> " #b ", test failed!"); \
 		goto __##info##_test_fail__;\
 	}
 

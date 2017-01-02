@@ -31,7 +31,7 @@ $(COMPILER):$(YFILE) $(LFILE) $(CFILES) $(HFILES)
 	mkdir -p $(OBJ_DIR)
 	$(CC) $(CFLAGS) $(CFILES) -o $(COMPILER) -lfl
 
-ast.h:syntax.y
+ast.h:syntax.y ast.c
 	python genast.py > ast.h
 
 .PHONY:run run-ast run-rdu test test-lex clean count

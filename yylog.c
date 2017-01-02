@@ -4,17 +4,22 @@ void *get_memory_pointer();
 void require_memory(size_t size);
 
 static const char *ErrorReason[] = {
-	[ERR_INVALID_NUM] = "error type A: invalid number.",
-	[ERR_INVALID_OCT] = "error type A: invalid oct number.",
-	[ERR_INVALID_HEX] = "error type A: invalid hex number.",
-	[ERR_UNKNOWN_TOKEN] = "error type A: invalid character.",
-	[ERR_NULL_DECLARATION] = "warning: declaration does not declare anything.",
-	[ERR_EXPECTED_COMMA] = "expected ',' here.",
-	[ERR_EXPECTED_SEMI] = "expected ';' here.",
-	[ERR_EXPECTED_STATEMENT] = "error type B: expected definition or statement here.",
-	[ERR_MISSING_SEMI] = "error type B: missing ';'",
-	[ERR_MISSING_RC] = "error type B: missing '}'",
-	[ERR_MISSING_RB] = "error type B: missing ']'",
+	[ErrorInvalidNUM] = "error type A: invalid number.",
+	[ErrorInvalidOCT] = "error type A: invalid oct number.",
+	[ErrorInvalidHEX] = "error type A: invalid hex number.",
+	[ErrorUnknownToken] = "error type A: invalid character.",
+	[ErrorNullDecl] = "warning: declaration does not declare anything.",
+	[ErrorExpectedComma] = "expected ',' here.",
+	[ErrorExpectedSemi] = "expected ';' here.",
+	[ErrorExpectedStmt] = "error type B: expected definition or statement here.",
+	[ErrorMissingSemi] = "error type B: missing ';'",
+	[ErrorMissingRC] = "error type B: missing '}'",
+	[ErrorMissingRB] = "error type B: missing ']'",
+	[ErrorRedefinition] = "line %d: error: redefinition of variable '%s'",
+	[ErrorNotCallable] = "line %d: error: called object '%s' is not a function",
+	[ErrorCall0vx] = "line %d: note: candidate function not viable: require 0 arguments, but ? was provided",
+	[ErrorCallnv0] = "line %d: note: candidate function not viable: require %d arguments, but no arguments was provided",
+	[ErrorUndeclaredIdentifier] = "line %d: error: use of undeclared identifier '%s'.\n",
 };
 
 char *sformat(const char *format, ...) {
@@ -54,6 +59,17 @@ int yyerr(const char *format, ...)
 	va_end(arg);
 	return done;
 }
+
+int yyerrtype(int errortype, ...) {
+	int done;
+	va_list arg;
+	extern int curlineno;
+	va_start(arg, errortype);
+	done = vfprintf(stderr, ErrorReason[errortype], arg);
+	va_end(arg);
+	return done;
+}
+
 
 /*for compatibility*/
 int yyerror(const char *format, ...)

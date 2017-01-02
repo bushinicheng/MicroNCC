@@ -21,6 +21,7 @@ typedef unsigned char bool;
 
 #define true 1
 #define false 0
+#define INT_MAX 2147483647
 
 /*other header files*/
 #include "error.h"
