@@ -1,5 +1,6 @@
 #include "common.h"
 
+extern bool is_syntax_error;
 void *get_memory_pointer();
 void require_memory(size_t size);
 
@@ -19,7 +20,17 @@ static const char *ErrorReason[] = {
 	[ErrorNotCallable] = "line %d: error: called object '%s' is not a function",
 	[ErrorCall0vx] = "line %d: note: candidate function not viable: require 0 arguments, but ? was provided",
 	[ErrorCallnv0] = "line %d: note: candidate function not viable: require %d arguments, but no arguments was provided",
-	[ErrorUndeclaredIdentifier] = "line %d: error: use of undeclared identifier '%s'.\n",
+	[ErrorCallngtm] = "line %d: note: candidate function not viable: require %d arguments, but %d arguments was provided",
+	[ErrorCallnltm] = "line %d: note: candidate function not viable: require %d arguments, but too much arguments was provided",
+	[ErrorCallParameterNotMatch] = "line %d: note: %dth parameter of function '%s' not match.",
+	[ErrorUndeclaredIdentifier] = "line %d: error: use of undeclared identifier '%s'.",
+	[ErrorNotPointer] = "line %d: error: indirection requires pointer operand.",
+	[ErrorTakeRvalueAddress] = "line %d: error: cannot take the address of an rvalue of type",
+	[ErrorUnaryOperatorMismatch] = "line %d: error: invalid argument type to unary",
+	[ErrorAssignIncompatible] = "line %d: error: assigning to '%s' from incompatible type",
+	[ErrorReferenceStructMember] = "line %d: error: member reference base type '%s' is not a structure or union",
+	[ErrorNoSuchMember] = "line %d: error: no member named '%s' in '%s'",
+	[ErrorReferenceNotPointer] = "line %d: error: member reference type '%s' is not a pointer",
 };
 
 char *sformat(const char *format, ...) {
@@ -64,6 +75,7 @@ int yyerrtype(int errortype, ...) {
 	int done;
 	va_list arg;
 	extern int curlineno;
+	is_syntax_error = true;
 	va_start(arg, errortype);
 	done = vfprintf(stderr, ErrorReason[errortype], arg);
 	va_end(arg);

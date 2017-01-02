@@ -18,7 +18,17 @@ enum ErrorType {
 	ErrorNotCallable,
 	ErrorCall0vx,
 	ErrorCallnv0,
+	ErrorCallngtm,
+	ErrorCallnltm,
+	ErrorCallParameterNotMatch,
 	ErrorUndeclaredIdentifier,
+	ErrorNotPointer,
+	ErrorTakeRvalueAddress,
+	ErrorUnaryOperatorMismatch,
+	ErrorAssignIncompatible,
+	ErrorReferenceStructMember,
+	ErrorNoSuchMember,
+	ErrorReferenceNotPointer,
 };
 
 int yydebug(int, int, int, enum ErrorType);

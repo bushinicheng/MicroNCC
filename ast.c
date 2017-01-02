@@ -129,20 +129,20 @@ void print_ast(Node *root)
 
 	/* print semanval or lexval */
 	if(root->token == ID)
-		printf("%s:%s\n", str_lexval[root->token], root->supval.st);
+		printf("%s:%s\n", str_lexval[root->token], root->idtype->type.cons.supval.st);
 	else if(root->token == NUM) {
-		switch(root->suptype) {
+		switch(root->idtype->type.cons.suptype) {
 		case 'i':
-			printf("NUM:%d\n", root->supval.i);
+			printf("NUM:%d\n", root->idtype->type.cons.supval.i);
 			break;
 		case 'o':
-			printf("NUM:0%o\n", root->supval.i);
+			printf("NUM:0%o\n", root->idtype->type.cons.supval.i);
 			break;
 		case 'x':
-			printf("NUM:0x%x\n", root->supval.i);
+			printf("NUM:0x%x\n", root->idtype->type.cons.supval.i);
 			break;
 		case 'f':
-			printf("NUM:%f\n", root->supval.f);
+			printf("NUM:%f\n", root->idtype->type.cons.supval.f);
 			break;
 		default:
 			printf("NUM:0\n");
@@ -150,7 +150,7 @@ void print_ast(Node *root)
 		}
 	}
 	else if(root->token == TYPE)
-		printf("TYPE:%s\n", str_lexval[root->suptype]);
+		printf("TYPE:%s\n", str_lexval[root->idtype->type.cons.suptype]);
 	else
 		printf("%s\n", str_lexval[root->token]);
 
@@ -189,17 +189,36 @@ Node* get_sibling_node_w(Node *root, int token)
 	return ret;
 }
 
-Node* get_child_node(Node *root, int token)
+Node* get_child_node_with_skip(Node *root, int token, int skip)
 {
+	if(skip < 0) return NULL;
 	if(!root) return NULL;
 	Node *child = root->child;
 	while(child) {
-		if(child->token == token)
-			return child;
+		if(child->token == token) {
+			if(skip == 0)
+				return child;
+			else
+				skip --;
+		}
 		child = child->sibling;
 	}
-
 	return NULL;
+}
+
+Node* get_child_node(Node *root, int token)
+{
+	return get_child_node_with_skip(root, token, 0);
+}
+
+Node* get_child_node_with_skip_w(Node *root, int token, int skip)
+{
+	if(!root)
+		logw("invalid parameter: 'root'=(nil)\n");
+	Node *ret = get_child_node_with_skip(root, token, skip);
+	if(!ret)
+		logw("unsucessful search:{'root':'%s', 'child':'%s', 'rule':'%s'}\n", str_lexval[root->token], str_lexval[token], rules[root->reduce_rule].str_rule);
+	return ret;
 }
 
 Node* get_child_node_w(Node *root, int token)

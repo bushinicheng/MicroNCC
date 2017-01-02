@@ -56,7 +56,7 @@ extern int yydebug;
     GT = 266,
     BITAND = 267,
     BITOR = 268,
-    BITNOR = 269,
+    BITNOT = 269,
     AND = 270,
     OR = 271,
     NOT = 272,

@@ -117,7 +117,7 @@ extern int yydebug;
     GT = 266,
     BITAND = 267,
     BITOR = 268,
-    BITNOR = 269,
+    BITNOT = 269,
     AND = 270,
     OR = 271,
     NOT = 272,
@@ -515,7 +515,7 @@ static const yytype_uint8 yyrline[] =
 static const char *const yytname[] =
 {
   "$end", "error", "$undefined", "LOWWEST", "LOWWER_THAN_ELSE", "ELSE",
-  "LT", "LE", "NE", "EQ", "GE", "GT", "BITAND", "BITOR", "BITNOR", "AND",
+  "LT", "LE", "NE", "EQ", "GE", "GT", "BITAND", "BITOR", "BITNOT", "AND",
   "OR", "NOT", "ADD", "SUB", "MULT", "DIV", "RELOP", "ASSIGNOP", "LP",
   "RP", "LB", "RB", "LC", "RC", "DOT", "COMMA", "SEMI", "POINTER", "IF",
   "DO", "WHILE", "FOR", "RETURN", "TYPE", "INT", "CHAR", "FLOAT", "ENUM",
@@ -1808,10 +1808,10 @@ yyreduce:
   case 41:
 #line 148 "syntax.y" /* yacc.c:1646  */
     {
-		if((yyvsp[-1].pnd)->suptype == 'f')
+		if((yyvsp[-1].pnd)->idtype->type.cons.suptype == 'f')
 		{
-			(yyvsp[-1].pnd)->suptype = 'i';
-			(yyvsp[-1].pnd)->supval.i = (yyvsp[-1].pnd)->supval.f;
+			(yyvsp[-1].pnd)->idtype->type.cons.suptype = 'i';
+			(yyvsp[-1].pnd)->idtype->type.cons.supval.i = (yyvsp[-1].pnd)->idtype->type.cons.supval.f;
 			yyerr("%d: error type A: invalid dim\n", (yyloc).first_line);
 		}
 		(yyval.pnd)=build_subast(AST_VarDec_is_VarDec_LB_NUM_RB, &(yyloc), (yyvsp[-3].pnd), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));
@@ -1899,7 +1899,7 @@ yyreduce:
 
   case 55:
 #line 181 "syntax.y" /* yacc.c:1646  */
-    {(yyval.pnd)=build_subast(AST_Exp_is_BITNOR_Exp, &(yyloc), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
+    {(yyval.pnd)=build_subast(AST_Exp_is_BITNOT_Exp, &(yyloc), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
 #line 1904 "syntax.c" /* yacc.c:1646  */
     break;
 

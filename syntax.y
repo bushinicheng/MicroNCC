@@ -19,7 +19,7 @@ extern Node *astroot;
 
 %token<pnd>
 	LT LE NE EQ GE GT
-	BITAND BITOR BITNOR AND OR NOT
+	BITAND BITOR BITNOT AND OR NOT
 	ADD SUB MULT DIV
 	RELOP ASSIGNOP 
 	LP RP LB RB LC RC
@@ -35,7 +35,7 @@ extern Node *astroot;
 %left AND
 %left BITOR
 %left BITAND
-%left BITNOR
+%left BITNOT
 %left EQ NE
 %left LT LE GE GT
 %left ADD SUB
@@ -146,10 +146,10 @@ Dec:VarDec {$$=build_subast(AST_Dec_is_VarDec, &@$, $1);}
 VarDec:ID {$$=build_subast(AST_VarDec_is_ID, &@$, $1);}
       |MULT VarDec {$$=build_subast(AST_VarDec_is_MULT_VarDec, &@$, $1, $2);}
 	  |VarDec LB NUM RB {
-		if($3->suptype == 'f')
+		if($3->idtype->type.cons.suptype == 'f')
 		{
-			$3->suptype = 'i';
-			$3->supval.i = $3->supval.f;
+			$3->idtype->type.cons.suptype = 'i';
+			$3->idtype->type.cons.supval.i = $3->idtype->type.cons.supval.f;
 			yyerr("%d: error type A: invalid dim\n", @$.first_line);
 		}
 		$$=build_subast(AST_VarDec_is_VarDec_LB_NUM_RB, &@$, $1, $2, $3, $4);
@@ -178,7 +178,7 @@ Exp:ID {$$=build_subast(AST_Exp_is_ID, &@$, $1);}
    |SUB NUM {$$=build_subast(AST_Exp_is_SUB_NUM, &@$, $1, $2);}
    |MULT Exp {$$=build_subast(AST_Exp_is_MULT_Exp, &@$, $1, $2);}
    |BITAND Exp {$$=build_subast(AST_Exp_is_BITAND_Exp, &@$, $1, $2);}
-   |BITNOR Exp {$$=build_subast(AST_Exp_is_BITNOR_Exp, &@$, $1, $2);}
+   |BITNOT Exp {$$=build_subast(AST_Exp_is_BITNOT_Exp, &@$, $1, $2);}
    |NOT Exp {$$=build_subast(AST_Exp_is_NOT_Exp, &@$, $1, $2);}
    |STRING {$$=build_subast(AST_Exp_is_STRING, &@$, $1);}
    |Exp ASSIGNOP Exp {$$=build_subast(AST_Exp_is_Exp_ASSIGNOP_Exp, &@$, $1, $2, $3);}

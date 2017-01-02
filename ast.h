@@ -81,7 +81,7 @@ enum {
 	AST_Exp_is_SUB_NUM,
 	AST_Exp_is_MULT_Exp,
 	AST_Exp_is_BITAND_Exp,
-	AST_Exp_is_BITNOR_Exp,
+	AST_Exp_is_BITNOT_Exp,
 	AST_Exp_is_NOT_Exp,
 	AST_Exp_is_STRING,
 	AST_Exp_is_Exp_ASSIGNOP_Exp,
@@ -170,7 +170,7 @@ static ReduceRules rules[] = {
 	[AST_Exp_is_SUB_NUM] = {2, Exp, "AST_Exp_is_SUB_NUM", "Exp"},
 	[AST_Exp_is_MULT_Exp] = {2, Exp, "AST_Exp_is_MULT_Exp", "Exp"},
 	[AST_Exp_is_BITAND_Exp] = {2, Exp, "AST_Exp_is_BITAND_Exp", "Exp"},
-	[AST_Exp_is_BITNOR_Exp] = {2, Exp, "AST_Exp_is_BITNOR_Exp", "Exp"},
+	[AST_Exp_is_BITNOT_Exp] = {2, Exp, "AST_Exp_is_BITNOT_Exp", "Exp"},
 	[AST_Exp_is_NOT_Exp] = {2, Exp, "AST_Exp_is_NOT_Exp", "Exp"},
 	[AST_Exp_is_STRING] = {1, Exp, "AST_Exp_is_STRING", "Exp"},
 	[AST_Exp_is_Exp_ASSIGNOP_Exp] = {3, Exp, "AST_Exp_is_Exp_ASSIGNOP_Exp", "Exp"},
@@ -204,7 +204,7 @@ static char* str_lexval[] = {
 	[GT] = "GT",
 	[BITAND] = "BITAND",
 	[BITOR] = "BITOR",
-	[BITNOR] = "BITNOR",
+	[BITNOT] = "BITNOT",
 	[AND] = "AND",
 	[OR] = "OR",
 	[NOT] = "NOT",
@@ -271,7 +271,9 @@ Node* __attribute__((noinline)) build_subast(int nodetype, YYLTYPE *yyinfo, ...)
 void print_ast(Node *root);
 Node* get_sibling_node(Node *root, int token);
 Node* get_sibling_node_w(Node *root, int token);
+Node* get_child_node_with_skip(Node *root, int token, int skip);
 Node* get_child_node(Node *root, int token);
+Node* get_child_node_with_skip_w(Node *root, int token, int skip);
 Node* get_child_node_w(Node *root, int token);
 Node* find_child_node_with_depth(Node *root, int token, uint32_t depth);
 Node* find_child_node(Node *root, int token);

@@ -76,7 +76,7 @@ invalidcomment   \/\*([^\*]|\*[^\/])*$
 
 "&"                 {tokout("BITAND");	return symbol(BITAND);}
 "|"                 {tokout("BITOR");	return symbol(BITOR);}
-"~"                 {tokout("BITNOR");	return symbol(BITNOR);}
+"~"                 {tokout("BITNOT");	return symbol(BITNOT);}
 "&&"                {tokout("AND");		return symbol(AND);}
 "||"                {tokout("OR");		return symbol(OR);}
 "!"                 {tokout("NOT");		return symbol(NOT);}
@@ -150,7 +150,9 @@ static int type(int specval)
 	int syntaxval = TYPE;
 	Node *pnd = new_node();
 	pnd->token = syntaxval;
-	pnd->suptype = specval;
+	pnd->idtype = new_spec();
+	pnd->idtype->btype = SpecTypeConst;
+	pnd->idtype->type.cons.suptype = specval;
 	pnd->lineno = yylineno;
 	pnd->column = yycolumn;
 	yylval.pnd = pnd;
@@ -163,7 +165,9 @@ static int num(int specval)
 	char *pstr = yytext;
 	Node *pnd = new_node();
 	pnd->token = NUM;
-	pnd->suptype = specval;
+	pnd->idtype = new_spec();
+	pnd->idtype->btype = SpecTypeConst;
+	pnd->idtype->type.cons.suptype = 'i';
 	pnd->lineno = yylineno;
 	pnd->column = yycolumn;
 	yylval.pnd = pnd;
@@ -171,18 +175,18 @@ static int num(int specval)
 	switch(specval)
 	{
 	case 'i':
-		pnd->supval.i = next_number(&pstr, 10);
+		pnd->idtype->type.cons.supval.i = next_number(&pstr, 10);
 		break;
 	case 'o':
 		pstr++;
-		pnd->supval.i = next_number(&pstr, 8);
+		pnd->idtype->type.cons.supval.i = next_number(&pstr, 8);
 		break;
 	case 'x':
 		pstr+=2;
-		pnd->supval.i = next_number(&pstr, 16);
+		pnd->idtype->type.cons.supval.i = next_number(&pstr, 16);
 		break;
 	case 'f':
-		pnd->supval.f = atof(pstr);
+		pnd->idtype->type.cons.supval.f = atof(pstr);
 		break;
 	}
 
@@ -196,14 +200,16 @@ static int reg(int syntaxval)
 	pnd->lineno = yylineno;
 	pnd->column = yycolumn;
 	yylval.pnd = pnd;
+	pnd->idtype = new_spec();
+	pnd->idtype->btype = SpecTypeConst;
 
 	switch(syntaxval)
 	{
 	case ID:
-		pnd->supval.st = register_id(yytext);
+		pnd->idtype->type.cons.supval.st = register_id(yytext);
 		break;
 	case STRING:
-		pnd->supval.st = register_string(yytext);
+		pnd->idtype->type.cons.supval.st = register_string(yytext);
 		break;
 	}
 
