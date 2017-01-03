@@ -29,7 +29,7 @@ void __attribute__((noinline)) make_node(Node *root, int reduce_rule, int token,
 	}
 
 	/*debug info*/
-	for(int i = 1; i < rules[reduce_rule].nr_child; i++)
+	for(int i = 1; i < syntax_rules[reduce_rule].nr_child; i++)
 	{
 		Node *post_child = va_arg(vlist, PNode);
 		prev_child->sibling = post_child;
@@ -37,7 +37,7 @@ void __attribute__((noinline)) make_node(Node *root, int reduce_rule, int token,
 		prev_child = post_child;
 	}
 
-	if(!rules[reduce_rule].nr_child)
+	if(!syntax_rules[reduce_rule].nr_child)
 		first_child = NULL;
 	else {
 		prev_child->sibling = NULL;
@@ -66,7 +66,7 @@ Node* new_sym_node(int lexval, YYLTYPE *yyinfo)
 Node* __attribute__((noinline)) build_subast(int nodetype, YYLTYPE *yyinfo, ...)
 {
 	if(is_print_reduce_step)
-		printf("%s\n", rules[nodetype].str_rule);
+		printf("%s\n", syntax_rules[nodetype].str_rule);
 
 	va_list vlist;
 	va_start(vlist, yyinfo);
@@ -76,18 +76,18 @@ Node* __attribute__((noinline)) build_subast(int nodetype, YYLTYPE *yyinfo, ...)
 
 	/*debug info*/
 	parent_node->reduce_rule = nodetype;
-	parent_node->token = rules[nodetype].root_type;
+	parent_node->token = syntax_rules[nodetype].root_type;
 	parent_node->lineno = curlineno = yyinfo->first_line;
 	parent_node->column = yyinfo->first_column;
 
-	for(int i = 1; i < rules[nodetype].nr_child; i++) {
+	for(int i = 1; i < syntax_rules[nodetype].nr_child; i++) {
 		Node *post_child = va_arg(vlist, PNode);
 		prev_child->sibling = post_child;
 		prev_child->parent = parent_node;
 		prev_child = post_child;
 	}
 
-	if(!rules[nodetype].nr_child)
+	if(!syntax_rules[nodetype].nr_child)
 		first_child = NULL;
 	else {
 		prev_child->sibling = NULL;
@@ -163,6 +163,8 @@ void print_ast(Node *root)
 	if(root->sibling) pstack --;
 	print_ast(root->sibling);
 	call_depth --;
+
+	if(call_depth == 0) require_memory(0);
 }
 
 Node* get_sibling_node(Node *root, int token)
@@ -217,7 +219,7 @@ Node* get_child_node_with_skip_w(Node *root, int token, int skip)
 		logw("invalid parameter: 'root'=(nil)\n");
 	Node *ret = get_child_node_with_skip(root, token, skip);
 	if(!ret)
-		logw("unsucessful search:{'root':'%s', 'child':'%s', 'rule':'%s'}\n", str_lexval[root->token], str_lexval[token], rules[root->reduce_rule].str_rule);
+		logw("unsucessful search:{'root':'%s', 'child':'%s', 'rule':'%s'}\n", str_lexval[root->token], str_lexval[token], syntax_rules[root->reduce_rule].str_rule);
 	return ret;
 }
 
@@ -227,7 +229,7 @@ Node* get_child_node_w(Node *root, int token)
 		logw("invalid parameter: 'root'=(nil)\n");
 	Node *ret = get_child_node(root, token);
 	if(!ret)
-		logw("unsucessful search:{'root':'%s', 'child':'%s', 'rule':'%s'}\n", str_lexval[root->token], str_lexval[token], rules[root->reduce_rule].str_rule);
+		logw("unsucessful search:{'root':'%s', 'child':'%s', 'rule':'%s'}\n", str_lexval[root->token], str_lexval[token], syntax_rules[root->reduce_rule].str_rule);
 	return ret;
 }
 
@@ -252,9 +254,18 @@ Node* find_child_node(Node *root, int token)
 	return find_child_node_with_depth(root, token, INT_MAX);
 }
 
-Node* find_node_by_rule(Node *root, int rule, int skip)
+Node* find_node_by_rule(Node *root, int rule)
 {
-	return NULL;
+	if(!root) return NULL;
+
+	if(root->reduce_rule == rule) {
+		return root;
+	}
+	Node *node = NULL;
+	node = find_node_by_rule(root->child, rule);
+	if(!node)
+		return find_node_by_rule(root->sibling, rule);
+	return node;
 }
 
 int init_ast()
@@ -269,11 +280,11 @@ int init_ast()
 #ifdef __DEBUG__
 	STATE_TEST_START;
 	STATE_RESET;
-	for(int i = 0;i < sizeof(rules)/sizeof(rules[0]); i++)
+	for(int i = 0;i < sizeof(syntax_rules)/sizeof(syntax_rules[0]); i++)
 	{
-		STATE_TEST_AVOID(rules[i].nr_child < 0 || rules[i].str_rule == NULL || rules[i].str_root == NULL);
+		STATE_TEST_AVOID(syntax_rules[i].nr_child < 0 || syntax_rules[i].str_rule == NULL || syntax_rules[i].str_root == NULL);
 		
-		const char *ptr = rules[i].str_rule;
+		const char *ptr = syntax_rules[i].str_rule;
 		while(*ptr) {
 			STATE_TEST_AVOID( !( ('a'<= *ptr && *ptr<='z')
 				||('A'<= *ptr && *ptr<='Z')
@@ -283,7 +294,7 @@ int init_ast()
 			ptr++;
 		}
 
-		ptr = rules[i].str_root;
+		ptr = syntax_rules[i].str_root;
 		while(*ptr) {
 			STATE_TEST_AVOID( !( ('a'<= *ptr && *ptr<='z')
 				||('A'<= *ptr && *ptr<='Z')

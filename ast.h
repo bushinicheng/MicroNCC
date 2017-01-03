@@ -115,7 +115,7 @@ typedef struct tagReduceRules {
 
 #ifdef __AST_C__
 
-static ReduceRules rules[] = {
+static ReduceRules syntax_rules[] = {
 	[AST_NONTERMINALBEGIN] = {0, NONTERMINALBEGIN, "AST_NONTERMINALBEGIN", "NONTERMINALBEGIN"},
 	[AST_Program_is_BlockList] = {1, Program, "AST_Program_is_BlockList", "Program"},
 	[AST_BlockList_is_Block] = {1, BlockList, "AST_BlockList_is_Block", "BlockList"},
@@ -277,7 +277,7 @@ Node* get_child_node_with_skip_w(Node *root, int token, int skip);
 Node* get_child_node_w(Node *root, int token);
 Node* find_child_node_with_depth(Node *root, int token, uint32_t depth);
 Node* find_child_node(Node *root, int token);
-Node* find_node_by_rule(Node *root, int rule, int skip);
+Node* find_node_by_rule(Node *root, int rule);
 int init_ast();
 
 #endif

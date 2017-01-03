@@ -78,6 +78,7 @@ int yyerrtype(int errortype, ...) {
 	is_syntax_error = true;
 	va_start(arg, errortype);
 	done = vfprintf(stderr, ErrorReason[errortype], arg);
+	fprintf(stderr, "\n");
 	va_end(arg);
 	return done;
 }

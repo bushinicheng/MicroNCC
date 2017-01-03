@@ -214,7 +214,7 @@ bool compare_type(Spec *s, Spec *t) {
 			//TODO:compare type function, IMPLEMENT ME
 			assert(0);
 			break;
-		case SpecTypeComp:
+		case SpecTypeComplex:
 			if(s->type.comp.plevel != t->type.comp.plevel)
 				return false;
 			else if(s->type.comp.spec != t->type.comp.spec)
@@ -658,7 +658,7 @@ void init_spec() {
 
 	/******testcase 3 int main(){int x,**a[12][34][56];}******/
 	STATE_RESET;
-	yy_scan_string("int main(){int **a[12][34][56];}");
+	yy_scan_string("int **a[12][34][56];");
 	yyparse();
 	retspec = register_type_complex_var(find_child_node(astroot, VarDec), NULL);
 	UNIT_TEST_STR_EQUAL(type_format(retspec), "int **[12][34][56]");

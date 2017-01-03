@@ -45,7 +45,7 @@ def get_rules(stream):
         sym=items[0]
         collection.extend([(i.count(' ')+1 if i else 0, 'AST_{}_is_{}'.format(sym, i.replace(' ', '_') if i else 'None'), sym) for i in items[1].split('|')])
     return 'enum {{\n{}\n}};'.format(',\n'.join(['\t{}'.format(j) for i,j,k in collection])), \
-    'static ReduceRules rules[] = {{\n{}\n}};'.format(',\n'.join(['\t[{1}] = {{{0}, {2}, "{1}", "{2}"}}'.format(i, j, k) for i,j,k in collection]))
+    'static ReduceRules syntax_rules[] = {{\n{}\n}};'.format(',\n'.join(['\t[{1}] = {{{0}, {2}, "{1}", "{2}"}}'.format(i, j, k) for i,j,k in collection]))
 
 def get_func():
     with open('ast.c') as fp:
