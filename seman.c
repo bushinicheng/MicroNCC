@@ -103,7 +103,8 @@ void push_variable(Node *node, char *varname, Spec *type) {
 	find_duplication(varname);
 
 	//calculate base
-	node->var_size = node->idtype->width;
+	if(node->idtype)
+		node->var_size = node->idtype->width;
 	if(actionscope[asptr].node)
 		node->base_addr = actionscope[asptr].node->base_addr + actionscope[asptr].node->var_size;
 	else
@@ -172,21 +173,22 @@ void check_function_call(Node *root, VarElement *func) {
 			//n parameter need, m given, n may equal to m
 			Node *arglist = get_child_node(root, FuncCallArgList);
 			for(int i = 0; i < func->type->func.argv; i++) {
-				//check every parameter if mismatch
-				Node *expnode = get_child_node_w(arglist->child, Exp);
-				analyse_expression(expnode);
-				if(!compare_type(func->type->func.arglist[i].type, expnode->idtype)) {
-					yyerrtype(ErrorCallParameterNotMatch, root->lineno, i, root->child->idtype->cons.supval.st);
-				}
-
-				arglist = get_child_node(arglist, FuncCallArgList);
 				if(!arglist) {
 					//n parameter need, m given, n > m
 					yyerrtype(ErrorCallngtm, root->lineno, func->type->func.argv, i);
+					break;
 				}
+				//check every parameter if mismatch
+				Node *expnode = get_child_node_dw(arglist, 2, FuncCallArg, Exp);
+				analyse_expression(expnode);
+				if(!compare_type(func->type->func.arglist[i].type, expnode->idtype)) {
+					yyerrtype(ErrorCallParameterNotMatch, root->lineno, type_format(expnode->idtype), type_format(func->type->func.arglist[i].type), i + 1);
+				}
+
+				arglist = get_child_node(arglist, FuncCallArgList);
 			}
 			
-			if(arglist->child->sibling) {
+			if(arglist) {
 				//n parameter need, m given, n < m
 				yyerrtype(ErrorCallnltm, root->lineno, func->type->func.argv);
 			}
@@ -291,13 +293,21 @@ int analyse_expression(Node *root) {
 			//lval -> OK, rval -> error
 			exp = get_child_node_w(root, Exp);
 			analyse_expression(exp);
-			root->idtype = copy_spec(exp->idtype);
-			if(exp->idtype->lval == SpecLvalue) {
-				if(root->idtype->comp.size != 0) {
-					logw("check here, something go wrong!");
-				}
+			root->idtype = exp->idtype;
+			if(exp->idtype->btype == SpecTypeComplex){
+				root->idtype = copy_spec(exp->idtype);
+				root->idtype->width = get_size_of_btype(SpecTypePointer);
 				root->idtype->comp.plevel ++;
 			}else{
+				root->idtype = new_spec();
+				root->idtype->lval = SpecRvalue;
+				root->idtype->btype = SpecTypeComplex;
+				root->idtype->comp.spec = exp->idtype;
+				root->idtype->width = get_size_of_btype(SpecTypePointer);
+				root->idtype->comp.plevel = 1;
+			}
+
+			if(exp->idtype->lval != SpecLvalue) {
 				yyerrtype(ErrorTakeRvalueAddress, root->lineno);
 			}
 			break;
@@ -375,19 +385,14 @@ int analyse_expression(Node *root) {
 			root->idtype = exp->idtype;
 			id = get_child_node_w(root, ID);
 			//plevel = 1 and array.size = 0 and btype = comp
+			//plevel = 0 and array.size = 1
 			if(exp->idtype->btype != SpecTypeComplex) {
 				yyerrtype(ErrorReferenceNotPointer, root->lineno, type_format(exp->idtype));
-			} else if(exp->idtype->comp.size > 0) {
-				yyerrtype(ErrorReferenceNotPointer, root->lineno, type_format(exp->idtype));
-			} else if(exp->idtype->comp.plevel == 0) {
-				//not a pointer
-				yyerrtype(ErrorReferenceNotPointer, root->lineno, type_format(exp->idtype));
-			} else if(exp->idtype->comp.plevel > 1) {
-				//struct A {int x;} ***p; p->x;
-				yyerrtype(ErrorReferenceStructMember, root->lineno, type_format(exp->idtype));
-			} else {
-				//struct A {int x;} p[10]; p->x;
-
+			} else if((exp->idtype->comp.size == 1
+					    &&exp->idtype->comp.plevel == 0)
+					||(exp->idtype->comp.size == 0
+						&&exp->idtype->comp.plevel == 1)) {
+				//struct{int b;} a[1]; a->b;
 				type = find_type_of_struct_member(exp->idtype->comp.spec, id->idtype->cons.supval.st);
 				if(type == NULL) {
 					//no this member
@@ -395,6 +400,8 @@ int analyse_expression(Node *root) {
 				} else {
 					root->idtype = type;
 				}
+			} else {
+				yyerrtype(ErrorReferenceStructMember, root->lineno, type_format(exp->idtype));
 			}
 			break;
 		case AST_Exp_is_Exp_ADD_Exp:
@@ -423,10 +430,8 @@ int analyse_expression(Node *root) {
 				}else{
 					if(exp->idtype->lval == SpecRvalue)
 						root->idtype = exp->idtype;
-					else {
-						root->idtype = copy_spec(exp->idtype);
-						root->idtype->lval = SpecRvalue;
-					}
+					else
+						root->idtype = get_spec_by_btype(exp->idtype->btype, SpecRvalue);
 				}
 			}else if(exp2->idtype->btype == SpecTypeComplex){
 				//note: int a = 0, *p = &a; 3 + p;
@@ -436,10 +441,8 @@ int analyse_expression(Node *root) {
 				}else{
 					if(exp2->idtype->lval == SpecRvalue)
 						root->idtype = exp2->idtype;
-					else {
-						root->idtype = copy_spec(exp2->idtype);
-						root->idtype->lval = SpecRvalue;
-					}
+					else
+						root->idtype = get_spec_by_btype(exp->idtype->btype, SpecRvalue);
 				}
 			}else if(type_is_num(exp->idtype)
 				  && type_is_num(exp2->idtype) ){
@@ -576,7 +579,6 @@ int analyse_expression(Node *root) {
 			// pointer int *p; p [ 0 ];
 			// array int a[5]; a [ 0 ];
 			// rval -> lval
-			// FIXME:
 			if(!type_is_bit(exp2->idtype)) {
 				//index is not an integer
 				yyerrtype(ErrorIndexNotInteger, root->lineno);
@@ -585,8 +587,13 @@ int analyse_expression(Node *root) {
 				yyerrtype(ErrorSubscripted, root->lineno);
 			}else if(exp->idtype->comp.size > 0){
 				//subscripted value is an array
-				root->idtype = copy_spec(exp->idtype);
-				root->idtype->comp.size --;
+				if(root->idtype->comp.size == 1
+				&& exp->idtype->comp.plevel == 0) {
+					root->idtype = exp->idtype->comp.spec;
+				}else{
+					root->idtype = copy_spec(exp->idtype);
+					root->idtype->comp.size --;
+				}
 			}else if(exp->idtype->comp.plevel > 0){
 				//pure pointer
 				root->idtype = copy_spec(exp->idtype);
@@ -717,9 +724,6 @@ void init_seman()
 
 	char *exp_test_sample[] = {
 		"int a; int main(){a;}",
-		"int func(){func();}",
-		"int func(int a, int b){func(1, 3);};}",
-		"int a; int func(int a, int *p){(func(16, &a)+56)*78;}",
 		"int main(){int a; ~a*45+(12*3.4)/78+7;}",
 		"int main(){+7;}",
 		"int main(){-7;}",
@@ -732,8 +736,12 @@ void init_seman()
 		"int a; int main(){a = 45,\"main\", 1.35;}",
 		"int a;struct A{int a;}x; int main(){a = x.a*a*x.a&x.a;}",
 		"struct A{int a;}*p;int a; int main(){p->a*a*p->a&p->a;}",
-		"struct A{int a;}*p;int a; int main(){p->a*a*p->a&p->a;}",
-		"struct A{int a;}p[0][1];int main(){p->a*p[0]->a*p[0][0].a;}",
+		"struct A{int a;}*p,a[12]; int main(){p->a*a[2].a*p->a&p->a;}",
+		"struct A{int a;}p[0][1];int main(){p[0]->a*(&p[0][0])->a*p[0][0].a;}",
+		"int func(){func();}",
+		"int func(int a, int b){int a; func(a, 3);}",
+		"int a; int func(int a, int *p){(func(16, &a)+56)*78;}",
+//check error detection
 	};
 
 	int exp_test_answer[][2] = {
@@ -745,13 +753,16 @@ void init_seman()
 		{SpecTypeInt, SpecRvalue},
 		{SpecTypeInt, SpecRvalue},
 		{SpecTypeInt, SpecRvalue},
-		{SpecTypeInt, SpecRvalue},
-		{SpecTypeInt, SpecRvalue},
-		{SpecTypeInt, SpecRvalue},
 		{SpecTypeBool, SpecRvalue},
 		{SpecTypeBool, SpecRvalue},
 		{SpecTypeInt, SpecLvalue},
-		{SpecTypeBool, SpecRvalue},
+		{SpecTypeInt, SpecLvalue},
+		{SpecTypeInt, SpecRvalue},
+		{SpecTypeInt, SpecRvalue},
+		{SpecTypeInt, SpecRvalue},
+		{SpecTypeInt, SpecLvalue},
+		{SpecTypeInt, SpecLvalue},
+		{SpecTypeInt, SpecLvalue},
 		
 		{SpecTypeBool, SpecRvalue},
 		{SpecTypeBool, SpecRvalue},
@@ -762,21 +773,29 @@ void init_seman()
 	for(int i = 0; i < sizeof(exp_test_sample)/sizeof(exp_test_sample[0]); i++) {
 		//TODO
 		STATE_RESET;
-		logw("case #%d:'%s'\n", i, exp_test_sample[i]);
 		yybuf = yy_scan_string(exp_test_sample[i]);
 		yyparse();
 		yy_delete_buffer(yybuf);
+
+		Node *funcdec = find_child_node(astroot, FuncDec);
 		Node *structdec = find_child_node(astroot, StructDec);
-		Node *vardef = find_child_node(astroot, VarDef);
-		register_type_struct(structdec);
-		print_ast(vardef);
-		if(vardef) print_ast(vardef->parent);
 		Node *exp = find_child_node(astroot, Exp);
+		Node *vardef = find_child_node(astroot, VarDef);
+		Spec *structtype = register_type_struct(structdec);
+		Spec *functype = register_type_function(funcdec);
+		if(get_sibling_node(structdec, IdList)) {
+			Spec *stype = register_type_struct(structdec);
+			Node *idlist = get_sibling_node_w(structdec, IdList);
+			register_idlist(idlist, stype);
+		}
+		if(functype){
+			char *funcname = get_child_node_w(funcdec, ID)->idtype->cons.supval.st;
+			push_variable(funcdec, funcname, functype);
+		}
 		analyse_vardef(vardef);
 		analyse_expression(exp);
-		print_exp(exp);
+		//print_exp(exp);//check every node by human !important!
 		UNIT_TEST_ASSERT(compare_type(exp->idtype, get_spec_by_btype(exp_test_answer[i][0], exp_test_answer[i][1])), "fail at #%d: '%s'", i, exp_test_sample[i]);
-
 	}
 
 	UNIT_TEST_END;

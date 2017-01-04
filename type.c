@@ -29,7 +29,6 @@ size_t get_size_of_btype(int btype) {
 		case SpecTypeFloat:    return 4;
 		case SpecTypePointer:  return 4;
 	}
-
 	return 0;
 }
 
@@ -212,6 +211,7 @@ Spec *get_spec_by_btype(int btype, int lr) {
 Spec *copy_spec(Spec *s) {
 	Spec *t = new_spec();
 	memcpy(t, s, sizeof(Spec));
+	t->format_string = NULL;
 	return t;
 }
 
@@ -225,19 +225,23 @@ Spec *copy_spec(Spec *s) {
  */
 char *type_format(Spec *type) {
 	if(!type) return NULL;
+	if(type->format_string) return type->format_string;
 	switch(type->btype) {
 		case SpecTypeConst: 
 			if(type->cons.suptype == 's')
-				return "string";
+				type->format_string = "string";
 			else
-				return "constant";
-		case SpecTypeVoid:     return "void";
-		case SpecTypeBool:     return "bool";
-		case SpecTypeChar:     return "char";
-		case SpecTypeInt:      return "int";
-		case SpecTypeUnsigned: return "unsigned";
-		case SpecTypeFloat:    return "float";
-		case SpecTypeStruct:   return sformat("struct %s", type->struc.struc_name);
+				type->format_string = "constant";
+			break;
+		case SpecTypeVoid:     type->format_string = "void";break;
+		case SpecTypeBool:     type->format_string = "bool";break;
+		case SpecTypeChar:     type->format_string = "char";break;
+		case SpecTypeInt:      type->format_string = "int";break;
+		case SpecTypeUnsigned: type->format_string = "unsigned";break;
+		case SpecTypeFloat:    type->format_string = "float";break;
+		case SpecTypeStruct:
+			type->format_string = sformat("struct %s", type->struc.struc_name);
+			break;
 	}
 
 	if(type->btype == SpecTypeFunc)	{
@@ -247,7 +251,7 @@ char *type_format(Spec *type) {
 		for(int i = 0; i < type->func.argv; i++) {
 			args_str[i] = type_format(type->func.arglist[i].type);
 		}
-		return sformat("%s (%s)", ret_str, strjoin(args_str, type->func.argv, ", "));
+		type->format_string = sformat("%s (%s)", ret_str, strjoin(args_str, type->func.argv, ", "));
 	} else if(type->btype == SpecTypeComplex) {
 		char *rawtype_str = type_format(type->comp.spec);
 		char *star_str = strmul("*", type->comp.plevel);
@@ -259,10 +263,10 @@ char *type_format(Spec *type) {
 			arr_size += sprintf(&p[arr_size], "[%lu]", type->comp.dim[i]);
 		}
 		require_memory(arr_size + 1);
-		return sformat("%s %s%s", rawtype_str, star_str, arr_str);
+		type->format_string = sformat("%s %s%s", rawtype_str, star_str, arr_str);
 	}
 
-	return NULL;
+	return type->format_string;
 }
 
 /* IN[0]: struct tagSpec *
@@ -290,7 +294,7 @@ bool compare_type(Spec *s, Spec *t) {
 		case SpecTypeComplex:
 			if(s->comp.plevel != t->comp.plevel)
 				return false;
-			else if(s->comp.spec != t->comp.spec)
+			else if(!compare_type(s->comp.spec, t->comp.spec))
 				return false;
 			else if(s->comp.size != t->comp.size)
 				return false;
@@ -300,8 +304,7 @@ bool compare_type(Spec *s, Spec *t) {
 			}
 			break;
 		case SpecTypeStruct:
-			//TODO:compare type struct, IMPLEMENT ME
-			assert(0);
+			if(s != t) return false;
 			break;
 	}
 	return true;

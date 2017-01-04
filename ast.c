@@ -104,8 +104,8 @@ void print_ast(Node *root)
 		return;
 
 	static int call_depth = 0;
+	static int tree_depth = 0;
 	static int *stack = NULL;
-	static int space = 0, pstack = 0;
 
 	if(call_depth == 0)
 		stack = get_memory_pointer();
@@ -114,18 +114,13 @@ void print_ast(Node *root)
 	call_depth ++;
 
 	/* print leading space */
-	int j = 0;
-	for(int i = 0; i < 3*space-3; i++)
-	{
-		int size = pstack;
-		if(size > 0 && j<size && i==3*stack[j])
-		{
-			printf("|");
-			j ++;
-		}
-		else printf(" ");
+	for(int i = 0; i < tree_depth - 1; i++) {
+		if(stack[i+1])
+			printf("|  ");
+		else
+			printf("   ");
 	}
-	if(space > 0) printf("+--");
+	if(tree_depth > 0) printf("+--");
 
 	/* print semanval or lexval */
 	if(root->token == ID)
@@ -156,14 +151,13 @@ void print_ast(Node *root)
 
 
 	/* recursively print ast */
-	space ++;
-	if(root->sibling) stack[pstack++] = space-2;
-	print_ast(root->child);
-	space --;
-	if(root->sibling) pstack --;
+	stack[tree_depth] = !!root->sibling;
+	tree_depth ++;	print_ast(root->child);	tree_depth --;
+	stack[tree_depth] = 0;
 	print_ast(root->sibling);
-	call_depth --;
 
+	//dec call_depth
+	call_depth --;
 	if(call_depth == 0) require_memory(0);
 }
 
@@ -176,7 +170,7 @@ void print_exp(Node *exp)
 		printf(" ");
 	}
 	if(exp->token == Exp) {
-		printf("%s:%s-", str_lexval[exp->token], type_format(exp->idtype));
+		printf("%s:'%s'@", str_lexval[exp->token], type_format(exp->idtype));
 		if(exp->idtype)
 			printf("%c\n", exp->idtype->lval ? 'r':'l');
 		else

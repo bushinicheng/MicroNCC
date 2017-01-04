@@ -39,6 +39,7 @@ typedef struct tagSpec {
 			//0 for global declaration, 1 for local declaration
 	int btype;
 	int width;
+	char *format_string;
 	union {
 		struct {
 			struct tagSpec *ret;
@@ -112,6 +113,7 @@ Spec *new_spec();
 Spec *copy_spec(Spec *s);
 char *type_format(Spec *type);
 bool compare_type(Spec *s, Spec *t);
+size_t get_size_of_btype(int btype);
 Spec *get_spec_by_btype(int btype, int lr);
 Spec *get_spec_of_const(Spec *const_spec);
 Spec *find_type_of_spec(struct tagNode *root);
