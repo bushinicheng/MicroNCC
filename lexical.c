@@ -2249,6 +2249,7 @@ static int num(int specval)
 	Node *pnd = new_node();
 	pnd->token = NUM;
 	pnd->idtype = new_spec();
+	pnd->idtype->lval = 1;
 	pnd->idtype->btype = SpecTypeConst;
 	pnd->idtype->type.cons.suptype = 'i';
 	pnd->lineno = yylineno;
@@ -2292,6 +2293,7 @@ static int reg(int syntaxval)
 		pnd->idtype->type.cons.supval.st = register_id(yytext);
 		break;
 	case STRING:
+		pnd->idtype->lval = 0;
 		pnd->idtype->type.cons.suptype = 's';
 		pnd->idtype->type.cons.supval.st = register_string(yytext);
 		break;

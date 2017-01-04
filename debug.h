@@ -32,9 +32,10 @@ char *sformat(const char *format, ...);
 	yylog(stderr, "\033[" YYLOG_STYLE_BOLD ";" YYLOG_COLOR_RED "m", __VA_ARGS__)
 
 #define logw(...) do { \
-		yylog(stderr, "\033[" YYLOG_STYLE_NORMAL ";" YYLOG_COLOR_YELLOW "m[WARNING] \033[0m", "line:%d, file:%s, ", __LINE__, __FILE__); \
-		yylog(stderr, "\033[" YYLOG_STYLE_BOLD ";" YYLOG_COLOR_WHITE "m", __VA_ARGS__); \
-	} while(0)
+	set_break(); \
+	yylog(stderr, "\033[" YYLOG_STYLE_NORMAL ";" YYLOG_COLOR_YELLOW "m[WARNING] \033[0m", "line:%d, file:%s, ", __LINE__, __FILE__); \
+	yylog(stderr, "\033[" YYLOG_STYLE_BOLD ";" YYLOG_COLOR_WHITE "m", __VA_ARGS__); \
+} while(0)
 
 #define logi(...) \
 	yylog(stderr, "\033[" YYLOG_STYLE_NORMAL ";" YYLOG_COLOR_NORMAL "m", __VA_ARGS__)
@@ -91,7 +92,8 @@ char *sformat(const char *format, ...);
 
 #define __TEST_ASSERT__(info, cond, ...) \
 	if(!(cond)) { \
-		logd(__VA_ARGS__); \
+		logR("FAIL\n"); \
+		logw(__VA_ARGS__); \
 		goto __##info##_test_fail__;\
 	}
 

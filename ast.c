@@ -167,6 +167,30 @@ void print_ast(Node *root)
 	if(call_depth == 0) require_memory(0);
 }
 
+/*just for debugging */
+void print_exp(Node *exp)
+{
+	if(!exp) return;
+	static int call_depth = 0;
+	for(int i = 0; i < call_depth; i++) {
+		printf(" ");
+	}
+	if(exp->token == Exp) {
+		printf("%s:%s-", str_lexval[exp->token], type_format(exp->idtype));
+		if(exp->idtype)
+			printf("%c\n", exp->idtype->lval ? 'r':'l');
+		else
+			printf("(nil)\n");
+	}
+	else
+		printf("%s\n", str_lexval[exp->token]);
+
+	call_depth += 2;
+	print_exp(exp->child);
+	call_depth -= 2;
+	print_exp(exp->sibling);
+}
+
 Node* get_sibling_node(Node *root, int token)
 {
 	if(!root) return NULL;
@@ -228,9 +252,22 @@ Node* get_child_node_w(Node *root, int token)
 	if(!root)
 		logw("invalid parameter: 'root'=(nil)\n");
 	Node *ret = get_child_node(root, token);
-	if(!ret)
+	if(!ret) {
 		logw("unsucessful search:{'root':'%s', 'child':'%s', 'rule':'%s'}\n", str_lexval[root->token], str_lexval[token], syntax_rules[root->reduce_rule].str_rule);
+	}
 	return ret;
+}
+
+Node* __attribute__((noinline))get_child_node_dw(Node *root, int depth, ...)
+{
+	va_list vlist;
+	va_start(vlist, depth);
+	for(int i = 0; root && i < depth; i++) {
+		int token = va_arg(vlist, int);
+		root = get_child_node_w(root, token);
+	}
+	va_end(vlist);
+	return root;
 }
 
 /* not suggested to use

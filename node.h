@@ -5,11 +5,12 @@
 enum {
 	SpecTypeConst,
 	SpecTypeVoid,
-	SpecTypeChar,
 	SpecTypeBool,
+	SpecTypeChar,
 	SpecTypeInt,
 	SpecTypeUnsigned,
 	SpecTypeFloat,
+	SpecTypeString, //char *s = "asdfda";
 	//the above must be registered firstly
 	SpecTypeArray,
 	SpecTypePointer,
@@ -17,6 +18,11 @@ enum {
 	SpecTypeStruct,
 	SpecTypeUnion,
 	SpecTypeFunc,
+};
+
+enum {
+	SpecLvalue = 0,
+	SpecRvalue = 1,
 };
 
 struct tagSpec;
@@ -27,10 +33,12 @@ typedef struct tagSinArg {
 } SinArg;
 
 typedef struct tagSpec {
-	int btype;
-	int width;
+	bool lval;//default to be zero
+			//0 for lval, 1 for rval
 	bool aslevel;//default to be zero
 			//0 for global declaration, 1 for local declaration
+	int btype;
+	int width;
 	union {
 		struct {
 			struct tagSpec *ret;
@@ -102,15 +110,22 @@ typedef struct tagNode {
 } Node, *PNode;
 
 Spec *new_spec();
-Spec *copy_type(Spec *s);
+Spec *copy_spec(Spec *s);
 char *type_format(Spec *type);
 bool compare_type(Spec *s, Spec *t);
-Spec *get_spec_by_btype(int btype);
+Spec *get_spec_by_btype(int btype, int lr);
+Spec *get_spec_of_const(Spec *const_spec);
 Spec *find_type_of_spec(struct tagNode *root);
 Spec *find_type_of_struct_member(Spec *type, char *member);
 Spec *register_type_function(struct tagNode *root);
 Spec *register_type_struct(struct tagNode *root);
 Spec *register_type_complex_var(Node *root, char **varname);
 Spec *register_complex_var_with_type(Spec *type, Node *root, char **varname);
+
+bool type_is_bit(Spec *type);
+bool type_is_float(Spec *type);
+bool type_is_num(Spec *type);
+Spec *type_more_accurate(Spec *typeA, Spec *typeB);
+
 
 #endif

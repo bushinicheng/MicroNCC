@@ -45,7 +45,76 @@ Spec *new_spec() {
 	return spec;
 }
 
+/*
+ * num -> rval
+ * string -> lval
+ */
+Spec *get_spec_of_const(Spec *const_spec) {
+	if(const_spec->btype != SpecTypeConst)
+		return NULL;
+	switch(const_spec->type.cons.suptype) {
+		case 'i':return get_spec_by_btype(SpecTypeInt, SpecRvalue);
+		case 'u':return get_spec_by_btype(SpecTypeUnsigned, SpecRvalue);
+		case 's':return get_spec_by_btype(SpecTypeString, SpecLvalue);
+		case 'c':return get_spec_by_btype(SpecTypeChar, SpecRvalue);
+		default:assert(0);
+	}
+	return NULL;
+}
 
+bool type_is_bit(Spec *type) {
+	if(!type) return false;
+	switch(type->btype) {
+		case SpecTypeBool:     return true;
+		case SpecTypeChar:     return true;
+		case SpecTypeInt:      return true;
+		case SpecTypeUnsigned: return true;
+	}
+
+	if(type->btype == SpecTypeConst && type->type.cons.suptype == 'i') {
+		return true;
+	}
+
+	return false;
+}
+
+bool type_is_float(Spec *type) {
+	if(!type) return false;
+	if(type->btype == SpecTypeFloat) return true;
+	if(type->btype == SpecTypeConst
+	&& type->type.cons.suptype == 'f')
+		return true;
+	return false;
+}
+
+bool type_is_num(Spec *type) {
+	return type_is_bit(type) || type_is_float(type);
+}
+
+/* assume operand A and B, A op B ==> rval
+ */
+Spec *type_more_accurate(Spec *typeA, Spec *typeB) {
+	if(!type_is_num(typeA) || !type_is_num(typeB))
+		return NULL;
+	if(typeA->btype == SpecTypeConst
+	|| typeB->btype == SpecTypeConst) {
+		if(typeA->type.cons.suptype == 'f'
+		|| typeB->type.cons.suptype == 'f') {
+			return get_spec_by_btype(SpecTypeFloat, SpecRvalue);
+		}else if(typeA->type.cons.suptype == 'i'
+		      || typeB->type.cons.suptype == 'i') {
+			return get_spec_by_btype(SpecTypeInt, SpecRvalue);
+		}
+	}else{
+		if(typeA->btype > typeB->btype)
+			return get_spec_by_btype(typeA->btype, SpecRvalue);
+		else
+			return get_spec_by_btype(typeB->btype, SpecRvalue);
+	}
+	/**/
+	logw("maybe ... :(");
+	return NULL;
+}
 
 /* IN[0]: struct tagSpec *
  *   struct type
@@ -86,19 +155,20 @@ Spec *find_type_of_spec(Node *root) {
 	char *struct_id = NULL;
 	
 	if(root->reduce_rule == AST_Specifier_is_TYPE) {
-		switch(root->child->idtype->type.cons.suptype) {
+		switch(get_child_node_w(root, TYPE)->idtype->type.cons.suptype) {
 			case CHAR:
-				return &specpool[SpecTypeChar];
+				return get_spec_by_btype(SpecTypeChar, SpecLvalue);
 			case INT:
-				return &specpool[SpecTypeInt];
+				return get_spec_by_btype(SpecTypeInt, SpecLvalue);
 			case FLOAT:
-				return &specpool[SpecTypeFloat];
+				return get_spec_by_btype(SpecTypeFloat, SpecLvalue);
 			default:
-				yyerr("error type B:type `%c` not supported!\n", root->child->idtype->type.cons.suptype);
+				yyerr("error type B:type `%c` not supported!\n",\
+						type_format(root->child->idtype));
 				return NULL;
 		}
 	} else {//AST_Specifier_is_STRUCT_ID
-		struct_id = root->child->sibling->idtype->type.cons.supval.st;
+		struct_id = get_child_node_w(root, ID)->idtype->type.cons.supval.st;
 		for(int i = specptr - 1; i; i--) {
 			if(specpool[i].btype == SpecTypeStruct && specpool[i].aslevel == 0) {
 				if(strcmp(specpool[i].type.struc.struc_name, struct_id) == 0) {
@@ -118,17 +188,19 @@ Spec *find_type_of_spec(Node *root) {
 /* function:
  *   get spec pointer by btype
  */
-Spec *get_spec_by_btype(int btype) {
+Spec *get_spec_by_btype(int btype, int lr) {
 	switch(btype) {
 		case SpecTypeConst:
 		case SpecTypeVoid:
+		case SpecTypeBool:
 		case SpecTypeChar:
 		case SpecTypeInt:
 		case SpecTypeUnsigned:
 		case SpecTypeFloat:
-		case SpecTypePointer:
-			return &specpool[btype];
+		case SpecTypeString:
+			return &specpool[2 * btype + lr];
 	}
+	logw("check here. :(\n");
 	return NULL;
 }
 
@@ -136,7 +208,7 @@ Spec *get_spec_by_btype(int btype) {
 /* function:
  *   return a copy of input type
  */
-Spec *copy_type(Spec *s) {
+Spec *copy_spec(Spec *s) {
 	Spec *t = new_spec();
 	memcpy(t, s, sizeof(Spec));
 	return t;
@@ -159,11 +231,11 @@ char *type_format(Spec *type) {
 			else
 				return "constant";
 		case SpecTypeVoid:     return "void";
+		case SpecTypeBool:     return "bool";
 		case SpecTypeChar:     return "char";
 		case SpecTypeInt:      return "int";
 		case SpecTypeUnsigned: return "unsigned";
 		case SpecTypeFloat:    return "float";
-		case SpecTypePointer:  return "pointer";
 		case SpecTypeStruct:   return sformat("struct %s", type->type.struc.struc_name);
 	}
 
@@ -601,22 +673,42 @@ void print_spec(Spec *type) {
 }
 
 void init_spec() {
-#define btype_register(b, w) do {\
+#define btype_register(b, w, l) do {\
 	specpool[specptr].btype = b;\
 	specpool[specptr].width = w;\
+	specpool[specptr].lval  = l;\
 	specptr ++;\
 } while(0)
 
 #define STATE_RESET \
 	do { \
 		specptr = 0; \
-		btype_register(SpecTypeConst,    0); \
-		btype_register(SpecTypeVoid,     4); \
-		btype_register(SpecTypeChar,     1); \
-		btype_register(SpecTypeBool,     1); \
-		btype_register(SpecTypeInt,      4); \
-		btype_register(SpecTypeUnsigned, 4); \
-		btype_register(SpecTypeFloat,    4); \
+		btype_register(SpecTypeConst,    0, SpecLvalue); \
+		btype_register(SpecTypeConst,    0, SpecRvalue); \
+		btype_register(SpecTypeVoid,     4, SpecLvalue); \
+		btype_register(SpecTypeVoid,     4, SpecRvalue); \
+		btype_register(SpecTypeBool,     1, SpecLvalue); \
+		btype_register(SpecTypeBool,     1, SpecRvalue); \
+		btype_register(SpecTypeChar,     1, SpecLvalue); \
+		btype_register(SpecTypeChar,     1, SpecRvalue); \
+		btype_register(SpecTypeInt,      4, SpecLvalue); \
+		btype_register(SpecTypeInt,      4, SpecRvalue); \
+		btype_register(SpecTypeUnsigned, 4, SpecLvalue); \
+		btype_register(SpecTypeUnsigned, 4, SpecRvalue); \
+		btype_register(SpecTypeFloat,    4, SpecLvalue); \
+		btype_register(SpecTypeFloat,    4, SpecRvalue); \
+		specpool[specptr].lval = SpecLvalue; \
+		specpool[specptr].btype = SpecTypeComplex; \
+		specpool[specptr].type.comp.spec = &specpool[2 * SpecTypeChar + 1]; \
+		specpool[specptr].type.comp.plevel = 1; \
+		specpool[specptr].aslevel = 1; \
+		specptr ++; \
+		specpool[specptr].lval = SpecRvalue; \
+		specpool[specptr].btype = SpecTypeComplex; \
+		specpool[specptr].type.comp.spec = &specpool[2 * SpecTypeChar + 1]; \
+		specpool[specptr].type.comp.plevel = 1; \
+		specpool[specptr].aslevel = 1; \
+		specptr ++; \
 	} while(0)
 
 #ifdef __DEBUG__
@@ -723,9 +815,21 @@ void init_spec() {
 
 	STATE_TEST_START;
 	STATE_RESET;
-	for(int i = 0; i < specptr; i++) {
-		STATE_TEST_EQUAL(specpool[i].btype, i);
+	for(int i = 0; i < specptr - 2; i++) {
+		STATE_TEST_EQUAL(specpool[i].btype, i/2);
+		STATE_TEST_EQUAL(specpool[i].lval, i%2);
 	}
+	STATE_TEST_EQUAL(specpool[2*SpecTypeString].btype, SpecTypeComplex);
+	STATE_TEST_EQUAL(specpool[2*SpecTypeString].lval, SpecLvalue);
+	STATE_TEST_EQUAL(specpool[2*SpecTypeString].aslevel, 1);
+	STATE_TEST_EQUAL(specpool[2*SpecTypeString].type.comp.plevel, 1);
+	STATE_TEST_EQUAL(specpool[2*SpecTypeString].type.comp.spec, &specpool[2 * SpecTypeChar + 1]);
+
+	STATE_TEST_EQUAL(specpool[2*SpecTypeString+1].btype, SpecTypeComplex);
+	STATE_TEST_EQUAL(specpool[2*SpecTypeString+1].lval, SpecRvalue);
+	STATE_TEST_EQUAL(specpool[2*SpecTypeString+1].aslevel, 1);
+	STATE_TEST_EQUAL(specpool[2*SpecTypeString+1].type.comp.plevel, 1);
+	STATE_TEST_EQUAL(specpool[2*SpecTypeString+1].type.comp.spec, &specpool[2 * SpecTypeChar + 1]);
 	STATE_TEST_END;
 #else
 	STATE_RESET;

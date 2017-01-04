@@ -27,10 +27,12 @@ static const char *ErrorReason[] = {
 	[ErrorNotPointer] = "line %d: error: indirection requires pointer operand.",
 	[ErrorTakeRvalueAddress] = "line %d: error: cannot take the address of an rvalue of type",
 	[ErrorUnaryOperatorMismatch] = "line %d: error: invalid argument type to unary",
-	[ErrorAssignIncompatible] = "line %d: error: assigning to '%s' from incompatible type",
+	[ErrorAssignIncompatible] = "line %d: error: assigning to '%s' from incompatible type '%s'",
 	[ErrorReferenceStructMember] = "line %d: error: member reference base type '%s' is not a structure or union",
 	[ErrorNoSuchMember] = "line %d: error: no member named '%s' in '%s'",
 	[ErrorReferenceNotPointer] = "line %d: error: member reference type '%s' is not a pointer",
+	[ErrorInvalidOperand] = "line %d: error: invalid operands to binary expression ('%s' and '%s')",
+	[ErrorIndexNotInteger] = "line %d: error: array subscript is not an integer",
 };
 
 char *sformat(const char *format, ...) {
@@ -91,9 +93,9 @@ int yyerror(const char *format, ...)
 	va_list arg;
 	extern int curlineno;
 	va_start(arg, format);
-	logd("%d: error type B: ", curlineno);
+	fprintf(stderr, "%d: error type B: ", curlineno);
 	done = vfprintf(stderr, format, arg);
-	logd("\n");
+	fprintf(stderr, "\n");
 	va_end (arg);
 	return done;
 }

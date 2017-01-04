@@ -29,6 +29,8 @@ enum ErrorType {
 	ErrorReferenceStructMember,
 	ErrorNoSuchMember,
 	ErrorReferenceNotPointer,
+	ErrorInvalidOperand,
+	ErrorIndexNotInteger,
 };
 
 int yydebug(int, int, int, enum ErrorType);
