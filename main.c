@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
 	init_spec();
 	init_seman();
 	char ch;
-	FILE *fp = NULL;
+	FILE *fp = stdin;
 
 #ifdef __DEBUG_LEX__
 	logd("enter debug mode, while(yylex()>0)\n");
@@ -60,23 +60,30 @@ int main(int argc, char *argv[])
 			fp=fopen(argv[i], "rb");
 			if(fp != NULL)
 			{
-				yyrestart(fp);
 				is_file=true;
 			}
 		}
 	}
+
+	void *yy_create_buffer(FILE *fp, int size);
+	void yy_switch_to_buffer(void *);
+	void yy_delete_buffer(void *);
+
+	void *yybuf = yy_create_buffer(fp, 16*1024);
+	yy_switch_to_buffer(yybuf);
 	/*grammer:shift and reduce*/
 
 #if YYDEBUG == 1
 	yydebug = 1;
 #endif
 	logd("call yyparse().\n");
-	yyparse();
+	//yyparse();
+	yy_delete_buffer(yybuf);
 	logd("call print_ast(astroot), is_print_ast=%d.\n", is_print_ast);
 	if(is_print_ast) print_ast(astroot);
-	if(fp) fclose(fp);
+	if(fp && fp != stdin) fclose(fp);
 #endif
-	semantic_analysis(astroot);
+	//semantic_analysis(astroot);
 	logd("normal exit.\n");
     return 0;
 }

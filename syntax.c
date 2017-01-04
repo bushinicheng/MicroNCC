@@ -1808,10 +1808,10 @@ yyreduce:
   case 41:
 #line 148 "syntax.y" /* yacc.c:1646  */
     {
-		if((yyvsp[-1].pnd)->idtype->type.cons.suptype == 'f')
+		if((yyvsp[-1].pnd)->idtype->cons.suptype == 'f')
 		{
-			(yyvsp[-1].pnd)->idtype->type.cons.suptype = 'i';
-			(yyvsp[-1].pnd)->idtype->type.cons.supval.i = (yyvsp[-1].pnd)->idtype->type.cons.supval.f;
+			(yyvsp[-1].pnd)->idtype->cons.suptype = 'i';
+			(yyvsp[-1].pnd)->idtype->cons.supval.i = (yyvsp[-1].pnd)->idtype->cons.supval.f;
 			yyerr("%d: error type A: invalid dim\n", (yyloc).first_line);
 		}
 		(yyval.pnd)=build_subast(AST_VarDec_is_VarDec_LB_NUM_RB, &(yyloc), (yyvsp[-3].pnd), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));

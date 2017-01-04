@@ -146,10 +146,10 @@ Dec:VarDec {$$=build_subast(AST_Dec_is_VarDec, &@$, $1);}
 VarDec:ID {$$=build_subast(AST_VarDec_is_ID, &@$, $1);}
       |MULT VarDec {$$=build_subast(AST_VarDec_is_MULT_VarDec, &@$, $1, $2);}
 	  |VarDec LB NUM RB {
-		if($3->idtype->type.cons.suptype == 'f')
+		if($3->idtype->cons.suptype == 'f')
 		{
-			$3->idtype->type.cons.suptype = 'i';
-			$3->idtype->type.cons.supval.i = $3->idtype->type.cons.supval.f;
+			$3->idtype->cons.suptype = 'i';
+			$3->idtype->cons.supval.i = $3->idtype->cons.supval.f;
 			yyerr("%d: error type A: invalid dim\n", @$.first_line);
 		}
 		$$=build_subast(AST_VarDec_is_VarDec_LB_NUM_RB, &@$, $1, $2, $3, $4);

@@ -152,7 +152,7 @@ static int type(int specval)
 	pnd->token = syntaxval;
 	pnd->idtype = new_spec();
 	pnd->idtype->btype = SpecTypeConst;
-	pnd->idtype->type.cons.suptype = specval;
+	pnd->idtype->cons.suptype = specval;
 	pnd->lineno = yylineno;
 	pnd->column = yycolumn;
 	yylval.pnd = pnd;
@@ -168,7 +168,7 @@ static int num(int specval)
 	pnd->idtype = new_spec();
 	pnd->idtype->lval = 1;
 	pnd->idtype->btype = SpecTypeConst;
-	pnd->idtype->type.cons.suptype = 'i';
+	pnd->idtype->cons.suptype = 'i';
 	pnd->lineno = yylineno;
 	pnd->column = yycolumn;
 	yylval.pnd = pnd;
@@ -176,18 +176,22 @@ static int num(int specval)
 	switch(specval)
 	{
 	case 'i':
-		pnd->idtype->type.cons.supval.i = next_number(&pstr, 10);
+		pnd->idtype->cons.suptype = 'i';
+		pnd->idtype->cons.supval.i = next_number(&pstr, 10);
 		break;
 	case 'o':
+		pnd->idtype->cons.suptype = 'i';
 		pstr++;
-		pnd->idtype->type.cons.supval.i = next_number(&pstr, 8);
+		pnd->idtype->cons.supval.i = next_number(&pstr, 8);
 		break;
 	case 'x':
+		pnd->idtype->cons.suptype = 'i';
 		pstr+=2;
-		pnd->idtype->type.cons.supval.i = next_number(&pstr, 16);
+		pnd->idtype->cons.supval.i = next_number(&pstr, 16);
 		break;
 	case 'f':
-		pnd->idtype->type.cons.supval.f = atof(pstr);
+		pnd->idtype->cons.suptype = 'f';
+		pnd->idtype->cons.supval.f = atof(pstr);
 		break;
 	}
 
@@ -207,12 +211,12 @@ static int reg(int syntaxval)
 	switch(syntaxval)
 	{
 	case ID:
-		pnd->idtype->type.cons.supval.st = register_id(yytext);
+		pnd->idtype->cons.supval.st = register_id(yytext);
 		break;
 	case STRING:
 		pnd->idtype->lval = 0;
-		pnd->idtype->type.cons.suptype = 's';
-		pnd->idtype->type.cons.supval.st = register_string(yytext);
+		pnd->idtype->cons.suptype = 's';
+		pnd->idtype->cons.supval.st = register_string(yytext);
 		break;
 	}
 

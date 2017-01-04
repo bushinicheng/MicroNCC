@@ -33,6 +33,8 @@ static const char *ErrorReason[] = {
 	[ErrorReferenceNotPointer] = "line %d: error: member reference type '%s' is not a pointer",
 	[ErrorInvalidOperand] = "line %d: error: invalid operands to binary expression ('%s' and '%s')",
 	[ErrorIndexNotInteger] = "line %d: error: array subscript is not an integer",
+	[ErrorSubscripted] = "line %d: error: subscripted value is not an array, pointer",
+	[ErrorNotAssignable] = "line %d: error: expression is not assignable",
 };
 
 char *sformat(const char *format, ...) {

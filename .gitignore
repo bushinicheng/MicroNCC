@@ -13,3 +13,4 @@ test/case*
 *.docx
 *.pdf
 tags
+*.png

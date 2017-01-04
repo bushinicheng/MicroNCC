@@ -31,6 +31,8 @@ enum ErrorType {
 	ErrorReferenceNotPointer,
 	ErrorInvalidOperand,
 	ErrorIndexNotInteger,
+	ErrorSubscripted,
+	ErrorNotAssignable,
 };
 
 int yydebug(int, int, int, enum ErrorType);

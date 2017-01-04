@@ -129,20 +129,20 @@ void print_ast(Node *root)
 
 	/* print semanval or lexval */
 	if(root->token == ID)
-		printf("%s:%s\n", str_lexval[root->token], root->idtype->type.cons.supval.st);
+		printf("%s:%s\n", str_lexval[root->token], root->idtype->cons.supval.st);
 	else if(root->token == NUM) {
-		switch(root->idtype->type.cons.suptype) {
+		switch(root->idtype->cons.suptype) {
 		case 'i':
-			printf("NUM:%d\n", root->idtype->type.cons.supval.i);
+			printf("NUM:%d\n", root->idtype->cons.supval.i);
 			break;
 		case 'o':
-			printf("NUM:0%o\n", root->idtype->type.cons.supval.i);
+			printf("NUM:0%o\n", root->idtype->cons.supval.i);
 			break;
 		case 'x':
-			printf("NUM:0x%x\n", root->idtype->type.cons.supval.i);
+			printf("NUM:0x%x\n", root->idtype->cons.supval.i);
 			break;
 		case 'f':
-			printf("NUM:%f\n", root->idtype->type.cons.supval.f);
+			printf("NUM:%f\n", root->idtype->cons.supval.f);
 			break;
 		default:
 			printf("NUM:0\n");
@@ -150,7 +150,7 @@ void print_ast(Node *root)
 		}
 	}
 	else if(root->token == TYPE)
-		printf("TYPE:%s\n", str_lexval[root->idtype->type.cons.suptype]);
+		printf("TYPE:%s\n", str_lexval[root->idtype->cons.suptype]);
 	else
 		printf("%s\n", str_lexval[root->token]);
 

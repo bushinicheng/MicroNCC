@@ -35,5 +35,6 @@ void *get_memory_pointer();
 void require_memory(size_t size);
 char *strjoin(char **strlist, int size, char *delim);
 char *strmul(char *str, int dup);
+int yylex_destroy();
 
 #endif

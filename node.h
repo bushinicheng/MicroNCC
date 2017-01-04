@@ -79,8 +79,7 @@ typedef struct tagSpec {
 				uintptr_t da;//dest addr of structure or function
 			} supval;
 		} cons; //constant value
-
-	} type;
+	};
 } Spec;
 
 typedef struct tagNode {
