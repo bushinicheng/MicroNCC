@@ -1,6 +1,7 @@
 #include "common.h"
 
 extern bool is_syntax_error;
+extern int last_syntax_error;
 void *get_memory_pointer();
 void require_memory(size_t size);
 
@@ -25,7 +26,7 @@ static const char *ErrorReason[] = {
 	[ErrorCallParameterNotMatch] = "line %d: error: candidate function not viable: no known conversion from '%s' to '%s' for %dth argument",
 	[ErrorUndeclaredIdentifier] = "line %d: error: use of undeclared identifier '%s'.",
 	[ErrorNotPointer] = "line %d: error: indirection requires pointer operand.",
-	[ErrorTakeRvalueAddress] = "line %d: error: cannot take the address of an rvalue of type",
+	[ErrorTakeRvalueAddress] = "line %d: error: cannot take the address of an rvalue of type '%s'",
 	[ErrorUnaryOperatorMismatch] = "line %d: error: invalid argument type to unary",
 	[ErrorAssignIncompatible] = "line %d: error: assigning to '%s' from incompatible type '%s'",
 	[ErrorReferenceStructMember] = "line %d: error: member reference base type '%s' is not a structure or union",
@@ -80,6 +81,7 @@ int yyerrtype(int errortype, ...) {
 	va_list arg;
 	extern int curlineno;
 	is_syntax_error = true;
+	last_syntax_error = errortype;
 	va_start(arg, errortype);
 	done = vfprintf(stderr, ErrorReason[errortype], arg);
 	fprintf(stderr, "\n");

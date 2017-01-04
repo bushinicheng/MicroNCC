@@ -116,6 +116,7 @@ bool compare_type(Spec *s, Spec *t);
 size_t get_size_of_btype(int btype);
 Spec *get_spec_by_btype(int btype, int lr);
 Spec *get_spec_of_const(Spec *const_spec);
+bool type_is_compatible(Spec *typeA, Spec *typeB);
 Spec *find_type_of_spec(struct tagNode *root);
 Spec *find_type_of_struct_member(Spec *type, char *member);
 Spec *register_type_function(struct tagNode *root);

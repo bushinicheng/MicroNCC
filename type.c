@@ -91,6 +91,13 @@ bool type_is_num(Spec *type) {
 	return type_is_bit(type) || type_is_float(type);
 }
 
+bool type_is_compatible(Spec *typeA, Spec *typeB) {
+	bool is_a_number = type_is_num(typeA);
+	bool is_b_number = type_is_num(typeB);
+	if(is_a_number && is_b_number) return true;
+	return false;
+}
+
 /* assume operand A and B, A op B ==> rval
  */
 Spec *type_more_accurate(Spec *typeA, Spec *typeB) {
@@ -701,13 +708,13 @@ void reset_spec_state() {
 	btype_register(SpecTypeFloat,    4, SpecRvalue);
 	specpool[specptr].lval = SpecLvalue;
 	specpool[specptr].btype = SpecTypeComplex;
-	specpool[specptr].comp.spec = &specpool[2 * SpecTypeChar + 1];
+	specpool[specptr].comp.spec = &specpool[2 * SpecTypeChar];
 	specpool[specptr].comp.plevel = 1;
 	specpool[specptr].aslevel = 1;
 	specptr ++;
 	specpool[specptr].lval = SpecRvalue;
 	specpool[specptr].btype = SpecTypeComplex;
-	specpool[specptr].comp.spec = &specpool[2 * SpecTypeChar + 1];
+	specpool[specptr].comp.spec = &specpool[2 * SpecTypeChar];
 	specpool[specptr].comp.plevel = 1;
 	specpool[specptr].aslevel = 1;
 	specptr ++;
