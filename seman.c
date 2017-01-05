@@ -70,10 +70,14 @@ bool find_duplication(char *varname) {
  * assume each query is meaningful :)
  */
 VarElement *find_variable(Node *node, char *varname) {
-	for(int i = asptr - 1; i >= 0; i--) {
-		if(strcmp(varname, actionscope[i].varname) == 0) {
-			actionscope[i].citcount ++;
-			return &actionscope[i];
+	wt_assert(node && varname);
+	if(asptr <= 0) return NULL;
+	for(int i = asptr - 1; i>=0; i--) {
+		if(actionscope[i].varname) {
+			if(strcmp(varname, actionscope[i].varname) == 0) {
+				actionscope[i].citcount ++;
+				return &actionscope[i];
+			}
 		}
 	}
 
@@ -91,6 +95,7 @@ void push_barrier() {
 	actionscope[asptr].varname = NULL;
 	actionscope[asptr].type = NULL;
 	actionlevel ++;
+	asptr ++;
 }
 
 
@@ -100,7 +105,7 @@ void push_barrier() {
  *   TODO: alloc register for active variable
  */
 void push_variable(Node *node, char *varname, Spec *type) {
-	assert(node && varname && type);
+	wt_assert(node && varname && type);
 	find_duplication(varname);
 
 	//calculate base
@@ -143,8 +148,11 @@ void push_variable(Node *node, char *varname, Spec *type) {
 void pop_scope() {
 	if(asptr > 0) asptr --;
 	if(actionlevel > 0) actionlevel --;
-	while(asptr > 0 && actionscope[asptr].varname != NULL) {
-		asptr --;
+	while(asptr > 0){
+	   	if(actionscope[asptr].varname != NULL)
+			asptr --;
+		else
+			break;
 	}
 }
 
@@ -155,7 +163,7 @@ int analyse_expression(Node *root);
 
 void check_function_call(Node *root, VarElement *func) {
 	if(!root || !func) return;
-	assert(root->reduce_rule == AST_Exp_is_ID_LP_RP
+	wt_assert(root->reduce_rule == AST_Exp_is_ID_LP_RP
 		|| root->reduce_rule == AST_Exp_is_ID_LP_FuncCallArgList_RP);
 	//need  <==> func->type->func.argv
 	//given <==> root->reduce_rule
@@ -207,7 +215,7 @@ void check_function_call(Node *root, VarElement *func) {
 
 void register_idlist(Node *root, Spec *type) {
 	if(!root) return;
-	assert(root->token == IdList);
+	wt_assert(root->token == IdList);
 	
 	Node *idlist = root;
 	while(idlist) {
@@ -223,7 +231,7 @@ void register_idlist(Node *root, Spec *type) {
 
 int analyse_expression(Node *root) {
 	if(root == NULL) return 0;
-	assert(root->token == Exp);
+	wt_assert(root->token == Exp);
 
 	Spec *type;
 	VarElement *var;
@@ -377,7 +385,7 @@ int analyse_expression(Node *root) {
 				type = find_type_of_struct_member(exp->idtype, id->idtype->cons.supval.st);
 				if(type == NULL) {
 					//no this member
-					yyerrtype(ErrorNoSuchMember, root->lineno, type_format(exp->idtype));
+					yyerrtype(ErrorNoSuchMember, root->lineno, id->idtype->cons.supval.st, type_format(exp->idtype));
 				} else {
 					root->idtype = type;
 				}
@@ -617,14 +625,14 @@ int analyse_expression(Node *root) {
 			}
 			break;
 		default:
-			assert(0);
+			wt_assert(0);
 	}
 }
 
 
 int analyse_statement(Node *root) {
 	if(root == NULL) return 0;
-	assert(root->token == Stmt);
+	wt_assert(root->token == Stmt);
 
 	Node *exp = NULL, *exp2 = NULL, *exp3 = NULL;
 	Node *vardef = NULL, *stmt = NULL;
@@ -640,7 +648,7 @@ int analyse_statement(Node *root) {
 			break;
 		case AST_Stmt_is_CompSt:
 			push_barrier();
-			stmtlist = get_child_node_w(root, StmtList);
+			stmtlist = get_child_node_dw(root, 2, CompSt, StmtList);
 			while(stmtlist) {
 				stmt = get_child_node_w(stmtlist, Stmt);
 				analyse_statement(stmt);
@@ -687,11 +695,11 @@ int analyse_statement(Node *root) {
 		case AST_Stmt_is_FOR_LP_Exp_SEMI_Exp_SEMI_Exp_RP_Stmt:
 			push_barrier();
 			exp = get_child_node_w(root, Exp);
-			analyse_statement(exp);
+			analyse_expression(exp);
 			exp2 = get_child_node_with_skip_w(root, Exp, 1);
-			analyse_statement(exp2);
+			analyse_expression(exp2);
 			exp3 = get_child_node_with_skip_w(root, Exp, 2);
-			analyse_statement(exp3);
+			analyse_expression(exp3);
 			stmt = get_child_node_w(root, Stmt);
 			analyse_statement(stmt);
 			pop_scope();
@@ -701,12 +709,23 @@ int analyse_statement(Node *root) {
 
 int analyse_function(Node *root, Spec *functype) {
 	if(root == NULL) return 0;
-	assert(root->reduce_rule == AST_Block_is_Specifier_FuncDec_CompSt);
+	wt_assert(root->reduce_rule == AST_Block_is_Specifier_FuncDec_CompSt);
 
 	push_barrier();
+	/*register function arguments*/
+	for(int i = 0; i < functype->func.argv; i++) {
+		Spec *type = functype->func.arglist[i].type;
+		char *varname = functype->func.arglist[i].varname;
+		if(type == NULL	|| varname == NULL)
+			logw("check here!\n");
+		push_variable(root, varname, type);
+	}
+
+
 	Node *stmt = NULL;
 	Node *stmtlist = get_child_node_dw(root, 2, CompSt, StmtList);
 
+	/*analyse every statements*/
 	while(stmtlist) {
 		stmt = get_child_node_w(stmtlist, Stmt);
 		analyse_statement(stmt);
@@ -718,7 +737,7 @@ int analyse_function(Node *root, Spec *functype) {
 
 int analyse_vardef(Node *root) {
 	if(root == NULL) return 0;
-	assert(root->token == VarDef);
+	wt_assert(root->token == VarDef);
 	Spec *type = find_type_of_spec(get_child_node_w(root, Specifier));
 	Node *declist = get_child_node_w(root, DecList);
 	while(declist) {
@@ -738,7 +757,7 @@ int semantic_analysis(Node *root)
 	if(root == NULL)
 		return 0;
 
-	assert(root->token == Program);
+	wt_assert(root->token == Program);
 	Node *blocklist = get_child_node_w(root, BlockList);
 
 	//block reduce
@@ -790,7 +809,7 @@ void init_seman()
 	/*unit test start*/
 	extern Node *astroot;
 	void yy_scan_string(char *);
-
+/*
 	char *vardef_test_sample[] = {
 		"int a;", "int a, b, c;", "int *a, b[10], *c[10];",
 		"int **a[2][3][4];",
@@ -861,7 +880,7 @@ void init_seman()
 		{SpecTypeInt, SpecLvalue},
 		{SpecTypeInt, SpecLvalue},
 	};
-/*
+
 	for(int i = 0; i < sizeof(exp_test_sample)/sizeof(exp_test_sample[0]); i++) {
 		STATE_RESET;
 		yy_scan_string(exp_test_sample[i]);
@@ -888,6 +907,8 @@ void init_seman()
 		UNIT_TEST_ASSERT(compare_type(exp->idtype, get_spec_by_btype(exp_test_answer[i][0], exp_test_answer[i][1])), "fail at #%d: '%s'", i, exp_test_sample[i]);
 	}
 */
+
+	/*
 	struct {
 		int is_error, reason;
 		char *sample;
@@ -982,12 +1003,13 @@ void init_seman()
 		{true, ErrorUndeclaredIdentifier, "int func(){next(78,12);}"},
 		{true, ErrorUndeclaredIdentifier, "int func(){next(78,12)*3;}//pass all these testcases :)"},
 	};
-/*	
+
 	for(int i = 0; i < sizeof(error_detection_testcase)/sizeof(error_detection_testcase[0]); i++) {
 		STATE_RESET;
 		yy_scan_string(error_detection_testcase[i].sample);
 		yyparse();
 
+		logd("line %d, case %d: %s\n", __LINE__, i, error_detection_testcase[i].sample);
 		Node *funcdec = find_child_node(astroot, FuncDec);
 		Node *structdec = find_child_node(astroot, StructDec);
 		Node *exp = find_child_node(astroot, Exp);
@@ -1009,7 +1031,6 @@ void init_seman()
 		UNIT_TEST_ASSERT(is_syntax_error == error_detection_testcase[i].is_error && last_syntax_error == error_detection_testcase[i].reason, "fail at #%d: '%s'", i, error_detection_testcase[i].sample);
 	}
 */
-
 	UNIT_TEST_END;
 #endif
 	STATE_RESET;

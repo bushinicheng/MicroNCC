@@ -49,7 +49,7 @@ void __attribute__((noinline)) make_node(Node *root, int reduce_rule, int token,
 
 Node* new_node()
 {
-	assert(ndpool_ptr < MAX_SIZE);
+	wt_assert(ndpool_ptr < MAX_SIZE);
 	ndpool_ptr ++;
 	return &ndpool[ndpool_ptr];
 }

@@ -2361,7 +2361,7 @@ char* register_string(const char *str)
 	char *p = (char *)str;
 	bool in_str = true;
 #ifdef __DEBUG__
-	assert(strbuf_ptr + strlen(str) < STRBUF_SIZE);
+	wt_assert(strbuf_ptr + strlen(str) < STRBUF_SIZE);
 #endif
 	while(*(++p)) //since the first char is always `"`
 	{

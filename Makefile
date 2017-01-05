@@ -7,7 +7,7 @@ YFILE=syntax.y
 LCFILE=$(LFILE:.l=.c)
 YCFILE=$(YFILE:.y=.c)
 YHFILE=$(YFILE:.y=.h)
-CFILES=$(shell find . -name "*.c")
+CFILES=$(shell echo "ls *.c" | bash)
 HFILES=$(shell find . -name "*.h")
 CFLAGS=-O2 -std=c11
 
@@ -15,9 +15,9 @@ OBJ_DIR=output/
 TEST_DIR=test/
 COMPILER=compiler
 
-#CMM=test/simple.cmm
-#CMM=test/token.cmm
-CMM=test/case-total.cmm
+#CMM=test/simple.c
+#CMM=test/token.c
+CMM=test/case-total.c
 
 all:$(COMPILER)
 

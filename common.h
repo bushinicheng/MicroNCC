@@ -31,6 +31,11 @@ typedef unsigned char bool;
 #include "syntax.h"
 #include "ast.h"
 
+#define wt_assert(cond) do { \
+	if(!(cond)) set_break(); \
+	assert(cond); \
+} while(0)
+
 void *get_memory_pointer();
 void require_memory(size_t size);
 char *strjoin(char **strlist, int size, char *delim);

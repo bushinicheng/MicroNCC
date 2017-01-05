@@ -38,7 +38,7 @@ size_t get_size_of_btype(int btype) {
  *   return a new spec pointer point to a clean spec element
  */
 Spec *new_spec() {
-	assert(specptr < MAX_SIZE);
+	wt_assert(specptr < MAX_SIZE);
 	Spec *spec = &specpool[specptr ++];
 	memset(spec, 0, sizeof(Spec));
 	return spec;
@@ -57,7 +57,7 @@ Spec *get_spec_of_const(Spec *const_spec) {
 		case 'f':return get_spec_by_btype(SpecTypeFloat, SpecRvalue);
 		case 's':return get_spec_by_btype(SpecTypeString, SpecLvalue);
 		case 'c':return get_spec_by_btype(SpecTypeChar, SpecRvalue);
-		default:assert(0);
+		default:wt_assert(0);
 	}
 	return NULL;
 }
@@ -158,11 +158,11 @@ Spec *find_type_of_struct_member(Spec *type, char *member) {
  */
 Spec *find_type_of_spec(Node *root) {
 	if(!root) return NULL;
-	assert(root->token == Specifier);
+	wt_assert(root->token == Specifier);
 	char *struct_id = NULL;
 	
 	if(root->reduce_rule == AST_Specifier_is_TYPE) {
-		switch(get_child_node_w(root, TYPE)->idtype->cons.suptype) {
+		switch(get_child_node_w(root, TYPE)->idtype->cons.suptype){
 			case CHAR:
 				return get_spec_by_btype(SpecTypeChar, SpecLvalue);
 			case INT:
@@ -170,8 +170,8 @@ Spec *find_type_of_spec(Node *root) {
 			case FLOAT:
 				return get_spec_by_btype(SpecTypeFloat, SpecLvalue);
 			default:
-				yyerr("error type B:type `%c` not supported!\n",\
-						type_format(root->child->idtype));
+				yyerr("error type B:type `%s` not supported!\n",\
+						type_format(get_child_node_w(root, TYPE)->idtype));
 				return NULL;
 		}
 	} else {//AST_Specifier_is_STRUCT_ID
@@ -296,7 +296,7 @@ bool compare_type(Spec *s, Spec *t) {
 	switch(s->btype) {
 		case SpecTypeFunc:
 			//TODO:compare type function, IMPLEMENT ME
-			assert(0);
+			wt_assert(0);
 			break;
 		case SpecTypeComplex:
 			if(s->comp.plevel != t->comp.plevel)
@@ -343,7 +343,7 @@ bool compare_type(Spec *s, Spec *t) {
  * */
 Spec *register_type_function(Node *root) {
 	if(!root) return NULL;
-	assert(root->token == FuncDec);
+	wt_assert(root->token == FuncDec);
 	Spec *newspec = new_spec();
 	char *funcname = get_child_node_w(root, ID)->idtype->cons.supval.st;
 	newspec->btype = SpecTypeFunc;
@@ -357,35 +357,34 @@ Spec *register_type_function(Node *root) {
 	size_t argv = 0;
 	SinArg *args = (SinArg*)get_memory_pointer();
 	Node *deflist = get_child_node_w(root, FuncDefArgList);
-	while(1) {
+	while(deflist) {
 		argv ++;
 		deflist = get_child_node(deflist, FuncDefArgList);
-		if(!deflist) break;
 	}
 	require_memory(sizeof(SinArg) * argv);
 
 	//register FuncDefArg recursively
 	size_t parg = 0;
 	deflist = get_child_node_w(root, FuncDefArgList);
-	while(1) {
+	while(deflist) {
 		/* FuncDefArgList => FuncDefArg COMMA FuncDefArgList
 		 * deflist as entry => FuncDefArg
 		 * register FuncDef by `FuncDefArg:Specifier VarDec` 
 		 */
-		Spec *rawtype = find_type_of_spec(deflist->child->child);
+		Node *specnode = get_child_node_dw(deflist, 2, FuncDefArg, Specifier);
+		Spec *rawtype = find_type_of_spec(specnode);
 		args[parg].type = register_complex_var_with_type(rawtype,\
-			deflist->child->child->sibling, &(args[parg].varname));
+			get_sibling_node_w(specnode, VarDec), &(args[parg].varname));
 		parg ++;
 
 		deflist = get_child_node(deflist, FuncDefArgList);
-		if(!deflist) break;
 	}
 
 	newspec->func.argv = parg;
 	newspec->func.arglist = args;
 
 	//final check
-	assert(argv == parg);
+	wt_assert(argv == parg);
 
 	//check duplication
 	check_dupset(sformat("line %d: error: redefinition of parameter '%%s' of '%s'.\n", root->lineno, funcname), 
@@ -424,7 +423,7 @@ Spec *register_type_function(Node *root) {
  */
 Spec *register_complex_var_with_type(Spec *type, Node *root, char **varname) {
 	if(!root || !type) return NULL;
-	assert(root->token == VarDec);
+	wt_assert(root->token == VarDec);
 	Spec *newspec = new_spec();
 	newspec->comp.plevel = 0;
 	newspec->btype = SpecTypeComplex;
@@ -494,7 +493,7 @@ Spec *register_complex_var_with_type(Spec *type, Node *root, char **varname) {
  */
 Spec *register_type_complex_var(Node *root, char **varname) {
 	if(!root) return NULL;
-	assert(root->token == VarDec);
+	wt_assert(root->token == VarDec);
 	Spec *newspec = new_spec();
 	newspec->btype = SpecTypeArray;
 	newspec->width = 1;
@@ -504,7 +503,7 @@ Spec *register_type_complex_var(Node *root, char **varname) {
 	while(vardef->reduce_rule != AST_VarDef_is_Specifier_DecList_SEMI) {
 		vardef = vardef->parent;
 	}
-	Spec *rawtype = find_type_of_spec(vardef->child);
+	Spec *rawtype = find_type_of_spec(get_child_node_w(vardef, Specifier));
 	Spec *newtype = register_complex_var_with_type(rawtype, root, varname);
 
 	if(newtype != rawtype) {
@@ -542,7 +541,7 @@ Spec *register_type_complex_var(Node *root, char **varname) {
  */
 Spec *register_type_struct(Node *root) {
 	if(!root) return NULL;
-	assert(root->token == StructDec);
+	wt_assert(root->token == StructDec);
 	int nr_var = 0, struct_width = 0;
 	char *struct_id = get_child_node_w(root, ID)->idtype->cons.supval.st;
 	Spec *newspec = new_spec();
@@ -552,15 +551,13 @@ Spec *register_type_struct(Node *root) {
 
 	Node *dvl = get_child_node_w(root, StructDecVarList);
 	//first traverse to count up number of variable
-	while(1) {
-		Node *idlist = get_child_node_w(dvl->child, IdList);
-		while(1) {
+	while(dvl) {
+		Node *idlist = get_child_node_dw(dvl, 2, StructDecVar, IdList);
+		while(idlist) {
 			nr_var ++;
 			idlist = get_child_node(idlist, IdList);
-			if(!idlist) break;
 		}
 		dvl = get_child_node(dvl, StructDecVarList);
-		if(!dvl) break;
 	}
 	//alloc memory for struc.varlist
 	newspec->struc.varlist = get_memory_pointer();
@@ -568,10 +565,10 @@ Spec *register_type_struct(Node *root) {
 
 	//second traverse to register type of variable
 	dvl = get_child_node_w(root, StructDecVarList);
-	while(1) {
+	while(dvl) {
 		Spec *curtype = NULL;
 		Node *type_node = dvl->child->child;
-		Node *idlist = get_child_node_w(dvl->child, IdList);
+		Node *idlist = get_child_node_dw(dvl, 2, StructDecVar, IdList);
 		if(type_node->token == Specifier)
 			curtype = find_type_of_spec(type_node);
 		else {
@@ -579,21 +576,20 @@ Spec *register_type_struct(Node *root) {
 			curtype->aslevel = newspec->aslevel + 1;
 		}
 
-		while(1) {
+		while(idlist) {
 			//TODO:round the size of width to 4
 			Spec *newtype = NULL;
 			char **specvarname = &(newspec->struc.varlist[newspec->struc.size].varname);
-			newtype = register_complex_var_with_type(curtype, idlist->child, specvarname);
+			newtype = register_complex_var_with_type(curtype,\
+				   	get_child_node_w(idlist, VarDec), specvarname);
 			newspec->struc.varlist[newspec->struc.size].spec = newtype;
 			newspec->struc.varlist[newspec->struc.size].offset = newspec->width;
 			newspec->struc.size ++;
 			newspec->width += newtype->width;
 
 			idlist = get_child_node(idlist, IdList);
-			if(!idlist) break;
 		}
 		dvl = get_child_node(dvl, StructDecVarList);
-		if(!dvl) break;
 	}
 
 	//check duplication
@@ -605,7 +601,7 @@ Spec *register_type_struct(Node *root) {
 		);
 
 	/*final check*/
-	assert(newspec->struc.size == nr_var);
+	wt_assert(newspec->struc.size == nr_var);
 	return newspec;
 }
 
@@ -838,13 +834,13 @@ void init_spec() {
 	STATE_TEST_EQUAL(specpool[2*SpecTypeString].lval, SpecLvalue);
 	STATE_TEST_EQUAL(specpool[2*SpecTypeString].aslevel, 1);
 	STATE_TEST_EQUAL(specpool[2*SpecTypeString].comp.plevel, 1);
-	STATE_TEST_EQUAL(specpool[2*SpecTypeString].comp.spec, &specpool[2 * SpecTypeChar + 1]);
+	STATE_TEST_EQUAL(specpool[2*SpecTypeString].comp.spec, &specpool[2 * SpecTypeChar]);
 
 	STATE_TEST_EQUAL(specpool[2*SpecTypeString+1].btype, SpecTypeComplex);
 	STATE_TEST_EQUAL(specpool[2*SpecTypeString+1].lval, SpecRvalue);
 	STATE_TEST_EQUAL(specpool[2*SpecTypeString+1].aslevel, 1);
 	STATE_TEST_EQUAL(specpool[2*SpecTypeString+1].comp.plevel, 1);
-	STATE_TEST_EQUAL(specpool[2*SpecTypeString+1].comp.spec, &specpool[2 * SpecTypeChar + 1]);
+	STATE_TEST_EQUAL(specpool[2*SpecTypeString].comp.spec, &specpool[2 * SpecTypeChar]);
 	STATE_TEST_END;
 #else
 	reset_spec_state();
