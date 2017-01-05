@@ -728,19 +728,16 @@ void init_spec() {
 
 	UNIT_TEST_START;
 	/*unit test start*/
-	uintptr_t utptr = 0;
 	Node utpool[1024];
 	Spec *retspec;
-	void *yybuf;
 	extern Node *astroot;
 	void *yy_scan_string(char *);
-	void yy_delete_buffer(void *);
 
 	/***********testcase 1 int func()*************/
 	reset_spec_state();
-	yybuf = yy_scan_string("int func(){return 0;}");
+	yy_scan_string("int func(){return 0;}");
 	yyparse();
-	yy_delete_buffer(yybuf);
+
 	retspec = register_type_function(find_child_node(astroot, FuncDec));
 	UNIT_TEST_STR_EQUAL(type_format(retspec), "int ()");
 	UNIT_TEST_EQUAL(retspec->func.argv, 0);
@@ -750,9 +747,9 @@ void init_spec() {
 
 	/********testcase 2 int func(int a, char b, int c)********/
 	reset_spec_state();
-	yybuf = yy_scan_string("int func(int a, char b, int c){return 0;}");
+	yy_scan_string("int func(int a, char b, int c){return 0;}");
 	yyparse();
-	yy_delete_buffer(yybuf);
+
 	retspec = register_type_function(find_child_node(astroot, FuncDec));
 	UNIT_TEST_STR_EQUAL(type_format(retspec), "int (int, char, int)");
 	UNIT_TEST_EQUAL(retspec->func.argv, 3);
@@ -767,9 +764,9 @@ void init_spec() {
 
 	/******testcase 3 int main(){int x,**a[12][34][56];}******/
 	reset_spec_state();
-	yybuf = yy_scan_string("int **a[12][34][56];");
+	yy_scan_string("int **a[12][34][56];");
 	yyparse();
-	yy_delete_buffer(yybuf);
+
 	retspec = register_type_complex_var(find_child_node(astroot, VarDec), NULL);
 	UNIT_TEST_STR_EQUAL(type_format(retspec), "int **[12][34][56]");
 	UNIT_TEST_EQUAL(retspec->btype, SpecTypeComplex);
@@ -783,9 +780,8 @@ void init_spec() {
 	/******testcase 4 duplicate parameter******/
 	/*
 	reset_spec_state();
-	yybuf = yy_scan_string("int main(int a, int a, int a){return 0;}");
+	yy_scan_string("int main(int a, int a, int a){return 0;}");
 	yyparse();
-	yy_delete_buffer(yybuf);
 	print_ast(astroot);
 	retspec = register_type_function(find_child_node(astroot, FuncDec));
 	*/
@@ -793,17 +789,15 @@ void init_spec() {
 	/******testcase 4 duplicate member******/
 	/*
 	reset_spec_state();
-	yybuf = yy_scan_string("struct A{int a;int a;int b;int a;};int main(){return 0;}");
+	yy_scan_string("struct A{int a;int a;int b;int a;};int main(){return 0;}");
 	yyparse();
-	yy_delete_buffer(yybuf);
 	retspec = register_type_struct(find_child_node(astroot, StructDec));
 	*/
 
 	/********testcase 5 struct ID as spec**********/
 	reset_spec_state();
-	yybuf = yy_scan_string("struct A{int a;};int main(struct A *a[45][78], struct A b){return 0;}");
+	yy_scan_string("struct A{int a;};int main(struct A *a[45][78], struct A b){return 0;}");
 	yyparse();
-	yy_delete_buffer(yybuf);
 	register_type_struct(find_child_node(astroot, StructDec));
 	retspec = register_type_function(find_child_node(astroot, FuncDec));
 	UNIT_TEST_STR_EQUAL(type_format(retspec), "int (struct A *[45][78], struct A)");
@@ -825,9 +819,8 @@ void init_spec() {
 
 	/****************testcase ?(hard to check)****************/
 	reset_spec_state();
-	yybuf = yy_scan_string("struct A {int a, *b, c[3];struct B {int **x[3][4], y;float z;} d, e, f;struct C {float _89;struct nested_in_C {int na, nb;float nc;} p_p;} xx;float oatt;} ;int *****array[123][12][4564][678];int init = 0;int main(struct A x) {int a[10][123][345][657];return 0;}");
+	yy_scan_string("struct A {int a, *b, c[3];struct B {int **x[3][4], y;float z;} d, e, f;struct C {float _89;struct nested_in_C {int na, nb;float nc;} p_p;} xx;float oatt;} ;int *****array[123][12][4564][678];int init = 0;int main(struct A x) {int a[10][123][345][657];return 0;}");
 	yyparse();
-	yy_delete_buffer(yybuf);
 	retspec = register_type_struct(find_child_node(astroot, StructDec));
 	//print_ast(astroot);
 	//print_spec(retspec);//checked by human

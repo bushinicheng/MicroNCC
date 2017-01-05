@@ -9,6 +9,16 @@ static int toggle = 0;
 static uintptr_t ptr = 0;
 static uint8_t bpool[POOL_SIZE];
 
+void *wt_malloc(size_t size) {
+	void *ptr = malloc(size);
+	if(!ptr) loge("memory shortage\n");
+	return ptr;
+}
+
+void wt_free(void *ptr) {
+	assert(0);
+}
+
 void *get_memory_pointer() {
 	toggle ++;
 	return &bpool[ptr];
@@ -50,5 +60,13 @@ char *strjoin(char **strlist, int size, char *delim) {
 		}
 	}
 	require_memory((size_t)p - (size_t)ret + 1);
+	return ret;
+}
+
+int strcnt(const char *strin, char ch)
+{
+	int ret = 0;
+	char *p = (char*)strin;
+	do{ret+=*p==ch;}while(*p++);
 	return ret;
 }

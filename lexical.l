@@ -313,6 +313,7 @@ char* register_id(const char *text)
 	return &strbuf[ret_ptr];
 }
 
+
 int init_component()
 {
 #ifdef __DEBUG__
@@ -345,12 +346,4 @@ int init_component()
 	UNIT_TEST_END;
 #endif
 	return 0;
-}
-
-int strcnt(const char *strin, char ch)
-{
-	int ret = 0;
-	char *p = (char*)strin;
-	do{ret+=*p==ch;}while(*p++);
-	return ret;
 }

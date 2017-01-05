@@ -12,9 +12,10 @@ int init_component();
 int init_vector();
 void print_ast(Node*);
 void yyrestart(FILE *);
-extern Node *astroot;
 int semantic_analysis(Node *root);
 
+FILE *fp = NULL;
+extern Node *astroot;
 /*global onoff*/
 bool is_print_ast = false;
 bool is_print_reduce_step = false;
@@ -31,23 +32,11 @@ char *dumps_argv(int argc, char *argv[]) {
 			strcat(ret, ",");
 	}
 	strcat(ret, "]");
+	return ret;
 }
 
-int main(int argc, char *argv[])
-{
-	init_ast();
-	init_component();
-	init_vector();
-	init_spec();
-	init_seman();
-	char ch;
-	FILE *fp = stdin;
-
-#ifdef __DEBUG_LEX__
-	logd("enter debug mode, while(yylex()>0)\n");
-	while(yylex()>0);
-#else
-
+void parse_arguments(int argc, char *argv[]) {
+	fp = stdin;
 	logd("parse arguments={%d, %s}.\n", argc - 1, dumps_argv(argc, argv));
 	for(int i = 1; i < argc; i++)
 	{
@@ -64,26 +53,37 @@ int main(int argc, char *argv[])
 			}
 		}
 	}
+}
 
-	void *yy_create_buffer(FILE *fp, int size);
-	void yy_switch_to_buffer(void *);
-	void yy_delete_buffer(void *);
+int main(int argc, char *argv[])
+{
+	/*dont't move it*/
+	parse_arguments(argc, argv);
 
-	void *yybuf = yy_create_buffer(fp, 16*1024);
-	yy_switch_to_buffer(yybuf);
-	/*grammer:shift and reduce*/
+	init_ast();
+	init_component();
+	init_vector();
+	init_spec();
+	init_seman();
+
+#ifdef __DEBUG_LEX__
+	logd("enter debug mode, while(yylex()>0)\n");
+	while(yylex()>0);
+#else
+
 
 #if YYDEBUG == 1
 	yydebug = 1;
 #endif
+	/*grammer:shift and reduce*/
+	yyrestart(fp);
 	logd("call yyparse().\n");
-	//yyparse();
-	yy_delete_buffer(yybuf);
+	yyparse();
 	logd("call print_ast(astroot), is_print_ast=%d.\n", is_print_ast);
 	if(is_print_ast) print_ast(astroot);
 	if(fp && fp != stdin) fclose(fp);
 #endif
-	//semantic_analysis(astroot);
+	semantic_analysis(astroot);
 	logd("normal exit.\n");
     return 0;
 }

@@ -28,8 +28,10 @@ char *sformat(const char *format, ...);
 #define logf(...) \
 	yylog(stderr, "\033[" YYLOG_STYLE_BACK ";" YYLOG_COLOR_PURPLE "m", __VA_ARGS__)
 
-#define loge(...) \
-	yylog(stderr, "\033[" YYLOG_STYLE_BOLD ";" YYLOG_COLOR_RED "m", __VA_ARGS__)
+#define loge(...) do {\
+	yylog(stderr, "\033[" YYLOG_STYLE_BOLD ";" YYLOG_COLOR_RED "m", __VA_ARGS__); \
+	assert(0); \
+} while(0)
 
 #define logw(...) do { \
 	set_break(); \

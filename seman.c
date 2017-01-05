@@ -149,6 +149,7 @@ void pop_scope() {
 }
 
 /*-------------------------*/
+int analyse_vardef(Node *root);
 int analyse_expression(Node *root);
 
 
@@ -160,7 +161,7 @@ void check_function_call(Node *root, VarElement *func) {
 	//given <==> root->reduce_rule
 	if(func->type->btype != SpecTypeFunc) {
 		//function not callable
-		yyerrtype(ErrorNotCallable, root->lineno, root->child->idtype->cons.supval.st);
+		yyerrtype(ErrorNotCallable, root->lineno, get_child_node_w(root, ID)->idtype->cons.supval.st);
 	}else if(func->type->func.argv == 0) {
 		//0 parameter need, ? given
 		if(root->reduce_rule != AST_Exp_is_ID_LP_RP) {
@@ -209,15 +210,13 @@ void register_idlist(Node *root, Spec *type) {
 	assert(root->token == IdList);
 	
 	Node *idlist = root;
-	while(1) {
+	while(idlist) {
 		char *varname = NULL;
-		Spec *newtype = register_complex_var_with_type(type, idlist->child, &varname);
-		push_variable(idlist->child, varname, newtype);
+		Node *vardec = get_child_node_w(idlist, VarDec);
+		Spec *newtype = register_complex_var_with_type(type, vardec, &varname);
+		push_variable(vardec, varname, newtype);
 
-		if(idlist->child->sibling)
-			idlist = idlist->child->sibling->sibling;
-		else
-			break;
+		idlist = get_child_node(idlist, IdList);
 	}
 }
 
@@ -260,7 +259,7 @@ int analyse_expression(Node *root) {
 			break;
 		case AST_Exp_is_NUM:
 			//rval
-			num = root->child;
+			num = get_child_node_w(root, NUM);
 			root->idtype = get_spec_of_const(num->idtype);
 			break;
 		case AST_Exp_is_ADD_NUM:
@@ -624,8 +623,80 @@ int analyse_expression(Node *root) {
 
 
 int analyse_statement(Node *root) {
-	assert(0);
 	if(root == NULL) return 0;
+	assert(root->token == Stmt);
+
+	Node *exp = NULL, *exp2 = NULL, *exp3 = NULL;
+	Node *vardef = NULL, *stmt = NULL;
+	Node *stmt2 = NULL, *stmtlist = NULL;
+	switch(root->reduce_rule) {
+		case AST_Stmt_is_Exp_SEMI:
+			exp = get_child_node_w(root, Exp);
+			analyse_expression(exp);
+			break;
+		case AST_Stmt_is_VarDef:
+			vardef = get_child_node_w(root, VarDef);
+			analyse_vardef(vardef);
+			break;
+		case AST_Stmt_is_CompSt:
+			push_barrier();
+			stmtlist = get_child_node_w(root, StmtList);
+			while(stmtlist) {
+				stmt = get_child_node_w(stmtlist, Stmt);
+				analyse_statement(stmt);
+				stmtlist = get_child_node(stmtlist, StmtList);
+			}
+			pop_scope();
+			break;
+		case AST_Stmt_is_RETURN_Exp_SEMI:
+			exp = get_child_node_w(root, Exp);
+			analyse_expression(exp);
+			break;
+		case AST_Stmt_is_IF_LP_Exp_RP_Stmt:
+			push_barrier();
+			exp = get_child_node_w(root, Exp);
+			analyse_expression(exp);
+			pop_scope();
+			break;
+		case AST_Stmt_is_IF_LP_Exp_RP_Stmt_ELSE_Stmt:
+			push_barrier();
+			exp = get_child_node_w(root, Exp);
+			analyse_expression(exp);
+			stmt = get_child_node_w(root, Stmt);
+			analyse_statement(stmt);
+			stmt2 = get_child_node_with_skip_w(root, Stmt, 1);
+			analyse_statement(stmt2);
+			pop_scope();
+			break;
+		case AST_Stmt_is_WHILE_LP_Exp_RP_Stmt:
+			push_barrier();
+			exp = get_child_node_w(root, Exp);
+			analyse_expression(exp);
+			stmt = get_child_node_w(root, Stmt);
+			analyse_statement(stmt);
+			pop_scope();
+			break;
+		case AST_Stmt_is_DO_Stmt_WHILE_LP_Exp_RP_SEMI:
+			push_barrier();
+			stmt = get_child_node_w(root, Stmt);
+			analyse_statement(stmt);
+			exp = get_child_node_w(root, Exp);
+			analyse_expression(exp);
+			pop_scope();
+			break;
+		case AST_Stmt_is_FOR_LP_Exp_SEMI_Exp_SEMI_Exp_RP_Stmt:
+			push_barrier();
+			exp = get_child_node_w(root, Exp);
+			analyse_statement(exp);
+			exp2 = get_child_node_with_skip_w(root, Exp, 1);
+			analyse_statement(exp2);
+			exp3 = get_child_node_with_skip_w(root, Exp, 2);
+			analyse_statement(exp3);
+			stmt = get_child_node_w(root, Stmt);
+			analyse_statement(stmt);
+			pop_scope();
+			break;
+	}
 }
 
 int analyse_function(Node *root, Spec *functype) {
@@ -633,6 +704,16 @@ int analyse_function(Node *root, Spec *functype) {
 	assert(root->reduce_rule == AST_Block_is_Specifier_FuncDec_CompSt);
 
 	push_barrier();
+	Node *stmt = NULL;
+	Node *stmtlist = get_child_node_dw(root, 2, CompSt, StmtList);
+
+	while(stmtlist) {
+		stmt = get_child_node_w(stmtlist, Stmt);
+		analyse_statement(stmt);
+		stmtlist = get_child_node(stmtlist, StmtList);
+	}
+
+	pop_scope();
 }
 
 int analyse_vardef(Node *root) {
@@ -642,7 +723,7 @@ int analyse_vardef(Node *root) {
 	Node *declist = get_child_node_w(root, DecList);
 	while(declist) {
 		char *varname = NULL;
-		Node *vardec = get_child_node_w(declist->child, VarDec);
+		Node *vardec = get_child_node_dw(declist, 2, Dec, VarDec);
 		Spec *type = register_type_complex_var(vardec, &varname);
 		//push and check
 		vardec->idtype = type;
@@ -672,12 +753,12 @@ int semantic_analysis(Node *root)
 				analyse_function(block, type);
 				break;
 			case AST_Block_is_StructDec_IdList_SEMI:
-				type = register_type_struct(block->child);
+				type = register_type_struct(get_child_node_w(block, StructDec));
 				idlist = get_child_node_w(block, IdList);
 				register_idlist(idlist, type);
 				break;
 			case AST_Block_is_StructDec_SEMI:
-				register_type_struct(block->child);
+				register_type_struct(get_child_node_w(block, StructDec));
 				break;
 			case AST_Block_is_VarDef:
 				analyse_vardef(get_child_node_w(block, VarDef));
@@ -708,9 +789,7 @@ void init_seman()
 	UNIT_TEST_START;
 	/*unit test start*/
 	extern Node *astroot;
-	void *yybuf;
-	void *yy_scan_string(char *);
-	void yy_delete_buffer(void *);
+	void yy_scan_string(char *);
 
 	char *vardef_test_sample[] = {
 		"int a;", "int a, b, c;", "int *a, b[10], *c[10];",
@@ -721,9 +800,9 @@ void init_seman()
 	
 	for(int i = 0; i < sizeof(vardef_test_sample)/sizeof(vardef_test_sample[0]); i++) {
 		STATE_RESET;
-		yybuf = yy_scan_string(vardef_test_sample[i]);
+		yy_scan_string(vardef_test_sample[i]);
 		yyparse();
-		yy_delete_buffer(yybuf);
+
 		Node *structdec = find_child_node(astroot, StructDec);
 		if(structdec != NULL) register_type_struct(structdec);
 		Node *vardef = find_child_node(astroot, VarDef);
@@ -733,7 +812,7 @@ void init_seman()
 		analyse_vardef(vardef);
 		while(declist) {
 			char *varname;
-			Node *vardec = get_child_node_w(declist->child, VarDec);
+			Node *vardec = get_child_node_dw(declist, 2, Dec, VarDec);
 			Spec *newtype = register_complex_var_with_type(rawtype, vardec, &varname);
 			UNIT_TEST_EQUAL(compare_type(newtype, find_variable(vardec, varname)->type), true);
 
@@ -785,9 +864,8 @@ void init_seman()
 /*
 	for(int i = 0; i < sizeof(exp_test_sample)/sizeof(exp_test_sample[0]); i++) {
 		STATE_RESET;
-		yybuf = yy_scan_string(exp_test_sample[i]);
+		yy_scan_string(exp_test_sample[i]);
 		yyparse();
-		yy_delete_buffer(yybuf);
 
 		Node *funcdec = find_child_node(astroot, FuncDec);
 		Node *structdec = find_child_node(astroot, StructDec);
@@ -906,11 +984,9 @@ void init_seman()
 	};
 /*	
 	for(int i = 0; i < sizeof(error_detection_testcase)/sizeof(error_detection_testcase[0]); i++) {
-		logw("%d:'%s'\n", i, error_detection_testcase[i].sample);
 		STATE_RESET;
-		yybuf = yy_scan_string(error_detection_testcase[i].sample);
+		yy_scan_string(error_detection_testcase[i].sample);
 		yyparse();
-		yy_delete_buffer(yybuf);
 
 		Node *funcdec = find_child_node(astroot, FuncDec);
 		Node *structdec = find_child_node(astroot, StructDec);
@@ -935,7 +1011,6 @@ void init_seman()
 */
 
 	UNIT_TEST_END;
-#else
-	STATE_RESET;
 #endif
+	STATE_RESET;
 }
