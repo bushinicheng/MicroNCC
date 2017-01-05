@@ -83,7 +83,7 @@ int main(int argc, char *argv[])
 	if(is_print_ast) print_ast(astroot);
 	if(fp && fp != stdin) fclose(fp);
 #endif
-	semantic_analysis(astroot);
+	//semantic_analysis(astroot);
 	logd("normal exit.\n");
     return 0;
 }

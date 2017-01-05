@@ -105,30 +105,34 @@ extern int yydebug;
     DEFAULT = 315,
     GOTO = 316,
     TYPE = 317,
-    BOOL = 318,
-    CHAR = 319,
-    SHORT = 320,
-    INT = 321,
-    UNSIGNED = 322,
-    FLOAT = 323,
-    DOUBLE = 324,
-    INT8T = 325,
-    INT16T = 326,
-    INT32T = 327,
-    INT64T = 328,
-    UINT8T = 329,
-    UINT16T = 330,
-    UINT32T = 331,
-    UINT64T = 332,
-    SIZET = 333,
-    OFFT = 334,
-    UINTPTRT = 335,
-    ENUM = 336,
-    UNION = 337,
-    STRUCT = 338,
-    NUM = 339,
-    STRING = 340,
-    ID = 341
+    VOID = 318,
+    BOOL = 319,
+    CHAR = 320,
+    SHORT = 321,
+    INT = 322,
+    UNSIGNED = 323,
+    FLOAT = 324,
+    DOUBLE = 325,
+    INT8T = 326,
+    INT16T = 327,
+    INT32T = 328,
+    INT64T = 329,
+    UINT8T = 330,
+    UINT16T = 331,
+    UINT32T = 332,
+    UINT64T = 333,
+    SIZET = 334,
+    OFFT = 335,
+    UINTPTRT = 336,
+    ENUM = 337,
+    UNION = 338,
+    STRUCT = 339,
+    NUM = 340,
+    STRING = 341,
+    NIL = 342,
+    TRUE = 343,
+    FALSE = 344,
+    ID = 345
   };
 #endif
 
@@ -141,7 +145,7 @@ union YYSTYPE
 
 	Node *pnd;
 
-#line 145 "syntax.h" /* yacc.c:1909  */
+#line 149 "syntax.h" /* yacc.c:1909  */
 };
 
 typedef union YYSTYPE YYSTYPE;

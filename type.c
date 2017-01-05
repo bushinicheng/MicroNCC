@@ -161,7 +161,7 @@ Spec *find_type_of_spec(Node *root) {
 	wt_assert(root->token == Specifier);
 	char *struct_id = NULL;
 	
-	if(root->reduce_rule == AST_Specifier_is_TYPE) {
+	if(root->reduce_rule == AST_Specifier_is_CommonSpec) {
 		switch(get_child_node_w(root, TYPE)->idtype->cons.suptype){
 			case CHAR:
 				return get_spec_by_btype(SpecTypeChar, SpecLvalue);

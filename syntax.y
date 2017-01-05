@@ -32,12 +32,13 @@ extern Node *astroot;
 	LP RP LB RB LC RC
 	DOT COMMA SEMI POINTER COLON
 	IF ELSE DO WHILE FOR RETURN SWITCH CASE BREAK DEFAULT GOTO /* inline key words */
-	TYPE BOOL CHAR SHORT INT UNSIGNED FLOAT DOUBLE
+	TYPE VOID BOOL CHAR SHORT INT UNSIGNED FLOAT DOUBLE
 	INT8T INT16T INT32T INT64T 
 	UINT8T UINT16T UINT32T UINT64T 
 	SIZET OFFT UINTPTRT
 	ENUM UNION STRUCT /* inline specifier */
 	NUM STRING
+	NIL TRUE FALSE
 	ID
 
 %left COMMA
@@ -72,7 +73,12 @@ extern Node *astroot;
 	DecList
 	Dec
 	VarDec
+	Initializer
+	TypeConversion
 	Specifier
+	TypeRef
+	CommonSpec
+	StarList
 	StructDec
 	AnonyStructDec
 	StructDecVar
@@ -157,7 +163,8 @@ CaseList:CaseOne CaseList {$$=build_subast(AST_CaseList_is_CaseOne_CaseList, &@$
 		|CaseOne {$$=build_subast(AST_CaseList_is_CaseOne, &@$, $1);}
 ;
 
-CaseOne:CASE Exp COLON StmtList {$$=build_subast(AST_CaseOne_is_CASE_Exp_COLON_StmtList, &@$, $1, $2, $3, $4);}
+CaseOne:CASE Exp COLON {$$=build_subast(AST_CaseOne_is_CASE_Exp_COLON, &@$, $1, $2, $3);}
+	   |CASE Exp COLON StmtList {$$=build_subast(AST_CaseOne_is_CASE_Exp_COLON_StmtList, &@$, $1, $2, $3, $4);}
 	   |DEFAULT COLON StmtList {$$=build_subast(AST_CaseOne_is_DEFAULT_COLON_StmtList, &@$, $1, $2, $3);}
 ;
 
@@ -166,12 +173,16 @@ VarDef:Specifier DecList SEMI {$$=build_subast(AST_VarDef_is_Specifier_DecList_S
 ;
 
 /*init value for VarDef only!!!*/
-DecList:Dec COMMA DecList %prec ASSIGNOP {$$=build_subast(AST_DecList_is_Dec_COMMA_DecList, &@$, $1, $2, $3);}
+DecList:Dec COMMA DecList {$$=build_subast(AST_DecList_is_Dec_COMMA_DecList, &@$, $1, $2, $3);}
 	   |Dec {$$=build_subast(AST_DecList_is_Dec, &@$, $1);}
 ;
 
 Dec:VarDec {$$=build_subast(AST_Dec_is_VarDec, &@$, $1);}
-   |VarDec ASSIGNOP Exp {$$=build_subast(AST_Dec_is_VarDec_ASSIGNOP_Exp, &@$, $1, $2, $3);}
+   |VarDec ASSIGNOP Initializer {$$=build_subast(AST_Dec_is_VarDec_ASSIGNOP_Initializer, &@$, $1, $2, $3);}
+;
+
+Initializer:Exp %prec ASSIGNOP {$$=build_subast(AST_Initializer_is_Exp, &@$, $1);}
+		   |LC Exp RC {$$=build_subast(AST_Initializer_is_LC_Exp_RC, &@$, $1, $2, $3);}
 ;
 
 VarDec:ID {$$=build_subast(AST_VarDec_is_ID, &@$, $1);}
@@ -188,10 +199,21 @@ VarDec:ID {$$=build_subast(AST_VarDec_is_ID, &@$, $1);}
 ;
 
 /*specifier and struct*/
-Specifier:TYPE {$$=build_subast(AST_Specifier_is_TYPE, &@$, $1);}
-		 |STRUCT ID {$$=build_subast(AST_Specifier_is_STRUCT_ID, &@$, $1, $2);}
+Specifier:CommonSpec {$$=build_subast(AST_Specifier_is_CommonSpec, &@$, $1);}
 		 |StructDec {$$=build_subast(AST_Specifier_is_StructDec, &@$, $1);}
 		 |AnonyStructDec {$$=build_subast(AST_Specifier_is_AnonyStructDec, &@$, $1);}
+;
+
+TypeRef:CommonSpec {$$=build_subast(AST_TypeRef_is_CommonSpec, &@$, $1);}
+	   |CommonSpec StarList {$$=build_subast(AST_TypeRef_is_CommonSpec_StarList, &@$, $1);}
+;
+
+StarList:MULT {$$=build_subast(AST_StarList_is_MULT, &@$, $1);}
+		|MULT StarList {$$=build_subast(AST_StarList_is_MULT_StarList, &@$, $1, $2);}
+;
+
+CommonSpec:TYPE {$$=build_subast(AST_CommonSpec_is_TYPE, &@$, $1);}
+		  |STRUCT ID {$$=build_subast(AST_CommonSpec_is_STRUCT_ID, &@$, $1, $2);}
 ;
 
 /*function call*/
@@ -202,11 +224,18 @@ FuncCallArgList:FuncCallArg COMMA FuncCallArgList {$$=build_subast(AST_FuncCallA
 FuncCallArg:Exp %prec ASSIGNOP {$$=build_subast(AST_FuncCallArg_is_Exp, &@$, $1);}
 ;
 
+TypeConversion:LP TypeRef RP {$$=build_subast(AST_TypeConversion_is_LP_TypeRef_RP, &@$, $1, $2, $3);}
+;
+
 /*expression*/
 Exp:ID {$$=build_subast(AST_Exp_is_ID, &@$, $1);}
    |ID LP RP {$$=build_subast(AST_Exp_is_ID_LP_RP, &@$, $1, $2, $3);}
    |ID LP FuncCallArgList RP {$$=build_subast(AST_Exp_is_ID_LP_FuncCallArgList_RP, &@$, $1, $2, $3, $4);}
+   |NIL {$$=build_subast(AST_Exp_is_NIL, &@$, $1);}
+   |TRUE {$$=build_subast(AST_Exp_is_TRUE, &@$, $1);}
+   |FALSE {$$=build_subast(AST_Exp_is_FALSE, &@$, $1);}
    |NUM {$$=build_subast(AST_Exp_is_NUM, &@$, $1);}
+   |TypeConversion Exp %prec LP {$$=build_subast(AST_Exp_is_TypeConversion_Exp, &@$, $1, $2);}
    |ADD NUM {$$=build_subast(AST_Exp_is_ADD_NUM, &@$, $1, $2);}
    |SUB NUM {$$=build_subast(AST_Exp_is_SUB_NUM, &@$, $1, $2);}
    |MULT Exp {$$=build_subast(AST_Exp_is_MULT_Exp, &@$, $1, $2);}

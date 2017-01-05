@@ -111,6 +111,7 @@ invalidcomment   \/\*([^\*]|\*[^\/])*$
 ":"                 {tokout("COMMA");	return symbol(COLON);}
 ";"                 {tokout("SEMI");	return symbol(SEMI);}
 
+void                {tokout("VOID");	return type(VOID);}
 bool                {tokout("BOOL");	return type(BOOL);}
 char                {tokout("CHAR");	return type(CHAR);}
 short               {tokout("SHORT");	return type(SHORT);}
@@ -131,6 +132,9 @@ off_t               {tokout("OFFT");	return type(OFFT);}
 enum                {tokout("ENUM");	return symbol(ENUM);}
 union               {tokout("UNION");	return symbol(UNION);}
 struct              {tokout("STRUCT");	return symbol(STRUCT);}
+NULL                {tokout("nil");		return symbol(NIL);}
+true                {tokout("true");	return symbol(TRUE);}
+false               {tokout("false");	return symbol(FALSE);}
 
 if                  {tokout("IF");		return symbol(IF);}
 else                {tokout("ELSE");	return symbol(ELSE);}

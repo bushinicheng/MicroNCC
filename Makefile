@@ -17,7 +17,7 @@ COMPILER=compiler
 
 #CMM=test/simple.c
 #CMM=test/token.c
-CMM=test/case-total.c
+CMM=test/case-more.c
 
 all:$(COMPILER)
 
