@@ -98,6 +98,168 @@ Node* __attribute__((noinline)) build_subast(int nodetype, YYLTYPE *yyinfo, ...)
 	return parent_node;
 }
 
+void dump_ast(Node *root)
+{
+	if(root == NULL)
+		return;
+
+	static int newline = 0;
+	static int tree_depth = 0;
+	static int pp = 0, pc = 0;
+
+
+	if(root->token == RC) {
+		tree_depth --;
+	}
+
+	if(root->token == LP)
+		pp ++;
+	else if(root->token == RP)
+		pp --;
+
+	/* print leading space */
+	if(!pp && newline) {
+		printf("\n");
+		for(int i = 0; i < tree_depth; i++) {
+			printf("    ");
+		}
+	}
+
+	if(root->token == LC) {
+		tree_depth ++;
+	}
+
+	newline = 0;
+
+	/* print semanval or lexval */
+	switch(root->token){
+		case SIZEOF:	printf("sizeof ");break;
+		case LSHIFT:	printf(" << ");break;
+		case RSHIFT:	printf(" >> ");break;
+		case LSHIFTE:	printf(" <<= ");break;
+		case RSHIFTE:	printf(" >>= ");break;
+		case LT:		printf(" <= ");break;
+		case LE:		printf(" < ");break;
+		case NE:		printf(" != ");break;
+		case EQ:		printf(" == ");break;
+		case GE:		printf(" >= ");break;
+		case GT:		printf(" > ");break;
+		case AND:		printf(" & ");break;
+		case OR:		printf(" | ");break;
+		case XOR:		printf(" ^ ");break;
+		case NOT:		printf("~");break;
+		case ANDE:		printf(" &= ");break;
+		case ORE:		printf(" |= ");break;
+		case XORE:		printf(" ^= ");break;
+		case LAND:		printf(" && ");break;
+		case LOR:		printf(" || ");break;
+		case LNOT:		printf("!");break;
+		case ADD:		printf(" + ");break;
+		case SUB:		printf(" - ");break;
+		case MULT:		printf("*");break;
+		case DIV:		printf(" / ");break;
+		case MOD:		printf("%% ");break;
+		case ADDE:		printf(" += ");break;
+		case SUBE:		printf(" -= ");break;
+		case MULTE:		printf(" *= ");break;
+		case DIVE:		printf(" /= ");break;
+		case MODE:		printf(" %%= ");break;
+		case INC:		printf(" ++");break;
+		case DEC:		printf(" --");break;
+		case ASSIGNOP:	printf(" = ");break;
+		case LP:		printf("(");break;
+		case RP:		printf(")");break;
+		case LB:		printf("[");break;
+		case RB:		printf("]");break;
+		case LC:		printf("{");newline=1;break;
+		case RC:		printf("}");newline=1;break;
+		case DOT:		printf(".");break;
+		case COMMA:		printf(", ");break;
+		case SEMI:		printf(";");newline=1;break;
+		case POINTER:	printf("->");break;
+		case COLON:		printf(":");newline=1;break;
+		case IF:		printf("if ");break;
+		case ELSE:		printf("else ");break;
+		case DO:		printf("do ");break;
+		case WHILE:		printf("while ");break;
+		case FOR:		printf("for ");break;
+		case RETURN:	printf("return ");break;
+		case SWITCH:	printf("switch ");break;
+		case CASE:		printf("case ");break;
+		case BREAK:		printf("break ");break;
+		case DEFAULT:	printf("default ");break;
+		case GOTO:		printf("goto ");break;
+		case TYPE:
+			switch(root->idtype->cons.suptype) {
+				case VOID:		printf("void ");break;
+				case BOOL:		printf("bool ");break;
+				case CHAR:		printf("char ");break;
+				case SHORT:		printf("short ");break;
+				case INT:		printf("int ");break;
+				case UNSIGNED:	printf("unsigned ");break;
+				case FLOAT:		printf("float ");break;
+				case DOUBLE:	printf("double ");break;
+				case INT8T:		printf("int8_t ");break;
+				case INT16T:	printf("int16_t ");break;
+				case INT32T:	printf("int32_t ");break;
+				case INT64T:	printf("int64_t ");break;
+				case UINT8T:	printf("uint8_t ");break;
+				case UINT16T:	printf("uint16_t ");break;
+				case UINT32T:	printf("uint32_t ");break;
+				case UINT64T:	printf("uint64_t ");break;
+				case SIZET:		printf("size_t ");break;
+				case OFFT:		printf("off_t ");break;
+				case UINTPTRT:	printf("uintptr_t ");break;
+			}
+			break;
+		case ENUM:		printf("enum ");break;
+		case UNION:		printf("union ");break;
+		case STRUCT:	printf("struct ");break;
+		case NUM:
+			switch(root->idtype->cons.suptype) {
+				case 'i':
+					printf("%d", root->idtype->cons.supval.i);
+					break;
+				case 'o':
+					printf("0%o", root->idtype->cons.supval.i);
+					break;
+				case 'x':
+					printf("0x%x", root->idtype->cons.supval.i);
+					break;
+				case 'f':
+					printf("%f", root->idtype->cons.supval.f);
+					break;
+				default:
+					printf("?");
+					break;
+			}
+			break;
+		case STRING:
+			printf("\"%s\"", root->idtype->cons.supval.st);
+			break;
+		case NIL:		printf("NULL");break;
+		case TRUE:		printf("true");break;
+		case FALSE:		printf("false");break;
+		case ID:
+			printf("%s", root->idtype->cons.supval.st);
+			break;
+	}
+
+	if(root->token == RC) {
+		if(pc == 1) printf("\n\n");
+		pc --;
+	}else if(root->token == LC) {
+		pc ++;
+	}
+
+	/* recursively print ast */
+	if(root->token == Exp) printf("(");
+	dump_ast(root->child);
+	if(root->token == Exp) printf(")");
+	dump_ast(root->sibling);
+
+}
+
 void print_ast(Node *root)
 {
 	if(root == NULL)

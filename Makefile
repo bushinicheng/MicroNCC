@@ -34,13 +34,16 @@ $(COMPILER):$(YFILE) $(LFILE) $(CFILES) $(HFILES)
 ast.h:syntax.y ast.c
 	python genast.py > ast.h
 
-.PHONY:run run-ast run-rdu test test-lex clean count
+.PHONY:run run-ast run-src run-rdu test test-lex clean count
 
 run:$(COMPILER)
 	./$(COMPILER) $(CMM)
 
 run-ast:$(COMPILER)
 	./$(COMPILER) --print-ast $(CMM)
+
+run-src:$(COMPILER)
+	./$(COMPILER) --print-src $(CMM)
 
 run-rdu:$(COMPILER)
 	./$(COMPILER) --print-reduce $(CMM)

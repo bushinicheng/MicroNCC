@@ -96,7 +96,7 @@ invalidcomment   \/\*([^\*]|\*[^\/])*$
 "~"                 {tokout("NOT");		return symbol(NOT);}
 "&&"                {tokout("LAND");	return symbol(LAND);}
 "||"                {tokout("LOR");		return symbol(LOR);}
-"!"                 {tokout("NOT");		return symbol(NOT);}
+"!"                 {tokout("LNOT");	return symbol(LNOT);}
 "sizeof"            {tokout("SIZEOF");	return symbol(SIZEOF);}
 
 "("                 {tokout("LP");		return symbol(LP);}

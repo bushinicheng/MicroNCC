@@ -205,7 +205,7 @@ Specifier:CommonSpec {$$=build_subast(AST_Specifier_is_CommonSpec, &@$, $1);}
 ;
 
 TypeRef:CommonSpec {$$=build_subast(AST_TypeRef_is_CommonSpec, &@$, $1);}
-	   |CommonSpec StarList {$$=build_subast(AST_TypeRef_is_CommonSpec_StarList, &@$, $1);}
+	   |CommonSpec StarList {$$=build_subast(AST_TypeRef_is_CommonSpec_StarList, &@$, $1, $2);}
 ;
 
 StarList:MULT {$$=build_subast(AST_StarList_is_MULT, &@$, $1);}

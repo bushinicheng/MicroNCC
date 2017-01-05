@@ -415,6 +415,7 @@ void __attribute__((noinline)) make_node(Node *root, int reduce_rule, int token,
 Node* new_node();
 Node* new_sym_node(int lexval, YYLTYPE *yyinfo);
 Node* __attribute__((noinline)) build_subast(int nodetype, YYLTYPE *yyinfo, ...);
+void dump_ast(Node *root);
 void print_ast(Node *root);
 void print_exp(Node *exp);
 Node* get_sibling_node(Node *root, int token);

@@ -2175,7 +2175,7 @@ yyreduce:
 
   case 59:
 #line 208 "syntax.y" /* yacc.c:1646  */
-    {(yyval.pnd)=build_subast(AST_TypeRef_is_CommonSpec_StarList, &(yyloc), (yyvsp[-1].pnd));}
+    {(yyval.pnd)=build_subast(AST_TypeRef_is_CommonSpec_StarList, &(yyloc), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
 #line 2180 "syntax.c" /* yacc.c:1646  */
     break;
 

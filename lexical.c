@@ -1166,7 +1166,7 @@ YY_RULE_SETUP
 case 33:
 YY_RULE_SETUP
 #line 99 "lexical.l"
-{tokout("NOT");		return symbol(NOT);}
+{tokout("LNOT");	return symbol(LNOT);}
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
