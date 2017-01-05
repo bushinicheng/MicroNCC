@@ -69,17 +69,35 @@ invalidcomment   \/\*([^\*]|\*[^\/])*$
 ">"                 {tokout("GT");		return symbol(GT);}
 ">="                {tokout("GE");		return symbol(GE);}
 
+"<<"                {tokout("LSHIFT");	return symbol(LSHIFT);}
+">>"                {tokout("RSHIFT");	return symbol(RSHIFT);}
+"<<="               {tokout("LSHIFTE");	return symbol(LSHIFTE);}
+">>="               {tokout("RSHIFTE");	return symbol(RSHIFTE);}
+
 "+"                 {tokout("ADD");		return symbol(ADD);}
 "-"                 {tokout("SUB");		return symbol(SUB);}
 "*"                 {tokout("MULT");	return symbol(MULT);}
 "/"                 {tokout("DIV");		return symbol(DIV);}
+"%"                 {tokout("MOD");		return symbol(MOD);}
+"+="                {tokout("ADDE");	return symbol(ADDE);}
+"-="                {tokout("SUBE");	return symbol(SUBE);}
+"*="                {tokout("MULTE");	return symbol(MULTE);}
+"/="                {tokout("DIVE");	return symbol(DIVE);}
+"%="                {tokout("MODE");	return symbol(MODE);}
+"++"                {tokout("INC"); 	return symbol(INC);}
+"--"                {tokout("DEC");		return symbol(DEC);}
+"&="                {tokout("ANDE");	return symbol(ANDE);}
+"|="                {tokout("ORE");		return symbol(ORE);}
+"^="                {tokout("XORE");	return symbol(XORE);}
 
-"&"                 {tokout("BITAND");	return symbol(BITAND);}
-"|"                 {tokout("BITOR");	return symbol(BITOR);}
-"~"                 {tokout("BITNOT");	return symbol(BITNOT);}
-"&&"                {tokout("AND");		return symbol(AND);}
-"||"                {tokout("OR");		return symbol(OR);}
+"&"                 {tokout("AND");		return symbol(AND);}
+"|"                 {tokout("OR");		return symbol(OR);}
+"^"                 {tokout("XOR");		return symbol(XOR);}
+"~"                 {tokout("NOT");		return symbol(NOT);}
+"&&"                {tokout("LAND");	return symbol(LAND);}
+"||"                {tokout("LOR");		return symbol(LOR);}
 "!"                 {tokout("NOT");		return symbol(NOT);}
+"sizeof"            {tokout("SIZEOF");	return symbol(SIZEOF);}
 
 "("                 {tokout("LP");		return symbol(LP);}
 ")"                 {tokout("RP");		return symbol(RP);}
@@ -90,19 +108,41 @@ invalidcomment   \/\*([^\*]|\*[^\/])*$
 "."                 {tokout("DOT");		return symbol(DOT);}
 "->"                {tokout("PT");		return symbol(POINTER);}
 ","                 {tokout("COMMA");	return symbol(COMMA);}
+":"                 {tokout("COMMA");	return symbol(COLON);}
 ";"                 {tokout("SEMI");	return symbol(SEMI);}
+
+bool                {tokout("BOOL");	return type(BOOL);}
+char                {tokout("CHAR");	return type(CHAR);}
+short               {tokout("SHORT");	return type(SHORT);}
+int                 {tokout("INT");		return type(INT);}
+unsigned            {tokout("UNSIGNED");return type(UNSIGNED);}
+float               {tokout("FLOAT");	return type(FLOAT);}
+double              {tokout("DOUBLE");	return type(DOUBLE);}
+int8_t              {tokout("INT8T");	return type(INT8T);}
+int16_t             {tokout("INT16T");	return type(INT16T);}
+int32_t             {tokout("INT32T");	return type(INT32T);}
+uint8_t             {tokout("UINT8T");	return type(UINT8T);}
+uint16_t            {tokout("UINT16T");	return type(UINT16T);}
+uint32_t            {tokout("UINT32T");	return type(UINT32T);}
+size_t              {tokout("SIZET");	return type(SIZET);}
+uintptr_t           {tokout("UINTPTRT");return type(UINTPTRT);}
+off_t               {tokout("OFFT");	return type(OFFT);}
+
+enum                {tokout("ENUM");	return symbol(ENUM);}
+union               {tokout("UNION");	return symbol(UNION);}
+struct              {tokout("STRUCT");	return symbol(STRUCT);}
 
 if                  {tokout("IF");		return symbol(IF);}
 else                {tokout("ELSE");	return symbol(ELSE);}
 do                  {tokout("DO");		return symbol(DO);}
 while               {tokout("WHILE");	return symbol(WHILE);}
 for                 {tokout("FOR");		return symbol(FOR);}
-int                 {tokout("INT");		return type(INT);}
-char                {tokout("CHAR");	return type(CHAR);}
-float               {tokout("FLOAT");	return type(FLOAT);}
-enum                {tokout("ENUM");	return symbol(ENUM);}
-struct              {tokout("STRUCT");	return symbol(STRUCT);}
 return              {tokout("RETURN");	return symbol(RETURN);}
+switch              {tokout("SWITCH");	return symbol(SWITCH);}
+case                {tokout("CASE");	return symbol(CASE);}
+break               {tokout("BREAK");	return symbol(BREAK);}
+default             {tokout("DEFAULT");	return symbol(DEFAULT);}
+goto                {tokout("GOTO");	return symbol(GOTO);}
 
 {int}               {tokout("NUM:i");	return num('i');}
 {hex}               {tokout("NUM:x");	return num('x');}

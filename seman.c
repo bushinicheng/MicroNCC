@@ -296,7 +296,7 @@ int analyse_expression(Node *root) {
 				yyerrtype(ErrorNotPointer, root->lineno);
 			}
 			break;
-		case AST_Exp_is_BITAND_Exp:
+		case AST_Exp_is_AND_Exp:
 			//int p; &p
 			//lval -> OK, rval -> error
 			//FIXME: function pointer;
@@ -321,7 +321,7 @@ int analyse_expression(Node *root) {
 				yyerrtype(ErrorTakeRvalueAddress, root->lineno, type_format(exp->idtype));
 			}
 			break;
-		case AST_Exp_is_BITNOT_Exp:
+		case AST_Exp_is_NOT_Exp:
 			//int p; ~p; ==> rval
 			exp = get_child_node_w(root, Exp);
 			analyse_expression(exp);
@@ -331,7 +331,7 @@ int analyse_expression(Node *root) {
 			}else if(!type_is_bit(exp->idtype))
 				yyerrtype(ErrorUnaryOperatorMismatch, root->lineno);
 			break;
-		case AST_Exp_is_NOT_Exp:
+		case AST_Exp_is_LNOT_Exp:
 			//int p; !p
 			//ok: num or (comp and (plevel>0 or size>0))
 			exp = get_child_node_w(root, Exp);
@@ -496,8 +496,8 @@ int analyse_expression(Node *root) {
 				yyerrtype(ErrorInvalidOperand, root->lineno, type_format(exp->idtype), type_format(exp2->idtype));
 			}
 			break;
-		case AST_Exp_is_Exp_BITAND_Exp:
-		case AST_Exp_is_Exp_BITOR_Exp:
+		case AST_Exp_is_Exp_AND_Exp:
+		case AST_Exp_is_Exp_OR_Exp:
 			exp = get_child_node_w(root, Exp);
 			analyse_expression(exp);
 			exp2 = get_child_node_with_skip_w(root, Exp, 1);
@@ -564,8 +564,8 @@ int analyse_expression(Node *root) {
 				}
 			}
 			break;
-		case AST_Exp_is_Exp_AND_Exp:
-		case AST_Exp_is_Exp_OR_Exp:
+		case AST_Exp_is_Exp_LAND_Exp:
+		case AST_Exp_is_Exp_LOR_Exp:
 			//all type except struct
 			//	result: rval
 			exp = get_child_node_w(root, Exp);
@@ -704,6 +704,8 @@ int analyse_statement(Node *root) {
 			analyse_statement(stmt);
 			pop_scope();
 			break;
+		default:
+			wt_assert(0);
 	}
 }
 
@@ -771,17 +773,14 @@ int semantic_analysis(Node *root)
 				push_variable(block, get_child_node_w(get_child_node_w(block, FuncDec), ID)->idtype->cons.supval.st, type);
 				analyse_function(block, type);
 				break;
-			case AST_Block_is_StructDec_IdList_SEMI:
-				type = register_type_struct(get_child_node_w(block, StructDec));
-				idlist = get_child_node_w(block, IdList);
-				register_idlist(idlist, type);
-				break;
 			case AST_Block_is_StructDec_SEMI:
 				register_type_struct(get_child_node_w(block, StructDec));
 				break;
 			case AST_Block_is_VarDef:
 				analyse_vardef(get_child_node_w(block, VarDef));
 				break;
+			default:
+				wt_assert(0);
 		}
 
 		blocklist = get_child_node(blocklist, BlockList);
