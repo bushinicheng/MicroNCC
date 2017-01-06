@@ -118,6 +118,7 @@ StructDecVarList:StructDecVar StructDecVarList {$$=build_subast(AST_StructDecVar
 ;
 
 StructDecVar:Specifier IdList SEMI {$$=build_subast(AST_StructDecVar_is_Specifier_IdList_SEMI, &@$, $1, $2, $3);}
+            |AnonyStructDec SEMI {$$=build_subast(AST_StructDecVar_is_AnonyStructDec_SEMI, &@$, $1, $2);}
             |StructDec SEMI {$$=build_subast(AST_StructDecVar_is_StructDec_SEMI, &@$, $1, $2);}
 ;
 

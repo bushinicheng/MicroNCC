@@ -16,6 +16,23 @@
  * shell script : test.sh
  * python script : genast.py(important)
 
+##syntax
+```
+Program:BlockList
+
+BlockList:VarDef | FuncDef
+
+VarDef:Specifier SEMI | Specifier DecList SEMI
+
+FuncDef:Specifier StarList ID LP ArgList RP CompSt
+
+CompSt:LC StmtList RC
+
+ArgList:Arg COMMA ArgList
+
+Arg:Specifier | Specifier DecList
+```
+
 ##example
 ```
 /*
