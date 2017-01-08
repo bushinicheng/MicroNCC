@@ -770,7 +770,7 @@ int semantic_analysis(Node *root)
 		switch(block->reduce_rule) {
 			case AST_Block_is_Specifier_FuncDec_CompSt:
 				type = register_type_function(get_child_node_w(block, FuncDec));
-				push_variable(block, get_child_node_w(get_child_node_w(block, FuncDec), ID)->idtype->cons.supval.st, type);
+				push_variable(block, get_child_node_dw(block, 2, FuncDec, ID)->idtype->cons.supval.st, type);
 				analyse_function(block, type);
 				break;
 			case AST_Block_is_StructDec_SEMI:

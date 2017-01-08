@@ -110,6 +110,8 @@ invalidcomment   \/\*([^\*]|\*[^\/])*$
 ","                 {tokout("COMMA");	return symbol(COMMA);}
 ":"                 {tokout("COMMA");	return symbol(COLON);}
 ";"                 {tokout("SEMI");	return symbol(SEMI);}
+"..."               {tokout("SEMI");	return symbol(SEMI);}
+"'\w+'"             {tokout("SEMI");	return symbol(SEMI);}
 
 void                {tokout("VOID");	return type(VOID);}
 bool                {tokout("BOOL");	return type(BOOL);}

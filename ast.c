@@ -105,7 +105,7 @@ void dump_ast(Node *root)
 
 	static int newline = 0;
 	static int tree_depth = 0;
-	static int pp = 0, pc = 0;
+	static int pp = 0;
 
 
 	if(root->token == RC) {
@@ -245,11 +245,8 @@ void dump_ast(Node *root)
 			break;
 	}
 
-	if(root->token == RC) {
-		if(pc == 1) printf("\n\n");
-		pc --;
-	}else if(root->token == LC) {
-		pc ++;
+	if(root->token == Block) {
+		printf("\n\n");
 	}
 
 	/* recursively print ast */

@@ -31,6 +31,8 @@ CompSt:LC StmtList RC
 ArgList:Arg COMMA ArgList
 
 Arg:Specifier | Specifier DecList
+
+...
 ```
 
 ##example

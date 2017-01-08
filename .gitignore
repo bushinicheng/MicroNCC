@@ -1,6 +1,9 @@
 *.out
 *.err
 *.d
+*.ini
+*.pdf
+*.html
 parser
 compiler
 *.[oO]
