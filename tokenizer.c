@@ -13,8 +13,8 @@
 
 
 struct {
-	int tag;
 	FILE *fp;
+	char *str;
 } wt_buffer;
 
 /*extract next char from current buffer*/

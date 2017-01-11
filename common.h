@@ -36,6 +36,9 @@ typedef unsigned char bool;
 	assert(cond); \
 } while(0)
 
+void *wt_alloc(size_t size);
+void *wt_realloc(size_t size, void *prev_page);
+void *wt_prevpage(void *nowpage);
 void *get_memory_pointer();
 void require_memory(size_t size);
 char *strjoin(char **strlist, int size, char *delim);

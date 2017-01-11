@@ -4,20 +4,53 @@
  * act like variable-length array
  */
 
+/* memory model:
+ *
+ *  NULL
+ *   ^
+ *   |
+ * +-----------------------------------------------------+
+ * | p |                                                 |
+ * +-----------------------------------------------------+
+ *   ^
+ *   |
+ * +-----------------------------------------------------+
+ * | p |                                                 |
+ * +-----------------------------------------------------+
+ *
+ * extend memory by realloc
+ *
+ */
+
 #define POOL_SIZE (16*1024*1024)
 static int toggle = 0;
 static uintptr_t ptr = 0;
 static uint8_t bpool[POOL_SIZE];
 
-void *wt_malloc(size_t size) {
-	void *ptr = malloc(size);
+void *wt_alloc(size_t size) {
+	void *ptr = malloc(size + sizeof(void *));
+	((void **)ptr)[0] = NULL;
 	if(!ptr) loge("memory shortage\n");
-	return ptr;
+	return ptr + sizeof(void *);
+}
+
+void *wt_realloc(size_t size, void *prev_page) {
+	void *ptr = malloc(size + sizeof(void *));
+	((void **)ptr)[0] = prev_page;
+	if(!ptr) loge("memory shortage\n");
+	return ptr + sizeof(void *);
+}
+
+void *wt_prevpage(void *nowpage) {
+	if(!ptr) logw("check here\n");
+	return ((void **)(ptr - sizeof(void *)))[0];
 }
 
 void wt_free(void *ptr) {
-	assert(0);
+	if(!ptr) logw("check here\n");
+	free(ptr - sizeof(void *));
 }
+
 
 void *get_memory_pointer() {
 	toggle ++;
