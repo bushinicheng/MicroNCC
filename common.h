@@ -23,6 +23,8 @@ typedef unsigned char bool;
 #define false 0
 #define INT_MAX 2147483647
 
+//#define __DEBUG_LEX__
+
 /*other header files*/
 #include "error.h"
 #include "debug.h"

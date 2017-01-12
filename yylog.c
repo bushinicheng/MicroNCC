@@ -48,7 +48,7 @@ char *sformat(const char *format, ...) {
 	return ret_str;
 }
 
-int yydebug(int lineno, int column, int tokenlen, enum ErrorType errortype)
+int yydbg(int lineno, int column, int tokenlen, enum ErrorType errortype)
 {
 	extern char yylinetext[1024];
 	printf("%d:%d: %s\n", lineno, column, ErrorReason[errortype]);

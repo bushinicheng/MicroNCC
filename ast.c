@@ -303,8 +303,6 @@ void print_ast(Node *root)
 			break;
 		}
 	}
-	else if(root->token == TypeSpec)
-		printf("TypeSpec:%s\n", str_lexval[root->idtype->cons.suptype]);
 	else
 		printf("%s\n", str_lexval[root->token]);
 

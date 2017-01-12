@@ -53,6 +53,7 @@ hex              0[xX][0-9a-fA-F]+
 oct              0[1-7][0-7]*
 invalidnum       \.*[0-9][_a-zA-Z0-9\.]*
 string           (\"([^\"]*(\\\")?)*\"[ \t\r\n]*)+
+char             (\'([^\']*(\\\')?)*\'[ \t\r\n]*)+
 blank            [ \t\r]+
 newline          \n+
 id               [_a-zA-Z][_a-zA-Z0-9]*
@@ -108,10 +109,11 @@ invalidcomment   \/\*([^\*]|\*[^\/])*$
 "."                 {tokout("DOT");		return symbol(DOT);}
 "->"                {tokout("PT");		return symbol(PTR);}
 ","                 {tokout("COMMA");	return symbol(COMMA);}
-":"                 {tokout("COMMA");	return symbol(COLON);}
+"?"                 {tokout("QOP");		return symbol(QOP);}
+":"                 {tokout("COLON");	return symbol(COLON);}
 ";"                 {tokout("SEMI");	return symbol(SEMI);}
-"..."               {tokout("SEMI");	return symbol(SEMI);}
-"'\w+'"             {tokout("SEMI");	return symbol(SEMI);}
+"..."               {tokout("ELLIPSIS");return symbol(ELLIPSIS);}
+{char}              {tokout("CHAR");	return symbol(CHAR);}
 
 void                {tokout("VOID");	return type(VOID);}
 bool                {tokout("BOOL");	return type(BOOL);}
@@ -124,9 +126,11 @@ double              {tokout("DOUBLE");	return type(DOUBLE);}
 int8_t              {tokout("INT8T");	return type(INT8T);}
 int16_t             {tokout("INT16T");	return type(INT16T);}
 int32_t             {tokout("INT32T");	return type(INT32T);}
+int64_t             {tokout("INT64T");	return type(INT64T);}
 uint8_t             {tokout("UINT8T");	return type(UINT8T);}
 uint16_t            {tokout("UINT16T");	return type(UINT16T);}
 uint32_t            {tokout("UINT32T");	return type(UINT32T);}
+uint64_t            {tokout("UINT64T");	return type(UINT64T);}
 size_t              {tokout("SIZET");	return type(SIZET);}
 uintptr_t           {tokout("UINTPTRT");return type(UINTPTRT);}
 off_t               {tokout("OFFT");	return type(OFFT);}
@@ -150,6 +154,15 @@ break               {tokout("BREAK");	return symbol(BREAK);}
 default             {tokout("DEFAULT");	return symbol(DEFAULT);}
 goto                {tokout("GOTO");	return symbol(GOTO);}
 
+typedef             {tokout("TYPEDEF");	return symbol(TYPEDEF);}
+extern              {tokout("EXTERN");	return symbol(EXTERN);}
+static              {tokout("STATIC");	return symbol(STATIC);}
+auto                {tokout("AUTO");	return symbol(AUTO);}
+register            {tokout("REGISTER");return symbol(REGISTER);}
+
+const               {tokout("CONST");	return symbol(CONST);}
+volatile            {tokout("VOLATILE");return symbol(VOLATILE);}
+
 {int}               {tokout("NUM:i");	return num('i');}
 {hex}               {tokout("NUM:x");	return num('x');}
 {oct}               {tokout("NUM:o");	return num('o');}
@@ -157,7 +170,7 @@ goto                {tokout("GOTO");	return symbol(GOTO);}
 
 {invalidnum}        {
 						tokout("NUM:v");
-						yydebug(yylineno, yycolumn-yyleng, yyleng, ErrorInvalidNUM);
+						yydbg(yylineno, yycolumn-yyleng, yyleng, ErrorInvalidNUM);
 						return symbol(NUM);
 					}
 {string}            {tokout("STR");		return reg(STRING);}
@@ -176,7 +189,7 @@ goto                {tokout("GOTO");	return symbol(GOTO);}
 					}
 .					{
 						tokout("UB");
-						yydebug(yylineno, yycolumn-yyleng, yyleng, ErrorUnknownToken);
+						yydbg(yylineno, yycolumn-yyleng, yyleng, ErrorUnknownToken);
 					}
 
 %%
@@ -193,16 +206,15 @@ static int symbol(int syntaxval)
 
 static int type(int specval)
 {
-	int syntaxval = TypeSpec;
 	Node *pnd = new_node();
-	pnd->token = syntaxval;
+	pnd->token = specval;
 	pnd->idtype = new_spec();
 	pnd->idtype->btype = SpecTypeConst;
 	pnd->idtype->cons.suptype = specval;
 	pnd->lineno = yylineno;
 	pnd->column = yycolumn;
 	yylval.pnd = pnd;
-	return syntaxval;
+	return specval;
 }
 
 static int num(int specval)

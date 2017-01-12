@@ -35,7 +35,7 @@ enum ErrorType {
 	ErrorNotAssignable,
 };
 
-int yydebug(int, int, int, enum ErrorType);
+int yydbg(int, int, int, enum ErrorType);
 int yyerr(const char *, ...);
 int yyerror(const char *, ...);//called only by YACC
 int yylog(FILE *fp, const char *tag, const char *, ...);

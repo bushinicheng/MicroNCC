@@ -72,13 +72,11 @@ int main(int argc, char *argv[])
 
 #ifdef __DEBUG_LEX__
 	logd("enter debug mode, while(yylex()>0)\n");
+	yyrestart(fp);
 	while(yylex()>0);
 #else
 
 
-#if YYDEBUG == 1
-	yydebug = 1;
-#endif
 	/*grammer:shift and reduce*/
 	yyrestart(fp);
 	logd("call yyparse().\n");
