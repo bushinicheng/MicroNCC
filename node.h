@@ -5,11 +5,18 @@
 enum {
 	SpecTypeConst,
 	SpecTypeVoid,
-	SpecTypeBool,
-	SpecTypeChar,
-	SpecTypeInt,
-	SpecTypeUnsigned,
-	SpecTypeFloat,
+	/*number*/
+	SpecTypeInt8,//also SpecTypeChar
+	SpecTypeUint8,//also SpecTypeBool
+	SpecTypeInt16,
+	SpecTypeUint16,
+	SpecTypeInt32,
+	SpecTypeUint32,
+	SpecTypeInt64,
+	SpecTypeUint64,
+	SpecTypeFloat32,
+	SpecTypeFloat64,
+	/*number*/
 	SpecTypeString, //char *s = "asdfda";
 	//the above must be registered firstly
 	SpecTypeArray,

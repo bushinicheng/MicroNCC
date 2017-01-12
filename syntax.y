@@ -17,11 +17,13 @@ extern Node *astroot;
 %nonassoc ELSE
 
 %token<pnd>
-	ID NUM STRING LITERAL SIZEOF
-	PTR INC DEC LSHIFT RSHIFT LE GE EQ NE
-	AND OR MULTE DIVE MODE ADDE
-	SUBE LSHIFTE RSHIFTE ANDE
-	XORE ORE TYPE_NAME
+	ID NUM STRING LITERAL SIZEOF TYPE_NAME
+	COMMA DOT PTR QOP COLON
+	ASSIGN DIVE MULTE MODE ADDE SUBE LSHIFTE RSHIFTE ANDE XORE ORE
+	LAND LOR OR XOR AND
+	EQ NE LT LE GE GT
+	LSHIFT RSHIFT ADD SUB MULT DIV MOD
+	INC DEC LNOT NOT
 	TYPEDEF EXTERN STATIC AUTO REGISTER
 	CHAR SHORT INT LONG SIGNED UNSIGNED FLOAT DOUBLE CONST VOLATILE VOID
 	STRUCT UNION ENUM ELLIPSIS
@@ -45,317 +47,358 @@ extern Node *astroot;
 %left DOT PTR LB RB
 %left LP RP
 
+%type<pnd>
+	Program
+	ExtDecln
+	FuncDef
+	ExpList
+	Decln
+	DeclnSpec
+	InitorDeclrList
+	InitorDeclr
+	ClassSpec
+	TypeSpec
+	CompSpec
+	CompType
+	StructDeclnList
+	StructDecln
+	SpecQulfrList
+	StructDeclrList
+	StructDeclr
+	EnumSpec
+	EnumorList
+	Enumor
+	TypeQulfr
+	Declr
+	DirectDeclr
+	StarList
+	TypeQulfrList
+	ParaTypeList
+	ParaList
+	ParaDecln
+	IdList
+	TypeName
+	AbstDeclr
+	DirectAbstDeclr
+	Initor
+	InitorList
+	StmtList
+	ExpStmt
+	CompSt
+	DeclnList
+	Stmt
+	Exp
+
 %start Program
 %%
 
 Program
-	:ExtDecln
-	|Program ExtDecln
+	:ExtDecln {$$=build_subast(AST_Program_is_ExtDecln, &@$, $1);}
+	|Program ExtDecln {$$=build_subast(AST_Program_is_Program_ExtDecln, &@$, $1, $2);}
 ;
 
 ExtDecln
-	:FuncDef
-	|Decln
+	:FuncDef {$$=build_subast(AST_ExtDecln_is_FuncDef, &@$, $1);}
+	|Decln {$$=build_subast(AST_ExtDecln_is_Decln, &@$, $1);}
 ;
 
 FuncDef
-	:DeclnSpec Declr DeclnList CompSt
-	|DeclnSpec Declr CompSt
-	|Declr DeclnList CompSt
-	|Declr CompSt
+	:DeclnSpec Declr DeclnList CompSt {$$=build_subast(AST_FuncDef_is_DeclnSpec_Declr_DeclnList_CompSt, &@$, $1, $2, $3, $4);}
+	|DeclnSpec Declr CompSt {$$=build_subast(AST_FuncDef_is_DeclnSpec_Declr_CompSt, &@$, $1, $2, $3);}
+	|Declr DeclnList CompSt {$$=build_subast(AST_FuncDef_is_Declr_DeclnList_CompSt, &@$, $1, $2, $3);}
+	|Declr CompSt {$$=build_subast(AST_FuncDef_is_Declr_CompSt, &@$, $1, $2);}
 ;
 
 ExpList
-	:Exp %prec ASSIGN
-	|ExpList COMMA Exp
+	:Exp %prec ASSIGN {$$=build_subast(AST_ExpList_is_Exp, &@$, $1);}
+	|ExpList COMMA Exp {$$=build_subast(AST_ExpList_is_ExpList_COMMA_Exp, &@$, $1, $2, $3);}
 ;
 
 Decln
-	:DeclnSpec SEMI
-	|DeclnSpec InitDeclrList SEMI
+	:DeclnSpec SEMI {$$=build_subast(AST_Decln_is_DeclnSpec_SEMI, &@$, $1, $2);}
+	|DeclnSpec InitorDeclrList SEMI {$$=build_subast(AST_Decln_is_DeclnSpec_InitorDeclrList_SEMI, &@$, $1, $2, $3);}
 ;
 
 DeclnSpec
-	:ClassSpec
-	|ClassSpec DeclnSpec
-	|TypeSpec
-	|TypeSpec DeclnSpec
-	|TypeQulfr
-	|TypeQulfr DeclnSpec
+	:ClassSpec {$$=build_subast(AST_DeclnSpec_is_ClassSpec, &@$, $1);}
+	|ClassSpec DeclnSpec {$$=build_subast(AST_DeclnSpec_is_ClassSpec_DeclnSpec, &@$, $1, $2);}
+	|TypeSpec {$$=build_subast(AST_DeclnSpec_is_TypeSpec, &@$, $1);}
+	|TypeSpec DeclnSpec {$$=build_subast(AST_DeclnSpec_is_TypeSpec_DeclnSpec, &@$, $1, $2);}
+	|TypeQulfr {$$=build_subast(AST_DeclnSpec_is_TypeQulfr, &@$, $1);}
+	|TypeQulfr DeclnSpec {$$=build_subast(AST_DeclnSpec_is_TypeQulfr_DeclnSpec, &@$, $1, $2);}
 ;
 
-InitDeclrList
-	:InitDeclr 
-	|InitDeclrList COMMA InitDeclr
+InitorDeclrList
+	:InitorDeclr {$$=build_subast(AST_InitorDeclrList_is_InitorDeclr, &@$, $1);}
+	|InitorDeclrList COMMA InitorDeclr {$$=build_subast(AST_InitorDeclrList_is_InitorDeclrList_COMMA_InitorDeclr, &@$, $1, $2, $3);}
 ;
 
-InitDeclr
-	:Declr
-	|Declr ASSIGN Init
+InitorDeclr
+	:Declr {$$=build_subast(AST_InitorDeclr_is_Declr, &@$, $1);}
+	|Declr ASSIGN Initor {$$=build_subast(AST_InitorDeclr_is_Declr_ASSIGN_Initor, &@$, $1, $2, $3);}
 ;
 
 ClassSpec
-	:TYPEDEF
-	|EXTERN
-	|STATIC
-	|AUTO
-	|REGISTER
+	:TYPEDEF {$$=build_subast(AST_ClassSpec_is_TYPEDEF, &@$, $1);}
+	|EXTERN {$$=build_subast(AST_ClassSpec_is_EXTERN, &@$, $1);}
+	|STATIC {$$=build_subast(AST_ClassSpec_is_STATIC, &@$, $1);}
+	|AUTO {$$=build_subast(AST_ClassSpec_is_AUTO, &@$, $1);}
+	|REGISTER {$$=build_subast(AST_ClassSpec_is_REGISTER, &@$, $1);}
 ;
 
 TypeSpec
-	:VOID
-	|CHAR
-	|SHORT
-	|INT
-	|LONG
-	|FLOAT
-	|DOUBLE
-	|SIGNED
-	|UNSIGNED
-	|CompSpec
-	|EnumSpec
-	|TYPE_NAME
+	:VOID {$$=build_subast(AST_TypeSpec_is_VOID, &@$, $1);}
+	|CHAR {$$=build_subast(AST_TypeSpec_is_CHAR, &@$, $1);}
+	|SHORT {$$=build_subast(AST_TypeSpec_is_SHORT, &@$, $1);}
+	|INT {$$=build_subast(AST_TypeSpec_is_INT, &@$, $1);}
+	|LONG {$$=build_subast(AST_TypeSpec_is_LONG, &@$, $1);}
+	|FLOAT {$$=build_subast(AST_TypeSpec_is_FLOAT, &@$, $1);}
+	|DOUBLE {$$=build_subast(AST_TypeSpec_is_DOUBLE, &@$, $1);}
+	|SIGNED {$$=build_subast(AST_TypeSpec_is_SIGNED, &@$, $1);}
+	|UNSIGNED {$$=build_subast(AST_TypeSpec_is_UNSIGNED, &@$, $1);}
+	|CompSpec {$$=build_subast(AST_TypeSpec_is_CompSpec, &@$, $1);}
+	|EnumSpec {$$=build_subast(AST_TypeSpec_is_EnumSpec, &@$, $1);}
+	|TYPE_NAME {$$=build_subast(AST_TypeSpec_is_TYPE_NAME, &@$, $1);}
 ;
 
 CompSpec
-	:CompType ID LC StructDeclnList RC
-	|CompType LC StructDeclnList RC
-	|CompType ID
+	:CompType ID LC StructDeclnList RC {$$=build_subast(AST_CompSpec_is_CompType_ID_LC_StructDeclnList_RC, &@$, $1, $2, $3, $4, $5);}
+	|CompType LC StructDeclnList RC {$$=build_subast(AST_CompSpec_is_CompType_LC_StructDeclnList_RC, &@$, $1, $2, $3, $4);}
+	|CompType ID {$$=build_subast(AST_CompSpec_is_CompType_ID, &@$, $1, $2);}
 ;
 
 CompType
-	:STRUCT
-	|UNION
+	:STRUCT {$$=build_subast(AST_CompType_is_STRUCT, &@$, $1);}
+	|UNION {$$=build_subast(AST_CompType_is_UNION, &@$, $1);}
 ;
 
 StructDeclnList
-	:StructDecln
-	|StructDeclnList StructDecln
+	:StructDecln {$$=build_subast(AST_StructDeclnList_is_StructDecln, &@$, $1);}
+	|StructDeclnList StructDecln {$$=build_subast(AST_StructDeclnList_is_StructDeclnList_StructDecln, &@$, $1, $2);}
 ;
 
 StructDecln
-	:SpecQulfrList StructDeclrList SEMI
+	:SpecQulfrList StructDeclrList SEMI {$$=build_subast(AST_StructDecln_is_SpecQulfrList_StructDeclrList_SEMI, &@$, $1, $2, $3);}
 ;
 
 SpecQulfrList
-	:TypeSpec SpecQulfrList
-	|TypeSpec
-	|TypeQulfr SpecQulfrList
-	|TypeQulfr
+	:TypeSpec SpecQulfrList {$$=build_subast(AST_SpecQulfrList_is_TypeSpec_SpecQulfrList, &@$, $1, $2);}
+	|TypeSpec {$$=build_subast(AST_SpecQulfrList_is_TypeSpec, &@$, $1);}
+	|TypeQulfr SpecQulfrList {$$=build_subast(AST_SpecQulfrList_is_TypeQulfr_SpecQulfrList, &@$, $1, $2);}
+	|TypeQulfr {$$=build_subast(AST_SpecQulfrList_is_TypeQulfr, &@$, $1);}
 ;
 
 StructDeclrList
-	:StructDeclr
-	|StructDeclrList COMMA StructDeclr
+	:StructDeclr {$$=build_subast(AST_StructDeclrList_is_StructDeclr, &@$, $1);}
+	|StructDeclrList COMMA StructDeclr {$$=build_subast(AST_StructDeclrList_is_StructDeclrList_COMMA_StructDeclr, &@$, $1, $2, $3);}
 ;
 
 StructDeclr
-	:Declr
-	|COLON Exp
-	|Declr COLON Exp
+	:Declr {$$=build_subast(AST_StructDeclr_is_Declr, &@$, $1);}
+	|COLON Exp {$$=build_subast(AST_StructDeclr_is_COLON_Exp, &@$, $1, $2);}
+	|Declr COLON Exp {$$=build_subast(AST_StructDeclr_is_Declr_COLON_Exp, &@$, $1, $2, $3);}
 ;
 
 EnumSpec
-	:ENUM LC EnumorList RC
-	|ENUM ID LC EnumorList RC
-	|ENUM ID
+	:ENUM LC EnumorList RC {$$=build_subast(AST_EnumSpec_is_ENUM_LC_EnumorList_RC, &@$, $1, $2, $3, $4);}
+	|ENUM ID LC EnumorList RC {$$=build_subast(AST_EnumSpec_is_ENUM_ID_LC_EnumorList_RC, &@$, $1, $2, $3, $4, $5);}
+	|ENUM ID {$$=build_subast(AST_EnumSpec_is_ENUM_ID, &@$, $1, $2);}
 ;
 
 EnumorList
-	:Enumor
-	|EnumorList COMMA Enumor
+	:Enumor {$$=build_subast(AST_EnumorList_is_Enumor, &@$, $1);}
+	|EnumorList COMMA Enumor {$$=build_subast(AST_EnumorList_is_EnumorList_COMMA_Enumor, &@$, $1, $2, $3);}
 ;
 
 Enumor
-	:ID
-	|ID ASSIGN Exp
+	:ID {$$=build_subast(AST_Enumor_is_ID, &@$, $1);}
+	|ID ASSIGN Exp {$$=build_subast(AST_Enumor_is_ID_ASSIGN_Exp, &@$, $1, $2, $3);}
 ;
 
 TypeQulfr
-	:CONST
-	|VOLATILE
+	:CONST {$$=build_subast(AST_TypeQulfr_is_CONST, &@$, $1);}
+	|VOLATILE {$$=build_subast(AST_TypeQulfr_is_VOLATILE, &@$, $1);}
 ;
 
-Declr 
-	:StarList DirectDeclr
-	|DirectDeclr
+Declr
+	:StarList DirectDeclr {$$=build_subast(AST_Declr_is_StarList_DirectDeclr, &@$, $1, $2);}
+	|DirectDeclr {$$=build_subast(AST_Declr_is_DirectDeclr, &@$, $1);}
 ;
 
 DirectDeclr
-	:ID
-	|LP Declr RP
-	|DirectDeclr LB Exp RB
-	|DirectDeclr LB RB
-	|DirectDeclr LP ParaTypeList RP
-	|DirectDeclr LP IdList RP
-	|DirectDeclr LP RP
+	:ID {$$=build_subast(AST_DirectDeclr_is_ID, &@$, $1);}
+	|LP Declr RP {$$=build_subast(AST_DirectDeclr_is_LP_Declr_RP, &@$, $1, $2, $3);}
+	|DirectDeclr LB Exp RB {$$=build_subast(AST_DirectDeclr_is_DirectDeclr_LB_Exp_RB, &@$, $1, $2, $3, $4);}
+	|DirectDeclr LB RB {$$=build_subast(AST_DirectDeclr_is_DirectDeclr_LB_RB, &@$, $1, $2, $3);}
+	|DirectDeclr LP ParaTypeList RP {$$=build_subast(AST_DirectDeclr_is_DirectDeclr_LP_ParaTypeList_RP, &@$, $1, $2, $3, $4);}
+	|DirectDeclr LP IdList RP {$$=build_subast(AST_DirectDeclr_is_DirectDeclr_LP_IdList_RP, &@$, $1, $2, $3, $4);}
+	|DirectDeclr LP RP {$$=build_subast(AST_DirectDeclr_is_DirectDeclr_LP_RP, &@$, $1, $2, $3);}
 ;
 
 StarList
-	:MULT
-	|MULT TypeQulfrList
-	|MULT StarList
-	|MULT TypeQulfrList StarList
+	:MULT {$$=build_subast(AST_StarList_is_MULT, &@$, $1);}
+	|MULT TypeQulfrList {$$=build_subast(AST_StarList_is_MULT_TypeQulfrList, &@$, $1, $2);}
+	|MULT StarList {$$=build_subast(AST_StarList_is_MULT_StarList, &@$, $1, $2);}
+	|MULT TypeQulfrList StarList {$$=build_subast(AST_StarList_is_MULT_TypeQulfrList_StarList, &@$, $1, $2, $3);}
 ;
 
 TypeQulfrList
-	:TypeQulfr
-	|TypeQulfrList TypeQulfr
+	:TypeQulfr {$$=build_subast(AST_TypeQulfrList_is_TypeQulfr, &@$, $1);}
+	|TypeQulfrList TypeQulfr {$$=build_subast(AST_TypeQulfrList_is_TypeQulfrList_TypeQulfr, &@$, $1, $2);}
 ;
 
 ParaTypeList
-	:ParaList
-	|ParaList COMMA ELLIPSIS
+	:ParaList {$$=build_subast(AST_ParaTypeList_is_ParaList, &@$, $1);}
+	|ParaList COMMA ELLIPSIS {$$=build_subast(AST_ParaTypeList_is_ParaList_COMMA_ELLIPSIS, &@$, $1, $2, $3);}
 ;
 
 ParaList
-	:ParaDecln
-	|ParaList COMMA ParaDecln
+	:ParaDecln {$$=build_subast(AST_ParaList_is_ParaDecln, &@$, $1);}
+	|ParaList COMMA ParaDecln {$$=build_subast(AST_ParaList_is_ParaList_COMMA_ParaDecln, &@$, $1, $2, $3);}
 ;
 
 ParaDecln
-	:DeclnSpec Declr
-	|DeclnSpec AbstDeclr
-	|DeclnSpec
+	:DeclnSpec Declr {$$=build_subast(AST_ParaDecln_is_DeclnSpec_Declr, &@$, $1, $2);}
+	|DeclnSpec AbstDeclr {$$=build_subast(AST_ParaDecln_is_DeclnSpec_AbstDeclr, &@$, $1, $2);}
+	|DeclnSpec {$$=build_subast(AST_ParaDecln_is_DeclnSpec, &@$, $1);}
 ;
 
 IdList
-	:ID
-	|IdList COMMA ID
+	:ID {$$=build_subast(AST_IdList_is_ID, &@$, $1);}
+	|IdList COMMA ID {$$=build_subast(AST_IdList_is_IdList_COMMA_ID, &@$, $1, $2, $3);}
 ;
 
 TypeName
-	:SpecQulfrList
-	|SpecQulfrList AbstDeclr
+	:SpecQulfrList {$$=build_subast(AST_TypeName_is_SpecQulfrList, &@$, $1);}
+	|SpecQulfrList AbstDeclr {$$=build_subast(AST_TypeName_is_SpecQulfrList_AbstDeclr, &@$, $1, $2);}
 ;
 
 AbstDeclr
-	:StarList
-	|DirectAbstDeclr
-	|StarList DirectAbstDeclr
+	:StarList {$$=build_subast(AST_AbstDeclr_is_StarList, &@$, $1);}
+	|DirectAbstDeclr {$$=build_subast(AST_AbstDeclr_is_DirectAbstDeclr, &@$, $1);}
+	|StarList DirectAbstDeclr {$$=build_subast(AST_AbstDeclr_is_StarList_DirectAbstDeclr, &@$, $1, $2);}
 ;
 
 DirectAbstDeclr
-	:LP AbstDeclr RP
-	|LB RB
-	|LB Exp RB
-	|DirectAbstDeclr LB RB
-	|DirectAbstDeclr LB Exp RB
-	|LP RP
-	|LP ParaTypeList RP
-	|DirectAbstDeclr LP RP
-	|DirectAbstDeclr LP ParaTypeList RP
+	:LP AbstDeclr RP {$$=build_subast(AST_DirectAbstDeclr_is_LP_AbstDeclr_RP, &@$, $1, $2, $3);}
+	|LB RB {$$=build_subast(AST_DirectAbstDeclr_is_LB_RB, &@$, $1, $2);}
+	|LB Exp RB {$$=build_subast(AST_DirectAbstDeclr_is_LB_Exp_RB, &@$, $1, $2, $3);}
+	|DirectAbstDeclr LB RB {$$=build_subast(AST_DirectAbstDeclr_is_DirectAbstDeclr_LB_RB, &@$, $1, $2, $3);}
+	|DirectAbstDeclr LB Exp RB {$$=build_subast(AST_DirectAbstDeclr_is_DirectAbstDeclr_LB_Exp_RB, &@$, $1, $2, $3, $4);}
+	|LP RP {$$=build_subast(AST_DirectAbstDeclr_is_LP_RP, &@$, $1, $2);}
+	|LP ParaTypeList RP {$$=build_subast(AST_DirectAbstDeclr_is_LP_ParaTypeList_RP, &@$, $1, $2, $3);}
+	|DirectAbstDeclr LP RP {$$=build_subast(AST_DirectAbstDeclr_is_DirectAbstDeclr_LP_RP, &@$, $1, $2, $3);}
+	|DirectAbstDeclr LP ParaTypeList RP {$$=build_subast(AST_DirectAbstDeclr_is_DirectAbstDeclr_LP_ParaTypeList_RP, &@$, $1, $2, $3, $4);}
 ;
 
-Init
-	:Exp %prec ASSIGN
-	|LC InitList RC
-	|LC InitList COMMA RC
+Initor
+	:Exp %prec ASSIGN {$$=build_subast(AST_Initor_is_Exp, &@$, $1);}
+	|LB Exp RB ASSIGN Exp %prec ASSIGN {$$=build_subast(AST_Initor_is_LB_Exp_RB_ASSIGN_Exp, &@$, $1, $2, $3, $4, $5);}
+	|LC InitorList RC {$$=build_subast(AST_Initor_is_LC_InitorList_RC, &@$, $1, $2, $3);}
+	|LC InitorList COMMA RC {$$=build_subast(AST_Initor_is_LC_InitorList_COMMA_RC, &@$, $1, $2, $3, $4);}
 ;
 
-InitList
-	:Init
-	|InitList COMMA Init
+InitorList
+	:Initor {$$=build_subast(AST_InitorList_is_Initor, &@$, $1);}
+	|InitorList COMMA Initor {$$=build_subast(AST_InitorList_is_InitorList_COMMA_Initor, &@$, $1, $2, $3);}
 ;
 
 StmtList
-	:Stmt
-	|StmtList Stmt
+	:Stmt {$$=build_subast(AST_StmtList_is_Stmt, &@$, $1);}
+	|StmtList Stmt {$$=build_subast(AST_StmtList_is_StmtList_Stmt, &@$, $1, $2);}
 ;
 
 ExpStmt
-	:Exp SEMI
-	|SEMI
+	:Exp SEMI {$$=build_subast(AST_ExpStmt_is_Exp_SEMI, &@$, $1, $2);}
+	|SEMI {$$=build_subast(AST_ExpStmt_is_SEMI, &@$, $1);}
 ;
 
 CompSt
-	:LC RC
-	|LC StmtList RC
+	:LC RC {$$=build_subast(AST_CompSt_is_LC_RC, &@$, $1, $2);}
+	|LC StmtList RC {$$=build_subast(AST_CompSt_is_LC_StmtList_RC, &@$, $1, $2, $3);}
 ;
 
 DeclnList
-	:Decln
-	|DeclnList Decln
+	:Decln {$$=build_subast(AST_DeclnList_is_Decln, &@$, $1);}
+	|DeclnList Decln {$$=build_subast(AST_DeclnList_is_DeclnList_Decln, &@$, $1, $2);}
 ;
 
 Stmt
-	:SEMI
-	|Decln
-	|Exp SEMI
-	|CompSt
-	|GOTO ID SEMI
-	|ID COLON
-	|CONTINUE SEMI
-	|BREAK SEMI
-	|RETURN SEMI
-	|RETURN Exp SEMI
-	|IF LP Exp RP Stmt %prec LOWWER_THAN_ELSE
-	|IF LP Exp RP Stmt ELSE Stmt
-	|SWITCH LP Exp RP Stmt
-	|CASE Exp COLON Stmt
-	|DEFAULT COLON Stmt
-	|WHILE LP Exp RP Stmt
-	|DO Stmt WHILE LP Exp RP SEMI
-	|FOR LP ExpStmt ExpStmt RP Stmt
-	|FOR LP ExpStmt ExpStmt Exp RP Stmt
+	:SEMI {$$=build_subast(AST_Stmt_is_SEMI, &@$, $1);}
+	|Decln {$$=build_subast(AST_Stmt_is_Decln, &@$, $1);}
+	|Exp SEMI {$$=build_subast(AST_Stmt_is_Exp_SEMI, &@$, $1, $2);}
+	|CompSt {$$=build_subast(AST_Stmt_is_CompSt, &@$, $1);}
+	|GOTO ID SEMI {$$=build_subast(AST_Stmt_is_GOTO_ID_SEMI, &@$, $1, $2, $3);}
+	|ID COLON {$$=build_subast(AST_Stmt_is_ID_COLON, &@$, $1, $2);}
+	|CONTINUE SEMI {$$=build_subast(AST_Stmt_is_CONTINUE_SEMI, &@$, $1, $2);}
+	|BREAK SEMI {$$=build_subast(AST_Stmt_is_BREAK_SEMI, &@$, $1, $2);}
+	|RETURN SEMI {$$=build_subast(AST_Stmt_is_RETURN_SEMI, &@$, $1, $2);}
+	|RETURN Exp SEMI {$$=build_subast(AST_Stmt_is_RETURN_Exp_SEMI, &@$, $1, $2, $3);}
+	|IF LP Exp RP Stmt %prec LOWWER_THAN_ELSE {$$=build_subast(AST_Stmt_is_IF_LP_Exp_RP_Stmt, &@$, $1, $2, $3, $4, $5);}
+	|IF LP Exp RP Stmt ELSE Stmt {$$=build_subast(AST_Stmt_is_IF_LP_Exp_RP_Stmt_ELSE_Stmt, &@$, $1, $2, $3, $4, $5, $6, $7);}
+	|SWITCH LP Exp RP Stmt {$$=build_subast(AST_Stmt_is_SWITCH_LP_Exp_RP_Stmt, &@$, $1, $2, $3, $4, $5);}
+	|CASE Exp COLON Stmt {$$=build_subast(AST_Stmt_is_CASE_Exp_COLON_Stmt, &@$, $1, $2, $3, $4);}
+	|DEFAULT COLON Stmt {$$=build_subast(AST_Stmt_is_DEFAULT_COLON_Stmt, &@$, $1, $2, $3);}
+	|WHILE LP Exp RP Stmt {$$=build_subast(AST_Stmt_is_WHILE_LP_Exp_RP_Stmt, &@$, $1, $2, $3, $4, $5);}
+	|DO Stmt WHILE LP Exp RP SEMI {$$=build_subast(AST_Stmt_is_DO_Stmt_WHILE_LP_Exp_RP_SEMI, &@$, $1, $2, $3, $4, $5, $6, $7);}
+	|FOR LP ExpStmt ExpStmt RP Stmt {$$=build_subast(AST_Stmt_is_FOR_LP_ExpStmt_ExpStmt_RP_Stmt, &@$, $1, $2, $3, $4, $5, $6);}
+	|FOR LP ExpStmt ExpStmt Exp RP Stmt {$$=build_subast(AST_Stmt_is_FOR_LP_ExpStmt_ExpStmt_Exp_RP_Stmt, &@$, $1, $2, $3, $4, $5, $6, $7);}
 ;
-
 
 Exp
-	:ID
-	|NUM
-	|STRING
-	|LITERAL
-	|LP Exp RP
-	|Exp LB Exp RB
-	|Exp LP RP
-	|Exp LP ExpList RP
-	|Exp DOT ID
-	|Exp PTR ID
-	|Exp INC
-	|Exp DEC
-	|INC Exp
-	|DEC Exp
-	|AND Exp
-	|MULT Exp
-	|ADD Exp
-	|SUB Exp
-	|NOT Exp
-	|LNOT Exp
-	|SIZEOF Exp
-	|SIZEOF LP TypeName RP
-	|LP TypeName RP Exp
-	|Exp MULT Exp
-	|Exp DIV Exp
-	|Exp MOD Exp
-	|Exp ADD Exp
-	|Exp SUB Exp
-	|Exp LSHIFT Exp 
-	|Exp RSHIFT Exp
-	|Exp LT Exp
-	|Exp GT Exp
-	|Exp LE Exp
-	|Exp GE Exp
-	|Exp EQ Exp
-	|Exp NE Exp
-	|Exp AND Exp
-	|Exp XOR Exp
-	|Exp OR Exp
-	|Exp LAND Exp
-	|Exp LOR Exp
-	|Exp QOP Exp COLON Exp
-	|Exp ASSIGN Exp
-	|Exp MULTE Exp
-	|Exp DIVE Exp
-	|Exp MODE Exp
-	|Exp ADDE Exp
-	|Exp SUBE Exp
-	|Exp LSHIFTE Exp
-	|Exp RSHIFTE Exp
-	|Exp ANDE Exp
-	|Exp XORE Exp
-	|Exp ORE Exp
-	|Exp COMMA Exp
+	:ID {$$=build_subast(AST_Exp_is_ID, &@$, $1);}
+	|NUM {$$=build_subast(AST_Exp_is_NUM, &@$, $1);}
+	|STRING {$$=build_subast(AST_Exp_is_STRING, &@$, $1);}
+	|LITERAL {$$=build_subast(AST_Exp_is_LITERAL, &@$, $1);}
+	|LP Exp RP {$$=build_subast(AST_Exp_is_LP_Exp_RP, &@$, $1, $2, $3);}
+	|Exp LB Exp RB {$$=build_subast(AST_Exp_is_Exp_LB_Exp_RB, &@$, $1, $2, $3, $4);}
+	|Exp LP RP {$$=build_subast(AST_Exp_is_Exp_LP_RP, &@$, $1, $2, $3);}
+	|Exp LP ExpList RP {$$=build_subast(AST_Exp_is_Exp_LP_ExpList_RP, &@$, $1, $2, $3, $4);}
+	|Exp DOT ID {$$=build_subast(AST_Exp_is_Exp_DOT_ID, &@$, $1, $2, $3);}
+	|Exp PTR ID {$$=build_subast(AST_Exp_is_Exp_PTR_ID, &@$, $1, $2, $3);}
+	|Exp INC {$$=build_subast(AST_Exp_is_Exp_INC, &@$, $1, $2);}
+	|Exp DEC {$$=build_subast(AST_Exp_is_Exp_DEC, &@$, $1, $2);}
+	|INC Exp {$$=build_subast(AST_Exp_is_INC_Exp, &@$, $1, $2);}
+	|DEC Exp {$$=build_subast(AST_Exp_is_DEC_Exp, &@$, $1, $2);}
+	|AND Exp {$$=build_subast(AST_Exp_is_AND_Exp, &@$, $1, $2);}
+	|MULT Exp {$$=build_subast(AST_Exp_is_MULT_Exp, &@$, $1, $2);}
+	|ADD Exp {$$=build_subast(AST_Exp_is_ADD_Exp, &@$, $1, $2);}
+	|SUB Exp {$$=build_subast(AST_Exp_is_SUB_Exp, &@$, $1, $2);}
+	|NOT Exp {$$=build_subast(AST_Exp_is_NOT_Exp, &@$, $1, $2);}
+	|LNOT Exp {$$=build_subast(AST_Exp_is_LNOT_Exp, &@$, $1, $2);}
+	|SIZEOF Exp {$$=build_subast(AST_Exp_is_SIZEOF_Exp, &@$, $1, $2);}
+	|SIZEOF LP TypeName RP {$$=build_subast(AST_Exp_is_SIZEOF_LP_TypeName_RP, &@$, $1, $2, $3, $4);}
+	|LP TypeName RP Exp {$$=build_subast(AST_Exp_is_LP_TypeName_RP_Exp, &@$, $1, $2, $3, $4);}
+	|Exp MULT Exp {$$=build_subast(AST_Exp_is_Exp_MULT_Exp, &@$, $1, $2, $3);}
+	|Exp DIV Exp {$$=build_subast(AST_Exp_is_Exp_DIV_Exp, &@$, $1, $2, $3);}
+	|Exp MOD Exp {$$=build_subast(AST_Exp_is_Exp_MOD_Exp, &@$, $1, $2, $3);}
+	|Exp ADD Exp {$$=build_subast(AST_Exp_is_Exp_ADD_Exp, &@$, $1, $2, $3);}
+	|Exp SUB Exp {$$=build_subast(AST_Exp_is_Exp_SUB_Exp, &@$, $1, $2, $3);}
+	|Exp LSHIFT Exp {$$=build_subast(AST_Exp_is_Exp_LSHIFT_Exp, &@$, $1, $2, $3);}
+	|Exp RSHIFT Exp {$$=build_subast(AST_Exp_is_Exp_RSHIFT_Exp, &@$, $1, $2, $3);}
+	|Exp LT Exp {$$=build_subast(AST_Exp_is_Exp_LT_Exp, &@$, $1, $2, $3);}
+	|Exp GT Exp {$$=build_subast(AST_Exp_is_Exp_GT_Exp, &@$, $1, $2, $3);}
+	|Exp LE Exp {$$=build_subast(AST_Exp_is_Exp_LE_Exp, &@$, $1, $2, $3);}
+	|Exp GE Exp {$$=build_subast(AST_Exp_is_Exp_GE_Exp, &@$, $1, $2, $3);}
+	|Exp EQ Exp {$$=build_subast(AST_Exp_is_Exp_EQ_Exp, &@$, $1, $2, $3);}
+	|Exp NE Exp {$$=build_subast(AST_Exp_is_Exp_NE_Exp, &@$, $1, $2, $3);}
+	|Exp AND Exp {$$=build_subast(AST_Exp_is_Exp_AND_Exp, &@$, $1, $2, $3);}
+	|Exp XOR Exp {$$=build_subast(AST_Exp_is_Exp_XOR_Exp, &@$, $1, $2, $3);}
+	|Exp OR Exp {$$=build_subast(AST_Exp_is_Exp_OR_Exp, &@$, $1, $2, $3);}
+	|Exp LAND Exp {$$=build_subast(AST_Exp_is_Exp_LAND_Exp, &@$, $1, $2, $3);}
+	|Exp LOR Exp {$$=build_subast(AST_Exp_is_Exp_LOR_Exp, &@$, $1, $2, $3);}
+	|Exp QOP Exp COLON Exp {$$=build_subast(AST_Exp_is_Exp_QOP_Exp_COLON_Exp, &@$, $1, $2, $3, $4, $5);}
+	|Exp ASSIGN Exp {$$=build_subast(AST_Exp_is_Exp_ASSIGN_Exp, &@$, $1, $2, $3);}
+	|Exp MULTE Exp {$$=build_subast(AST_Exp_is_Exp_MULTE_Exp, &@$, $1, $2, $3);}
+	|Exp DIVE Exp {$$=build_subast(AST_Exp_is_Exp_DIVE_Exp, &@$, $1, $2, $3);}
+	|Exp MODE Exp {$$=build_subast(AST_Exp_is_Exp_MODE_Exp, &@$, $1, $2, $3);}
+	|Exp ADDE Exp {$$=build_subast(AST_Exp_is_Exp_ADDE_Exp, &@$, $1, $2, $3);}
+	|Exp SUBE Exp {$$=build_subast(AST_Exp_is_Exp_SUBE_Exp, &@$, $1, $2, $3);}
+	|Exp LSHIFTE Exp {$$=build_subast(AST_Exp_is_Exp_LSHIFTE_Exp, &@$, $1, $2, $3);}
+	|Exp RSHIFTE Exp {$$=build_subast(AST_Exp_is_Exp_RSHIFTE_Exp, &@$, $1, $2, $3);}
+	|Exp ANDE Exp {$$=build_subast(AST_Exp_is_Exp_ANDE_Exp, &@$, $1, $2, $3);}
+	|Exp XORE Exp {$$=build_subast(AST_Exp_is_Exp_XORE_Exp, &@$, $1, $2, $3);}
+	|Exp ORE Exp {$$=build_subast(AST_Exp_is_Exp_ORE_Exp, &@$, $1, $2, $3);}
+	|Exp COMMA Exp {$$=build_subast(AST_Exp_is_Exp_COMMA_Exp, &@$, $1, $2, $3);}
 ;
 
-%%
