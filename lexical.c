@@ -1218,7 +1218,7 @@ YY_RULE_SETUP
 case 42:
 YY_RULE_SETUP
 #line 109 "lexical.l"
-{tokout("PT");		return symbol(POINTER);}
+{tokout("PT");		return symbol(PTR);}
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
@@ -2539,7 +2539,7 @@ static int symbol(int syntaxval)
 
 static int type(int specval)
 {
-	int syntaxval = TYPE;
+	int syntaxval = TypeSpec;
 	Node *pnd = new_node();
 	pnd->token = syntaxval;
 	pnd->idtype = new_spec();

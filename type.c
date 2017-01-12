@@ -23,10 +23,10 @@ size_t get_size_of_btype(int btype) {
 	switch(btype) {
 		case SpecTypeConst:    return 0;
 		case SpecTypeVoid:     return 4;
-		case SpecTypeChar:     return 1;
-		case SpecTypeInt:      return 4;
-		case SpecTypeUnsigned: return 4;
-		case SpecTypeFloat:    return 4;
+		case SpecTypeInt8:     return 1;
+		case SpecTypeInt32:      return 4;
+		case SpecTypeUint32: return 4;
+		case SpecTypeFloat32:    return 4;
 		case SpecTypePointer:  return 4;
 	}
 	return 0;
@@ -52,11 +52,11 @@ Spec *get_spec_of_const(Spec *const_spec) {
 	if(const_spec->btype != SpecTypeConst)
 		return NULL;
 	switch(const_spec->cons.suptype) {
-		case 'i':return get_spec_by_btype(SpecTypeInt, SpecRvalue);
-		case 'u':return get_spec_by_btype(SpecTypeUnsigned, SpecRvalue);
-		case 'f':return get_spec_by_btype(SpecTypeFloat, SpecRvalue);
+		case 'i':return get_spec_by_btype(SpecTypeInt32, SpecRvalue);
+		case 'u':return get_spec_by_btype(SpecTypeUint32, SpecRvalue);
+		case 'f':return get_spec_by_btype(SpecTypeFloat32, SpecRvalue);
 		case 's':return get_spec_by_btype(SpecTypeString, SpecLvalue);
-		case 'c':return get_spec_by_btype(SpecTypeChar, SpecRvalue);
+		case 'c':return get_spec_by_btype(SpecTypeInt8, SpecRvalue);
 		default:wt_assert(0);
 	}
 	return NULL;
@@ -65,10 +65,10 @@ Spec *get_spec_of_const(Spec *const_spec) {
 bool type_is_bit(Spec *type) {
 	if(!type) return false;
 	switch(type->btype) {
-		case SpecTypeBool:     return true;
-		case SpecTypeChar:     return true;
-		case SpecTypeInt:      return true;
-		case SpecTypeUnsigned: return true;
+		case SpecTypeUint8:     return true;
+		case SpecTypeInt8:     return true;
+		case SpecTypeInt32:      return true;
+		case SpecTypeUint32: return true;
 	}
 
 	if(type->btype == SpecTypeConst && type->cons.suptype == 'i') {
@@ -80,7 +80,7 @@ bool type_is_bit(Spec *type) {
 
 bool type_is_float(Spec *type) {
 	if(!type) return false;
-	if(type->btype == SpecTypeFloat) return true;
+	if(type->btype == SpecTypeFloat32) return true;
 	if(type->btype == SpecTypeConst
 	&& type->cons.suptype == 'f')
 		return true;
@@ -107,10 +107,10 @@ Spec *type_more_accurate(Spec *typeA, Spec *typeB) {
 	|| typeB->btype == SpecTypeConst) {
 		if(typeA->cons.suptype == 'f'
 		|| typeB->cons.suptype == 'f') {
-			return get_spec_by_btype(SpecTypeFloat, SpecRvalue);
+			return get_spec_by_btype(SpecTypeFloat32, SpecRvalue);
 		}else if(typeA->cons.suptype == 'i'
 		      || typeB->cons.suptype == 'i') {
-			return get_spec_by_btype(SpecTypeInt, SpecRvalue);
+			return get_spec_by_btype(SpecTypeInt32, SpecRvalue);
 		}
 	}else{
 		if(typeA->btype > typeB->btype)
@@ -149,32 +149,32 @@ Spec *find_type_of_struct_member(Spec *type, char *member) {
 
 /* IN[0]: struct tagNode *
  *   AST node
- *   RESTRICTION: token = Specifier
+ *   RESTRICTION: token = TypeSpec
  * OUT[0]:
  *   struct tagSpec *
  *   type of input node
  * function:
- *   find corresponding type of AST's `Specifier` node
+ *   find corresponding type of AST's `TypeSpec` node
  */
 Spec *find_type_of_spec(Node *root) {
 	if(!root) return NULL;
-	wt_assert(root->token == Specifier);
+	wt_assert(root->token == TypeSpec);
 	char *struct_id = NULL;
 	
-	if(root->reduce_rule == AST_Specifier_is_CommonSpec) {
-		switch(get_child_node_w(root, TYPE)->idtype->cons.suptype){
+	if(root->token == TypeSpec) {
+		switch(get_child_node_w(root, TypeSpec)->idtype->cons.suptype){
 			case CHAR:
-				return get_spec_by_btype(SpecTypeChar, SpecLvalue);
+				return get_spec_by_btype(SpecTypeInt8, SpecLvalue);
 			case INT:
-				return get_spec_by_btype(SpecTypeInt, SpecLvalue);
+				return get_spec_by_btype(SpecTypeInt32, SpecLvalue);
 			case FLOAT:
-				return get_spec_by_btype(SpecTypeFloat, SpecLvalue);
+				return get_spec_by_btype(SpecTypeFloat32, SpecLvalue);
 			default:
 				yyerr("error type B:type `%s` not supported!\n",\
-						type_format(get_child_node_w(root, TYPE)->idtype));
+						type_format(get_child_node_w(root, TypeSpec)->idtype));
 				return NULL;
 		}
-	} else {//AST_Specifier_is_STRUCT_ID
+	} else {//AST_TypeSpec_is_STRUCT_ID
 		struct_id = get_child_node_w(root, ID)->idtype->cons.supval.st;
 		for(int i = specptr - 1; i; i--) {
 			if(specpool[i].btype == SpecTypeStruct && specpool[i].aslevel == 0) {
@@ -199,11 +199,11 @@ Spec *get_spec_by_btype(int btype, int lr) {
 	switch(btype) {
 		case SpecTypeConst:
 		case SpecTypeVoid:
-		case SpecTypeBool:
-		case SpecTypeChar:
-		case SpecTypeInt:
-		case SpecTypeUnsigned:
-		case SpecTypeFloat:
+		case SpecTypeUint8:
+		case SpecTypeInt8:
+		case SpecTypeInt32:
+		case SpecTypeUint32:
+		case SpecTypeFloat32:
 		case SpecTypeString:
 			return &specpool[2 * btype + lr];
 	}
@@ -241,11 +241,11 @@ char *type_format(Spec *type) {
 				type->format_string = "constant";
 			break;
 		case SpecTypeVoid:     type->format_string = "void";break;
-		case SpecTypeBool:     type->format_string = "bool";break;
-		case SpecTypeChar:     type->format_string = "char";break;
-		case SpecTypeInt:      type->format_string = "int";break;
-		case SpecTypeUnsigned: type->format_string = "unsigned";break;
-		case SpecTypeFloat:    type->format_string = "float";break;
+		case SpecTypeUint8:     type->format_string = "bool";break;
+		case SpecTypeInt8:     type->format_string = "char";break;
+		case SpecTypeInt32:      type->format_string = "int";break;
+		case SpecTypeUint32: type->format_string = "unsigned";break;
+		case SpecTypeFloat32:    type->format_string = "float";break;
 		case SpecTypeStruct:
 			type->format_string = sformat("struct %s", type->struc.struc_name);
 			break;
@@ -328,7 +328,7 @@ bool compare_type(Spec *s, Spec *t) {
  *
  * root=>FuncDec
  *
- * Block:Specifier FuncDec CompSt
+ * Block:TypeSpec FuncDec CompSt
  *
  * FuncDec:ID LP RP
  *        |ID LP FuncDefArgList RP
@@ -336,348 +336,12 @@ bool compare_type(Spec *s, Spec *t) {
  * FuncDefArgList:FuncDefArg COMMA FuncDefArgList
  *               |FuncDefArg
  *
- * FuncDefArg:Specifier VarDec
+ * FuncDefArg:TypeSpec Decln
  *
- * Specifier:TYPE
+ * TypeSpec:TypeSpec
  *          |STRUCT ID
  * */
-Spec *register_type_function(Node *root) {
-	if(!root) return NULL;
-	wt_assert(root->token == FuncDec);
-	Spec *newspec = new_spec();
-	char *funcname = get_child_node_w(root, ID)->idtype->cons.supval.st;
-	newspec->btype = SpecTypeFunc;
-	newspec->width = 0;
-	newspec->func.ret = find_type_of_spec(get_sibling_node_w(root, Specifier));
 
-	if(root->reduce_rule == AST_FuncDec_is_ID_LP_RP)
-		return newspec;
-
-	//count up variable firstly
-	size_t argv = 0;
-	SinArg *args = (SinArg*)get_memory_pointer();
-	Node *deflist = get_child_node_w(root, FuncDefArgList);
-	while(deflist) {
-		argv ++;
-		deflist = get_child_node(deflist, FuncDefArgList);
-	}
-	require_memory(sizeof(SinArg) * argv);
-
-	//register FuncDefArg recursively
-	size_t parg = 0;
-	deflist = get_child_node_w(root, FuncDefArgList);
-	while(deflist) {
-		/* FuncDefArgList => FuncDefArg COMMA FuncDefArgList
-		 * deflist as entry => FuncDefArg
-		 * register FuncDef by `FuncDefArg:Specifier VarDec` 
-		 */
-		Node *specnode = get_child_node_dw(deflist, 2, FuncDefArg, Specifier);
-		Spec *rawtype = find_type_of_spec(specnode);
-		args[parg].type = register_complex_var_with_type(rawtype,\
-			get_sibling_node_w(specnode, VarDec), &(args[parg].varname));
-		parg ++;
-
-		deflist = get_child_node(deflist, FuncDefArgList);
-	}
-
-	newspec->func.argv = parg;
-	newspec->func.arglist = args;
-
-	//final check
-	wt_assert(argv == parg);
-
-	//check duplication
-	check_dupset(sformat("line %d: error: redefinition of parameter '%%s' of '%s'.\n", root->lineno, funcname), 
-			args, argv, sizeof(SinArg),
-			(uintptr_t)(&(args[0].varname)) - (uintptr_t)(&args[0])
-		);
-	
-	return newspec;
-}
-
-
-
-/* IN[0]: struct tagSpec *
- *   the type pointer of target variable
- *
- * IN[1]: struct tagNode *
- *   a pointer point to ast node
- *   RESTRICTION: root->token == VarDec
- *
- * IN[2]: char **varname
- *   varname[0] will be assigned value of id's pointer
- *
- * OUT[0]:struct tagSpec *
- *   final type of variable, array or pointer or both
- *
- * function:
- *   register the type of target array or pointer variable
- *
- *
- * root=>VarDec
- *       and VarDec !=> ID
- *
- * VarDec:ID
- *       |MULT VarDec
- *       |VarDec LB NUM RB
- */
-Spec *register_complex_var_with_type(Spec *type, Node *root, char **varname) {
-	if(!root || !type) return NULL;
-	wt_assert(root->token == VarDec);
-	Spec *newspec = new_spec();
-	newspec->comp.plevel = 0;
-	newspec->btype = SpecTypeComplex;
-	newspec->width = 1;
-	Node *vardef = root;
-	newspec->comp.spec = type;
-	
-	//process star corresponding to `POINTER`
-	while(root->reduce_rule == AST_VarDec_is_MULT_VarDec) {
-		newspec->comp.plevel ++;
-		root = get_child_node_w(root, VarDec);
-	}
-
-	//process dim corresponding to `Array`
-	newspec->comp.size = 0;
-	newspec->comp.dim = (size_t*)get_memory_pointer();
-	while(root->reduce_rule == AST_VarDec_is_VarDec_LB_NUM_RB) {
-		int cur_dim = get_child_node_w(root, NUM)->idtype->cons.supval.i;
-		newspec->comp.dim[newspec->comp.size] = cur_dim;
-		newspec->width = newspec->width * cur_dim;
-		newspec->comp.size ++;
-		root = get_child_node_w(root, VarDec);
-	}
-	require_memory(sizeof(size_t) * newspec->comp.size);
-
-	//get here means `root` point to node with reduce rule:
-	//   VarDec => ID
-	if(varname != NULL) {
-		varname[0] = get_child_node_w(root, ID)->idtype->cons.supval.st;
-	}
-
-	if(newspec->comp.plevel == 0) {//pure array 
-		if(newspec->comp.size == 0) {//pure variable
-			specptr --;
-			return type;
-		}
-		newspec->width = newspec->comp.spec->width * newspec->width;
-	}else{//pointer array
-		newspec->width = newspec->width * get_size_of_btype(SpecTypePointer);
-	}
-
-	return newspec;
-}
-
-
-/* IN[0]:struct tagNode *
- *   a pointer point to ast node
- *   RESTRICTION: root->token == VarDec
- * function:
- *   register the type of target array or pointer variable
- *
- *
- * root=>VarDec
- *       and VarDec !=> ID
- *
- * VarDef: Specifier DecList SEMI;
- *
- * DecList: Dec COMMA DecList
- *        | Dec
- *
- * Dec: VarDec
- *    | VarDec ASSIGNOP Exp
- *
- * VarDec:ID
- *       |MULT VarDec
- *       |VarDec LB NUM RB
- */
-Spec *register_type_complex_var(Node *root, char **varname) {
-	if(!root) return NULL;
-	wt_assert(root->token == VarDec);
-	Spec *newspec = new_spec();
-	newspec->btype = SpecTypeArray;
-	newspec->width = 1;
-	Node *vardef = root;
-
-	//search upwards for the VarDef node to get type
-	while(vardef->reduce_rule != AST_VarDef_is_Specifier_DecList_SEMI) {
-		vardef = vardef->parent;
-	}
-	Spec *rawtype = find_type_of_spec(get_child_node_w(vardef, Specifier));
-	Spec *newtype = register_complex_var_with_type(rawtype, root, varname);
-
-	if(newtype != rawtype) {
-		newspec->comp.spec = newtype;
-	} else {
-		specptr --;//pure variable, not array or pointer
-	}
-
-	return newtype;
-}
-
-
-
-/* IN[0]:struct tagNode *
- *   a pointer point to ast node
- *   RESTRICTION: root->token == StructDec
- * function:
- *   register the struct type
- *
- *
- * root=>StructDec
- *
- * Block:StructDec IdList SEMI
- *
- * StructDec:STRUCT ID LC StructDecVarList RC
- *
- * StructDecVarList:StructDecVar StructDecVarList
- *                 |StructDecVar
- * 
- * StructDecVar:Specifier IdList SEMI
- *             |StructDec IdList SEMI //here need recursive
- *
- * IdList:VarDec COMMA IdList
- *       |VarDec
- */
-Spec *register_type_struct(Node *root) {
-	if(!root) return NULL;
-	wt_assert(root->token == StructDec);
-	int nr_var = 0, struct_width = 0;
-	char *struct_id = get_child_node_w(root, ID)->idtype->cons.supval.st;
-	Spec *newspec = new_spec();
-	newspec->btype = SpecTypeStruct;
-	newspec->width = 0;//just init
-	newspec->struc.struc_name = struct_id;
-
-	Node *dvl = get_child_node_w(root, StructDecVarList);
-	//first traverse to count up number of variable
-	while(dvl) {
-		Node *idlist = get_child_node_dw(dvl, 2, StructDecVar, IdList);
-		while(idlist) {
-			nr_var ++;
-			idlist = get_child_node(idlist, IdList);
-		}
-		dvl = get_child_node(dvl, StructDecVarList);
-	}
-	//alloc memory for struc.varlist
-	newspec->struc.varlist = get_memory_pointer();
-	require_memory(sizeof(newspec->struc.varlist[0]) * nr_var);
-
-	//second traverse to register type of variable
-	dvl = get_child_node_w(root, StructDecVarList);
-	while(dvl) {
-		Spec *curtype = NULL;
-		Node *type_node = dvl->child->child;
-		Node *idlist = get_child_node_dw(dvl, 2, StructDecVar, IdList);
-		if(type_node->token == Specifier)
-			curtype = find_type_of_spec(type_node);
-		else {
-			curtype = register_type_struct(type_node);
-			curtype->aslevel = newspec->aslevel + 1;
-		}
-
-		while(idlist) {
-			//TODO:round the size of width to 4
-			Spec *newtype = NULL;
-			char **specvarname = &(newspec->struc.varlist[newspec->struc.size].varname);
-			newtype = register_complex_var_with_type(curtype,\
-				   	get_child_node_w(idlist, VarDec), specvarname);
-			newspec->struc.varlist[newspec->struc.size].spec = newtype;
-			newspec->struc.varlist[newspec->struc.size].offset = newspec->width;
-			newspec->struc.size ++;
-			newspec->width += newtype->width;
-
-			idlist = get_child_node(idlist, IdList);
-		}
-		dvl = get_child_node(dvl, StructDecVarList);
-	}
-
-	//check duplication
-	check_dupset(sformat("line %d: error: duplicate member '%%s' in struct '%s'.\n", root->lineno, struct_id), 
-			newspec->struc.varlist,
-			newspec->struc.size,
-			sizeof(newspec->struc.varlist[0]),
-			0
-		);
-
-	/*final check*/
-	wt_assert(newspec->struc.size == nr_var);
-	return newspec;
-}
-
-
-
-/* IN[0]:struct tagSpec *
- *   the type pointer to specpool
- * function:
- *   dumps the spec structure
- *   for debugging
- */
-void print_spec(Spec *type) {
-	if(type == NULL) return;
-	static int indent = 0;
-	switch(type->btype) {
-		case SpecTypeVoid    :printf("void ");return;
-		case SpecTypeChar    :printf("char ");return;
-		case SpecTypeInt     :printf("int ");return;
-		case SpecTypeUnsigned:printf("unsigned ");return;
-		case SpecTypeFloat   :printf("float ");return;
-	}
-
-	if(type->btype == SpecTypeStruct) {
-		int i;
-		for(int j = 0; j < indent - 2; j++)
-			printf(" ");
-		printf("struct %s:%d {\n", type->struc.struc_name, type->aslevel);
-		Spec *old_spec = type->struc.varlist[0].spec;
-		for(int j = 0; j < indent + 2; j++)
-			printf(" ");
-		indent += 2;
-		print_spec(type->struc.varlist[0].spec);
-		indent -= 2;
-		printf("%s(%d)", type->struc.varlist[0].varname, type->struc.varlist[0].offset);
-		for(i = 1; i < type->struc.size; i++) {
-			if(old_spec != type->struc.varlist[i].spec) {
-				printf(";\n");
-				for(int j = 0; j < indent + 2; j++)
-					printf(" ");
-				indent += 2;
-				print_spec(type->struc.varlist[i].spec);
-				indent -= 2;
-				printf("%s(%d)", type->struc.varlist[i].varname, type->struc.varlist[i].offset);
-			}
-			else
-				printf(", %s(%d)", type->struc.varlist[i].varname, type->struc.varlist[i].offset);
-			old_spec = type->struc.varlist[i].spec;
-		}
-
-		printf(";\n");
-		for(int j = 0; j < indent; j++)
-			printf(" ");
-		if(indent == 0)
-			printf("};\n");
-		else
-			printf("} ");
-	}else if(type->btype == SpecTypeFunc) {
-		print_spec(type->func.ret);
-		printf("function(");
-		for(int i = 0; i < (int)(type->func.argv); i++) {
-			print_spec(type->func.arglist[i].type);
-			if(i != type->func.argv - 1)
-				printf("%s, ", type->func.arglist[i].varname);
-			else
-				printf("%s", type->func.arglist[i].varname);
-		}
-		printf(");\n");
-	}else if(type->btype == SpecTypeArray) {
-		print_spec(type->comp.spec);
-		for(int i = 0; i < type->comp.plevel; i++)
-			printf("*");
-		for(int i = type->comp.size - 1; i >= 0; i--) {
-			printf("[%lu]", type->comp.dim[i]);
-		}
-	}
-}
 
 void reset_spec_state() {
 #define btype_register(b, w, l) do {\
@@ -692,158 +356,40 @@ void reset_spec_state() {
 	btype_register(SpecTypeConst,    0, SpecRvalue);
 	btype_register(SpecTypeVoid,     4, SpecLvalue);
 	btype_register(SpecTypeVoid,     4, SpecRvalue);
-	btype_register(SpecTypeBool,     1, SpecLvalue);
-	btype_register(SpecTypeBool,     1, SpecRvalue);
-	btype_register(SpecTypeChar,     1, SpecLvalue);
-	btype_register(SpecTypeChar,     1, SpecRvalue);
-	btype_register(SpecTypeInt,      4, SpecLvalue);
-	btype_register(SpecTypeInt,      4, SpecRvalue);
-	btype_register(SpecTypeUnsigned, 4, SpecLvalue);
-	btype_register(SpecTypeUnsigned, 4, SpecRvalue);
-	btype_register(SpecTypeFloat,    4, SpecLvalue);
-	btype_register(SpecTypeFloat,    4, SpecRvalue);
+	btype_register(SpecTypeInt8,     1, SpecLvalue);
+	btype_register(SpecTypeInt8,     1, SpecRvalue);
+	btype_register(SpecTypeUint8,    1, SpecLvalue);
+	btype_register(SpecTypeUint8,    1, SpecRvalue);
+	btype_register(SpecTypeInt16,    2, SpecLvalue);
+	btype_register(SpecTypeInt16,    2, SpecRvalue);
+	btype_register(SpecTypeUint16,   2, SpecLvalue);
+	btype_register(SpecTypeUint16,   2, SpecRvalue);
+	btype_register(SpecTypeInt32,    4, SpecLvalue);
+	btype_register(SpecTypeInt32,    4, SpecRvalue);
+	btype_register(SpecTypeUint32,   4, SpecLvalue);
+	btype_register(SpecTypeUint32,   4, SpecRvalue);
+	btype_register(SpecTypeInt64,    8, SpecLvalue);
+	btype_register(SpecTypeInt64,    8, SpecRvalue);
+	btype_register(SpecTypeUint64,   8, SpecLvalue);
+	btype_register(SpecTypeUint64,   8, SpecRvalue);
+	btype_register(SpecTypeFloat32,  4, SpecLvalue);
+	btype_register(SpecTypeFloat32,  4, SpecRvalue);
+	btype_register(SpecTypeFloat64,  8, SpecLvalue);
+	btype_register(SpecTypeFloat64,  8, SpecRvalue);
 	specpool[specptr].lval = SpecLvalue;
 	specpool[specptr].btype = SpecTypeComplex;
-	specpool[specptr].comp.spec = &specpool[2 * SpecTypeChar];
+	specpool[specptr].comp.spec = &specpool[2 * SpecTypeInt8];
 	specpool[specptr].comp.plevel = 1;
 	specpool[specptr].aslevel = 1;
 	specptr ++;
 	specpool[specptr].lval = SpecRvalue;
 	specpool[specptr].btype = SpecTypeComplex;
-	specpool[specptr].comp.spec = &specpool[2 * SpecTypeChar];
+	specpool[specptr].comp.spec = &specpool[2 * SpecTypeInt8];
 	specpool[specptr].comp.plevel = 1;
 	specpool[specptr].aslevel = 1;
 	specptr ++;
 }
 
 void init_spec() {
-
-#undef __DEBUG__
-#warning "don't forget it!"
-#ifdef __DEBUG__
-
-	UNIT_TEST_START;
-	/*unit test start*/
-	Node utpool[1024];
-	Spec *retspec;
-	extern Node *astroot;
-	void *yy_scan_string(char *);
-
-	/***********testcase 1 int func()*************/
 	reset_spec_state();
-	yy_scan_string("int func(){return 0;}");
-	yyparse();
-
-	retspec = register_type_function(find_child_node(astroot, FuncDec));
-	UNIT_TEST_STR_EQUAL(type_format(retspec), "int ()");
-	UNIT_TEST_EQUAL(retspec->func.argv, 0);
-	UNIT_TEST_EQUAL(retspec->func.arglist, NULL);
-	UNIT_TEST_EQUAL(retspec->func.ret->btype, SpecTypeInt);
-
-
-	/********testcase 2 int func(int a, char b, int c)********/
-	reset_spec_state();
-	yy_scan_string("int func(int a, char b, int c){return 0;}");
-	yyparse();
-
-	retspec = register_type_function(find_child_node(astroot, FuncDec));
-	UNIT_TEST_STR_EQUAL(type_format(retspec), "int (int, char, int)");
-	UNIT_TEST_EQUAL(retspec->func.argv, 3);
-	UNIT_TEST_EQUAL(retspec->func.arglist[0].type->btype, SpecTypeInt);
-	UNIT_TEST_EQUAL(retspec->func.arglist[1].type->btype, SpecTypeChar);
-	UNIT_TEST_EQUAL(retspec->func.arglist[2].type->btype, SpecTypeInt);
-	UNIT_TEST_STR_EQUAL(retspec->func.arglist[0].varname, "a");
-	UNIT_TEST_STR_EQUAL(retspec->func.arglist[1].varname, "b");
-	UNIT_TEST_STR_EQUAL(retspec->func.arglist[2].varname, "c");
-	UNIT_TEST_EQUAL(retspec->func.ret->btype, SpecTypeInt);
-
-
-	/******testcase 3 int main(){int x,**a[12][34][56];}******/
-	reset_spec_state();
-	yy_scan_string("int **a[12][34][56];");
-	yyparse();
-
-	retspec = register_type_complex_var(find_child_node(astroot, VarDec), NULL);
-	UNIT_TEST_STR_EQUAL(type_format(retspec), "int **[12][34][56]");
-	UNIT_TEST_EQUAL(retspec->btype, SpecTypeComplex);
-	UNIT_TEST_EQUAL(retspec->comp.plevel, 2);
-	UNIT_TEST_EQUAL(retspec->comp.size, 3);
-	UNIT_TEST_EQUAL(retspec->comp.dim[0], 56);
-	UNIT_TEST_EQUAL(retspec->comp.dim[1], 34);
-	UNIT_TEST_EQUAL(retspec->comp.dim[2], 12);
-	UNIT_TEST_EQUAL(retspec->comp.spec->btype, SpecTypeInt);
-
-	/******testcase 4 duplicate parameter******/
-	/*
-	reset_spec_state();
-	yy_scan_string("int main(int a, int a, int a){return 0;}");
-	yyparse();
-	print_ast(astroot);
-	retspec = register_type_function(find_child_node(astroot, FuncDec));
-	*/
-
-	/******testcase 4 duplicate member******/
-	/*
-	reset_spec_state();
-	yy_scan_string("struct A{int a;int a;int b;int a;};int main(){return 0;}");
-	yyparse();
-	retspec = register_type_struct(find_child_node(astroot, StructDec));
-	*/
-
-	/********testcase 5 struct ID as spec**********/
-	reset_spec_state();
-	yy_scan_string("struct A{int a;};int main(struct A *a[45][78], struct A b){return 0;}");
-	yyparse();
-	register_type_struct(find_child_node(astroot, StructDec));
-	retspec = register_type_function(find_child_node(astroot, FuncDec));
-	UNIT_TEST_STR_EQUAL(type_format(retspec), "int (struct A *[45][78], struct A)");
-	UNIT_TEST_EQUAL(retspec->func.argv, 2);
-	UNIT_TEST_EQUAL(retspec->func.ret->btype, SpecTypeInt);
-	UNIT_TEST_EQUAL(retspec->func.arglist[0].type->btype, SpecTypeComplex);
-	UNIT_TEST_EQUAL(retspec->func.arglist[0].type->comp.plevel, 1);
-	UNIT_TEST_EQUAL(retspec->func.arglist[0].type->width, (get_size_of_btype(SpecTypePointer) * 45 * 78));
-	UNIT_TEST_EQUAL(retspec->func.arglist[1].type->btype, SpecTypeStruct);
-	UNIT_TEST_STR_EQUAL(retspec->func.arglist[1].type->struc.struc_name, "A");
-	UNIT_TEST_EQUAL(retspec->func.arglist[1].type->struc.size, 1);
-	UNIT_TEST_STR_EQUAL(retspec->func.arglist[1].type->struc.varlist[0].varname, "a");
-	UNIT_TEST_EQUAL(retspec->func.arglist[1].type->struc.varlist[0].offset, 0);
-	UNIT_TEST_EQUAL(retspec->func.arglist[1].type->struc.varlist[0].spec->btype, SpecTypeInt);
-	UNIT_TEST_STR_EQUAL(retspec->func.arglist[0].varname, "a");
-	UNIT_TEST_STR_EQUAL(retspec->func.arglist[1].varname, "b");
-	UNIT_TEST_EQUAL(retspec->func.ret->btype, SpecTypeInt);
-
-
-	/****************testcase ?(hard to check)****************/
-	reset_spec_state();
-	yy_scan_string("struct A {int a, *b, c[3];struct B {int **x[3][4], y;float z;} d, e, f;struct C {float _89;struct nested_in_C {int na, nb;float nc;} p_p;} xx;float oatt;} ;int *****array[123][12][4564][678];int init = 0;int main(struct A x) {int a[10][123][345][657];return 0;}");
-	yyparse();
-	retspec = register_type_struct(find_child_node(astroot, StructDec));
-	//print_ast(astroot);
-	//print_spec(retspec);//checked by human
-
-	UNIT_TEST_END;
-
-
-	STATE_TEST_START;
-	reset_spec_state();
-	for(int i = 0; i < specptr - 2; i++) {
-		STATE_TEST_EQUAL(specpool[i].btype, i/2);
-		STATE_TEST_EQUAL(specpool[i].lval, i%2);
-	}
-	STATE_TEST_EQUAL(specpool[2*SpecTypeString].btype, SpecTypeComplex);
-	STATE_TEST_EQUAL(specpool[2*SpecTypeString].lval, SpecLvalue);
-	STATE_TEST_EQUAL(specpool[2*SpecTypeString].aslevel, 1);
-	STATE_TEST_EQUAL(specpool[2*SpecTypeString].comp.plevel, 1);
-	STATE_TEST_EQUAL(specpool[2*SpecTypeString].comp.spec, &specpool[2 * SpecTypeChar]);
-
-	STATE_TEST_EQUAL(specpool[2*SpecTypeString+1].btype, SpecTypeComplex);
-	STATE_TEST_EQUAL(specpool[2*SpecTypeString+1].lval, SpecRvalue);
-	STATE_TEST_EQUAL(specpool[2*SpecTypeString+1].aslevel, 1);
-	STATE_TEST_EQUAL(specpool[2*SpecTypeString+1].comp.plevel, 1);
-	STATE_TEST_EQUAL(specpool[2*SpecTypeString].comp.spec, &specpool[2 * SpecTypeChar]);
-	STATE_TEST_END;
-#else
-	reset_spec_state();
-#endif
-	return;
 }

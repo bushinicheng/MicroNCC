@@ -19,7 +19,7 @@ extern Node *astroot;
 %token<pnd>
 	ID NUM STRING LITERAL SIZEOF TYPE_NAME
 	COMMA DOT PTR QOP COLON
-	ASSIGN DIVE MULTE MODE ADDE SUBE LSHIFTE RSHIFTE ANDE XORE ORE
+	ASSIGNOP DIVE MULTE MODE ADDE SUBE LSHIFTE RSHIFTE ANDE XORE ORE
 	LAND LOR OR XOR AND
 	EQ NE LT LE GE GT
 	LSHIFT RSHIFT ADD SUB MULT DIV MOD
@@ -29,9 +29,11 @@ extern Node *astroot;
 	STRUCT UNION ENUM ELLIPSIS
 	CASE DEFAULT IF ELSE SWITCH WHILE DO FOR GOTO CONTINUE BREAK RETURN
 	LC RC LB RB LP RP SEMI
+	BOOL INT8T INT16T INT32T INT64T UINT8T UINT16T UINT32T UINT64T
+	SIZET UINTPTRT OFFT NIL TRUE FALSE
 
 %left COMMA
-%right ASSIGN DIVE MULTE MODE ADDE SUBE LSHIFTE RSHIFTE ANDE XORE ORE
+%right ASSIGNOP DIVE MULTE MODE ADDE SUBE LSHIFTE RSHIFTE ANDE XORE ORE
 %right QOP COLON
 %left LOR
 %left LAND
@@ -110,7 +112,7 @@ FuncDef
 ;
 
 ExpList
-	:Exp %prec ASSIGN {$$=build_subast(AST_ExpList_is_Exp, &@$, $1);}
+	:Exp %prec ASSIGNOP {$$=build_subast(AST_ExpList_is_Exp, &@$, $1);}
 	|ExpList COMMA Exp {$$=build_subast(AST_ExpList_is_ExpList_COMMA_Exp, &@$, $1, $2, $3);}
 ;
 
@@ -135,7 +137,7 @@ InitorDeclrList
 
 InitorDeclr
 	:Declr {$$=build_subast(AST_InitorDeclr_is_Declr, &@$, $1);}
-	|Declr ASSIGN Initor {$$=build_subast(AST_InitorDeclr_is_Declr_ASSIGN_Initor, &@$, $1, $2, $3);}
+	|Declr ASSIGNOP Initor {$$=build_subast(AST_InitorDeclr_is_Declr_ASSIGNOP_Initor, &@$, $1, $2, $3);}
 ;
 
 ClassSpec
@@ -212,7 +214,7 @@ EnumorList
 
 Enumor
 	:ID {$$=build_subast(AST_Enumor_is_ID, &@$, $1);}
-	|ID ASSIGN Exp {$$=build_subast(AST_Enumor_is_ID_ASSIGN_Exp, &@$, $1, $2, $3);}
+	|ID ASSIGNOP Exp {$$=build_subast(AST_Enumor_is_ID_ASSIGNOP_Exp, &@$, $1, $2, $3);}
 ;
 
 TypeQulfr
@@ -292,8 +294,8 @@ DirectAbstDeclr
 ;
 
 Initor
-	:Exp %prec ASSIGN {$$=build_subast(AST_Initor_is_Exp, &@$, $1);}
-	|LB Exp RB ASSIGN Exp %prec ASSIGN {$$=build_subast(AST_Initor_is_LB_Exp_RB_ASSIGN_Exp, &@$, $1, $2, $3, $4, $5);}
+	:Exp %prec ASSIGNOP {$$=build_subast(AST_Initor_is_Exp, &@$, $1);}
+	|LB Exp RB ASSIGNOP Exp %prec ASSIGNOP {$$=build_subast(AST_Initor_is_LB_Exp_RB_ASSIGNOP_Exp, &@$, $1, $2, $3, $4, $5);}
 	|LC InitorList RC {$$=build_subast(AST_Initor_is_LC_InitorList_RC, &@$, $1, $2, $3);}
 	|LC InitorList COMMA RC {$$=build_subast(AST_Initor_is_LC_InitorList_COMMA_RC, &@$, $1, $2, $3, $4);}
 ;
@@ -388,7 +390,7 @@ Exp
 	|Exp LAND Exp {$$=build_subast(AST_Exp_is_Exp_LAND_Exp, &@$, $1, $2, $3);}
 	|Exp LOR Exp {$$=build_subast(AST_Exp_is_Exp_LOR_Exp, &@$, $1, $2, $3);}
 	|Exp QOP Exp COLON Exp {$$=build_subast(AST_Exp_is_Exp_QOP_Exp_COLON_Exp, &@$, $1, $2, $3, $4, $5);}
-	|Exp ASSIGN Exp {$$=build_subast(AST_Exp_is_Exp_ASSIGN_Exp, &@$, $1, $2, $3);}
+	|Exp ASSIGNOP Exp {$$=build_subast(AST_Exp_is_Exp_ASSIGNOP_Exp, &@$, $1, $2, $3);}
 	|Exp MULTE Exp {$$=build_subast(AST_Exp_is_Exp_MULTE_Exp, &@$, $1, $2, $3);}
 	|Exp DIVE Exp {$$=build_subast(AST_Exp_is_Exp_DIVE_Exp, &@$, $1, $2, $3);}
 	|Exp MODE Exp {$$=build_subast(AST_Exp_is_Exp_MODE_Exp, &@$, $1, $2, $3);}
@@ -401,4 +403,3 @@ Exp
 	|Exp ORE Exp {$$=build_subast(AST_Exp_is_Exp_ORE_Exp, &@$, $1, $2, $3);}
 	|Exp COMMA Exp {$$=build_subast(AST_Exp_is_Exp_COMMA_Exp, &@$, $1, $2, $3);}
 ;
-

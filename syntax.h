@@ -58,7 +58,7 @@ extern int yydebug;
     PTR = 268,
     QOP = 269,
     COLON = 270,
-    ASSIGN = 271,
+    ASSIGNOP = 271,
     DIVE = 272,
     MULTE = 273,
     MODE = 274,
@@ -128,7 +128,22 @@ extern int yydebug;
     RB = 338,
     LP = 339,
     RP = 340,
-    SEMI = 341
+    SEMI = 341,
+    BOOL = 342,
+    INT8T = 343,
+    INT16T = 344,
+    INT32T = 345,
+    INT64T = 346,
+    UINT8T = 347,
+    UINT16T = 348,
+    UINT32T = 349,
+    UINT64T = 350,
+    SIZET = 351,
+    UINTPTRT = 352,
+    OFFT = 353,
+    NIL = 354,
+    TRUE = 355,
+    FALSE = 356
   };
 #endif
 
@@ -141,7 +156,7 @@ union YYSTYPE
 
 	Node *pnd;
 
-#line 145 "syntax.h" /* yacc.c:1909  */
+#line 160 "syntax.h" /* yacc.c:1909  */
 };
 
 typedef union YYSTYPE YYSTYPE;

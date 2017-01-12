@@ -176,7 +176,7 @@ void dump_ast(Node *root)
 		case DOT:		printf(".");break;
 		case COMMA:		printf(", ");break;
 		case SEMI:		printf(";");newline=1;break;
-		case POINTER:	printf("->");break;
+		case PTR:		printf("->");break;
 		case COLON:		printf(":");newline=1;break;
 		case IF:		printf("if ");break;
 		case ELSE:		printf("else ");break;
@@ -189,7 +189,7 @@ void dump_ast(Node *root)
 		case BREAK:		printf("break ");break;
 		case DEFAULT:	printf("default ");break;
 		case GOTO:		printf("goto ");break;
-		case TYPE:
+		case TypeSpec:
 			switch(root->idtype->cons.suptype) {
 				case VOID:		printf("void ");break;
 				case BOOL:		printf("bool ");break;
@@ -245,7 +245,7 @@ void dump_ast(Node *root)
 			break;
 	}
 
-	if(root->token == Block) {
+	if(root->token == ExtDecln) {
 		printf("\n\n");
 	}
 
@@ -303,8 +303,8 @@ void print_ast(Node *root)
 			break;
 		}
 	}
-	else if(root->token == TYPE)
-		printf("TYPE:%s\n", str_lexval[root->idtype->cons.suptype]);
+	else if(root->token == TypeSpec)
+		printf("TypeSpec:%s\n", str_lexval[root->idtype->cons.suptype]);
 	else
 		printf("%s\n", str_lexval[root->token]);
 

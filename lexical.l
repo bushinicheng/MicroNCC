@@ -106,7 +106,7 @@ invalidcomment   \/\*([^\*]|\*[^\/])*$
 "{"                 {tokout("LC");		return symbol(LC);}
 "}"                 {tokout("RC");		return symbol(RC);}
 "."                 {tokout("DOT");		return symbol(DOT);}
-"->"                {tokout("PT");		return symbol(POINTER);}
+"->"                {tokout("PT");		return symbol(PTR);}
 ","                 {tokout("COMMA");	return symbol(COMMA);}
 ":"                 {tokout("COMMA");	return symbol(COLON);}
 ";"                 {tokout("SEMI");	return symbol(SEMI);}
@@ -193,7 +193,7 @@ static int symbol(int syntaxval)
 
 static int type(int specval)
 {
-	int syntaxval = TYPE;
+	int syntaxval = TypeSpec;
 	Node *pnd = new_node();
 	pnd->token = syntaxval;
 	pnd->idtype = new_spec();
