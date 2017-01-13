@@ -6,353 +6,409 @@
 
 ##syntax of c11
 ```
-terminal_token:
-	|IDENTIFIER	CONSTANT	STRING_LITERAL	SIZEOF
-	|PTR_OP	INC_OP	DEC_OP	LEFT_OP	RIGHT_OP	LE_OP	GE_OP	EQ_OP	NE_OP
-	|AND_OP	OR_OP	MUL_ASSIGN	DIV_ASSIGN	MOD_ASSIGN	ADD_ASSIGN
-	|SUB_ASSIGN	LEFT_ASSIGN	RIGHT_ASSIGN	AND_ASSIGN
-	|XOR_ASSIGN	OR_ASSIGN	TYPE_NAME
-	|TYPEDEF	EXTERN	STATIC	AUTO	REGISTER
-	|CHAR	SHORT	INT	LONG	SIGNED	UNSIGNED	FLOAT	DOUBLE	CONST	VOLATILE	VOID
-	|STRUCT	UNION	ENUM	ELLIPSIS
-	|CASE	DEFAULT	IF	ELSE	SWITCH	WHILE	DO	FOR	GOTO	CONTINUE	BREAK	RETURN
-	|translation_unit
+%nonassoc LOWWER_THAN_ELSE
+%nonassoc ELSE
 
-primary_expression
-	:	IDENTIFIER
-	|	CONSTANT
-	|	STRING_LITERAL
-	|	'('	expression	')'
+%token
+	ID NUM STRING LITERAL SIZEOF TYPE_NAME
+	COMMA DOT PTR QOP COLON
+	ASSIGNOP DIVE MULTE MODE ADDE SUBE LSHIFTE RSHIFTE ANDE XORE ORE
+	LAND LOR OR XOR AND
+	EQ NE LT LE GE GT
+	LSHIFT RSHIFT ADD SUB MULT DIV MOD
+	INC DEC LNOT NOT
+	TYPEDEF EXTERN STATIC AUTO REGISTER CONST VOLATILE
+	CHAR SHORT INT LONG SIGNED UNSIGNED FLOAT DOUBLE VOID
+	STRUCT UNION ENUM ELLIPSIS
+	CASE DEFAULT IF ELSE SWITCH WHILE DO FOR GOTO CONTINUE BREAK RETURN
+	LC RC LB RB LP RP SEMI
+	BOOL INT8T INT16T INT32T INT64T UINT8T UINT16T UINT32T UINT64T
+	FLOAT32T FLOAT64T
+	SIZET UINTPTRT OFFT NIL TRUE FALSE
 
-postfix_expression
-	:	primary_expression
-	|	postfix_expression	'['	expression	']'
-	|	postfix_expression	'('	')'
-	|	postfix_expression	'('	argument_expression_list	')'
-	|	postfix_expression	'.'	IDENTIFIER
-	|	postfix_expression	PTR_OP	IDENTIFIER
-	|	postfix_expression	INC_OP
-	|	postfix_expression	DEC_OP
+%left COMMA
+%right ASSIGNOP DIVE MULTE MODE ADDE SUBE LSHIFTE RSHIFTE ANDE XORE ORE
+%right QOP COLON
+%left LOR
+%left LAND
+%left OR
+%left XOR
+%left AND
+%left EQ NE
+%left LT LE GE GT
+%left LSHIFT RSHIFT
+%left ADD SUB
+%left MULT DIV MOD
+%right INC DEC LNOT NOT SIZEOF
+%left DOT PTR LB RB
+%left LP RP
 
-argument_expression_list
-	:	assignment_expression
-	|	argument_expression_list	','	assignment_expression
+%type
+	Program
+	ExtDecln
+	ExtDeclnList
+	FuncDef
+	ExpList
+	Decln
+	DeclnSpec
+	InitorDeclrList
+	InitorDeclr
+	TypeSpec
+	CompSpec
+	CompType
+	CompDeclnList
+	CompDecln
+	CompDeclrList
+	CompDeclr
+	EnumSpec
+	EnumorList
+	Enumor
+	TypeQulfr
+	Declr
+	DirectDeclr
+	StarList
+	TypeQulfrList
+	ParaTypeList
+	ParaList
+	ParaDecln
+	IdList
+	TypeName
+	AbstDeclr
+	DirectAbstDeclr
+	Initor
+	InitorList
+	StmtList
+	ExpStmt
+	CompSt
+	DeclnList
+	Stmt
+	Exp
 
-unary_expression
-	:	postfix_expression
-	|	INC_OP	unary_expression
-	|	DEC_OP	unary_expression
-	|	unary_operator	cast_expression
-	|	SIZEOF	unary_expression
-	|	SIZEOF	'('	type_name	')'
+%start Program
+%%
 
-unary_operator
-	:	'&'
-	|	'*'
-	|	'+'
-	|	'-'
-	|	'~'
-	|	'!'
+Program
+	:ExtDeclnList 
+;
 
-cast_expression
-	:	unary_expression
-	|	'('	type_name	')'	cast_expression
+ExtDeclnList
+	:ExtDecln 
+	|ExtDeclnList ExtDecln 
+;
 
-multiplicative_expression
-	:	cast_expression
-	|	multiplicative_expression	'*'	cast_expression
-	|	multiplicative_expression	'/'	cast_expression
-	|	multiplicative_expression	'%'	cast_expression
+ExtDecln
+	:FuncDef 
+	|Decln 
+;
 
-additive_expression
-	:	multiplicative_expression
-	|	additive_expression	'+'	multiplicative_expression
-	|	additive_expression	'-'	multiplicative_expression
+FuncDef
+	:DeclnSpec Declr DeclnList CompSt 
+	|DeclnSpec Declr CompSt 
+	|Declr DeclnList CompSt 
+	|Declr CompSt 
+;
 
-shift_expression
-	:	additive_expression
-	|	shift_expression	LEFT_OP	additive_expression	
-	|	shift_expression	RIGHT_OP	additive_expression
+ExpList
+	:Exp %prec ASSIGNOP 
+	|ExpList COMMA Exp 
+;
 
-relational_expression
-	:	shift_expression
-	|	relational_expression	'<'	shift_expression
-	|	relational_expression	'>'	shift_expression
-	|	relational_expression	LE_OP	shift_expression
-	|	relational_expression	GE_OP	shift_expression
+Decln
+	:DeclnSpec SEMI 
+	|DeclnSpec InitorDeclrList SEMI 
+;
 
-equality_expression
-	:	relational_expression
-	|	equality_expression	EQ_OP	relational_expression
-	|	equality_expression	NE_OP	relational_expression
+DeclnList
+	:Decln 
+	|DeclnList Decln 
+;
 
-and_expression
-	:	equality_expression
-	|	and_expression	'&'	equality_expression
+DeclnSpec
+	:TypeSpec 
+	|TypeSpec DeclnSpec 
+	|TypeQulfr 
+	|TypeQulfr DeclnSpec 
+;
 
-exclusive_or_expression
-	:	and_expression
-	|	exclusive_or_expression	'^'	and_expression
+InitorDeclrList
+	:InitorDeclr 
+	|InitorDeclrList COMMA InitorDeclr 
+;
 
-inclusive_or_expression
-	:	exclusive_or_expression
-	|	inclusive_or_expression	'|'	exclusive_or_expression
+InitorDeclr
+	:Declr 
+	|Declr ASSIGNOP Initor 
+;
 
-logical_and_expression
-	:	inclusive_or_expression
-	|	logical_and_expression	AND_OP	inclusive_or_expression
+TypeQulfr
+	:TYPEDEF 
+	|EXTERN 
+	|STATIC 
+	|AUTO 
+	|REGISTER 
+	|CONST 
+	|VOLATILE 
+;
 
-logical_or_expression
-	:	logical_and_expression
-	|	logical_or_expression	OR_OP	logical_and_expression
+TypeSpec
+	:VOID 
+	|BOOL 
+	|CHAR 
+	|SHORT 
+	|INT 
+	|LONG 
+	|FLOAT 
+	|DOUBLE 
+	|SIGNED 
+	|UNSIGNED 
+	|INT8T 
+	|INT16T 
+	|INT32T 
+	|INT64T 
+	|UINT8T 
+	|UINT16T 
+	|UINT32T 
+	|UINT64T 
+	|FLOAT32T 
+	|FLOAT64T 
+	|UINTPTRT 
+	|SIZET 
+	|OFFT 
+	|CompSpec 
+	|EnumSpec 
+	|TYPE_NAME 
+;
 
-conditional_expression
-	:	logical_or_expression
-	|	logical_or_expression	'?'	expression	':'	conditional_expression
+CompSpec
+	:CompType ID LC CompDeclnList RC 
+	|CompType LC CompDeclnList RC 
+	|CompType ID 
+;
 
-assignment_expression
-	:	conditional_expression
-	|	unary_expression	assignment_operator	assignment_expression
+CompType
+	:STRUCT 
+	|UNION 
+;
 
-assignment_operator
-	:	'='
-	|	MUL_ASSIGN
-	|	DIV_ASSIGN
-	|	MOD_ASSIGN
-	|	ADD_ASSIGN
-	|	SUB_ASSIGN
-	|	LEFT_ASSIGN
-	|	RIGHT_ASSIGN
-	|	AND_ASSIGN
-	|	XOR_ASSIGN
-	|	OR_ASSIGN
+CompDeclnList
+	:CompDecln 
+	|CompDeclnList CompDecln 
+;
 
-expression
-	:	assignment_expression
-	|	expression	','	assignment_expression
+CompDecln
+	:DeclnSpec SEMI 
+	|DeclnSpec CompDeclrList SEMI 
+;
 
-constant_expression
-	:	conditional_expression
+CompDeclrList
+	:CompDeclr 
+	|CompDeclrList COMMA CompDeclr 
+;
 
-declaration
-	:	declaration_specifiers	';'
-	|	declaration_specifiers	init_declarator_list	';'
+CompDeclr
+	:Declr 
+	|COLON Exp 
+	|Declr COLON Exp 
+;
 
-declaration_specifiers
-	:	storage_class_specifier
-	|	storage_class_specifier	declaration_specifiers
-	|	type_specifier
-	|	type_specifier	declaration_specifiers
-	|	type_qualifier
-	|	type_qualifier	declaration_specifiers
+EnumSpec
+	:ENUM LC EnumorList RC 
+	|ENUM LC EnumorList COMMA RC 
+	|ENUM ID LC EnumorList RC 
+	|ENUM ID LC EnumorList COMMA RC 
+	|ENUM ID 
+;
 
-init_declarator_list
-	:	init_declarator	
-	|	init_declarator_list	','	init_declarator
+EnumorList
+	:Enumor 
+	|EnumorList COMMA Enumor 
+;
 
-init_declarator
-	:	declarator
-	|	declarator	'='	initializer
+Enumor
+	:ID 
+	|ID ASSIGNOP Exp 
+;
 
-storage_class_specifier
-	:	TYPEDEF
-	|	EXTERN
-	|	STATIC
-	|	AUTO
-	|	REGISTER
+Declr
+	:StarList DirectDeclr 
+	|DirectDeclr 
+;
 
-type_specifier
-	:	VOID
-	|	CHAR
-	|	SHORT
-	|	INT
-	|	LONG
-	|	FLOAT
-	|	DOUBLE
-	|	SIGNED
-	|	UNSIGNED
-	|	struct_or_union_specifier
-	|	enum_specifier
-	|	TYPE_NAME
+DirectDeclr
+	:ID 
+	|LP Declr RP 
+	|DirectDeclr LB Exp RB 
+	|DirectDeclr LB RB 
+	|DirectDeclr LP ParaTypeList RP 
+	|DirectDeclr LP IdList RP 
+	|DirectDeclr LP RP 
+;
 
-struct_or_union_specifier
-	:	struct_or_union	IDENTIFIER	'{'	struct_declaration_list	'}'
-	|	struct_or_union	'{'	struct_declaration_list	'}'
-	|	struct_or_union	IDENTIFIER
+StarList
+	:MULT 
+	|MULT TypeQulfrList 
+	|MULT StarList 
+	|MULT TypeQulfrList StarList 
+;
 
-struct_or_union
-	:	STRUCT
-	|	UNION
+TypeQulfrList
+	:TypeQulfr 
+	|TypeQulfrList TypeQulfr 
+;
 
-struct_declaration_list
-	:	struct_declaration
-	|	struct_declaration_list	struct_declaration
+ParaTypeList
+	:ParaList 
+	|ParaList COMMA ELLIPSIS 
+;
 
-struct_declaration
-	:	specifier_qualifier_list	struct_declarator_list	';'
+ParaList
+	:ParaDecln 
+	|ParaList COMMA ParaDecln 
+;
 
-specifier_qualifier_list
-	:	type_specifier	specifier_qualifier_list
-	|	type_specifier
-	|	type_qualifier	specifier_qualifier_list
-	|	type_qualifier
+ParaDecln
+	:DeclnSpec Declr 
+	|DeclnSpec AbstDeclr 
+	|DeclnSpec 
+;
 
-struct_declarator_list
-	:	struct_declarator
-	|	struct_declarator_list	','	struct_declarator
+IdList
+	:ID 
+	|IdList COMMA ID 
+;
 
-struct_declarator
-	:	declarator
-	|	':'	constant_expression
-	|	declarator	':'	constant_expression
+TypeName
+	:DeclnSpec 
+	|DeclnSpec AbstDeclr 
+;
 
-enum_specifier
-	:	ENUM	'{'	enumerator_list	'}'
-	|	ENUM	IDENTIFIER	'{'	enumerator_list	'}'
-	|	ENUM	IDENTIFIER
+AbstDeclr
+	:StarList 
+	|DirectAbstDeclr 
+	|StarList DirectAbstDeclr 
+;
 
-enumerator_list
-	:	enumerator
-	|	enumerator_list	','	enumerator
+DirectAbstDeclr
+	:LP AbstDeclr RP 
+	|LB RB 
+	|LB Exp RB 
+	|DirectAbstDeclr LB RB 
+	|DirectAbstDeclr LB Exp RB 
+	|LP RP 
+	|LP ParaTypeList RP 
+	|DirectAbstDeclr LP RP 
+	|DirectAbstDeclr LP ParaTypeList RP 
+;
 
-enumerator
-	:	IDENTIFIER
-	|	IDENTIFIER	'='	constant_expression
+Initor
+	:Exp %prec ASSIGNOP 
+	|LB Exp RB ASSIGNOP Exp %prec ASSIGNOP 
+	|LC InitorList RC 
+	|LC InitorList COMMA RC 
+;
 
-type_qualifier
-	:	CONST
-	|	VOLATILE
+InitorList
+	:Initor 
+	|InitorList COMMA Initor 
+;
 
-declarator	
-	:	pointer	direct_declarator
-	|	direct_declarator
+StmtList
+	:Stmt 
+	|StmtList Stmt 
+;
 
-direct_declarator
-	:	IDENTIFIER
-	|	'('	declarator	')'
-	|	direct_declarator	'['	constant_expression	']'
-	|	direct_declarator	'['	']'
-	|	direct_declarator	'('	parameter_type_list	')'
-	|	direct_declarator	'('	identifier_list	')'
-	|	direct_declarator	'('	')'
+ExpStmt
+	:Decln 
+	|Exp SEMI 
+	|SEMI 
+;
 
-pointer
-	:	'*'
-	|	'*'	type_qualifier_list
-	|	'*'	pointer
-	|	'*'	type_qualifier_list	pointer
+CompSt
+	:LC RC 
+	|LC StmtList RC 
+;
 
-type_qualifier_list
-	:	type_qualifier
-	|	type_qualifier_list	type_qualifier
+Stmt
+	:SEMI 
+	|Decln 
+	|Exp SEMI 
+	|CompSt 
+	|GOTO ID SEMI 
+	|ID COLON 
+	|CONTINUE SEMI 
+	|BREAK SEMI 
+	|RETURN SEMI 
+	|RETURN Exp SEMI 
+	|IF LP Exp RP Stmt %prec LOWWER_THAN_ELSE 
+	|IF LP Exp RP Stmt ELSE Stmt 
+	|SWITCH LP Exp RP Stmt 
+	|CASE Exp COLON Stmt 
+	|DEFAULT COLON Stmt 
+	|WHILE LP Exp RP Stmt 
+	|DO Stmt WHILE LP Exp RP SEMI 
+	|FOR LP ExpStmt ExpStmt RP Stmt 
+	|FOR LP ExpStmt ExpStmt Exp RP Stmt 
+;
 
-parameter_type_list
-	:	parameter_list
-	|	parameter_list	','	ELLIPSIS
-
-parameter_list
-	:	parameter_declaration
-	|	parameter_list	','	parameter_declaration
-
-parameter_declaration
-	:	declaration_specifiers	declarator
-	|	declaration_specifiers	abstract_declarator
-	|	declaration_specifiers
-
-identifier_list
-	:	IDENTIFIER
-	|	identifier_list	','	IDENTIFIER
-
-type_name
-	:	specifier_qualifier_list
-	|	specifier_qualifier_list	abstract_declarator
-
-abstract_declarator
-	:	pointer
-	|	direct_abstract_declarator
-	|	pointer	direct_abstract_declarator
-
-direct_abstract_declarator
-	:	'('	abstract_declarator	')'
-	|	'['	']'
-	|	'['	constant_expression	']'
-	|	direct_abstract_declarator	'['	']'
-	|	direct_abstract_declarator	'['	constant_expression	']'
-	|	'('	')'
-	|	'('	parameter_type_list	')'
-	|	direct_abstract_declarator	'('	')'
-	|	direct_abstract_declarator	'('	parameter_type_list	')'
-
-initializer
-	:	assignment_expression
-	|	'{'	initializer_list	'}'
-	|	'{'	initializer_list	','	'}'
-
-initializer_list
-	:	initializer
-	|	initializer_list	','	initializer
-
-statement
-	:	labeled_statement
-	|	compound_statement
-	|	expression_statement
-	|	selection_statement
-	|	iteration_statement
-	|	jump_statement
-labeled_statement
-	:	IDENTIFIER	':'	statement
-	|	CASE	constant_expression	':'	statement
-	|	DEFAULT	':'	statement
-
-compound_statement
-	:	'{'	'}'
-	|	'{'	statement_list	'}'
-	|	'{'	declaration_list	'}'
-	|	'{'	declaration_list	statement_list	'}'
-
-declaration_list
-	:	declaration
-	|	declaration_list	declaration
-
-statement_list
-	:	statement
-	|	statement_list	statement
-
-expression_statement
-	:	';'
-	|	expression	';'
-
-selection_statement
-	:	IF	'('	expression	')'	statement
-	|	IF	'('	expression	')'	statement	ELSE	statement
-	|	SWITCH	'('	expression	')'	statement
-
-iteration_statement
-	:	WHILE	'('	expression	')'	statement
-	|	DO	statement	WHILE	'('	expression	')'	';'
-	|	FOR	'('	expression_statement	expression_statement	')'	statement
-	|	FOR	'('	expression_statement	expression_statement	expression	')'	statement
-
-jump_statement
-	:	GOTO	IDENTIFIER	';'
-	|	CONTINUE	';'
-	|	BREAK	';'
-	|	RETURN	';'
-	|	RETURN	expression	';'
-
-translation_unit
-	:	external_declaration
-	|	translation_unit	external_declaration
-
-external_declaration
-	:	function_definition
-	|	declaration
-
-function_definition
-	:	declaration_specifiers	declarator	declaration_list	compound_statement
-	|	declaration_specifiers	declarator	compound_statement
-	|	declarator	declaration_list	compound_statement
-	|	declarator	compound_statement
+Exp
+	:ID 
+	|NUM 
+	|NIL 
+	|TRUE 
+	|FALSE 
+	|STRING 
+	|LITERAL 
+	|LP Exp RP 
+	|Exp LB Exp RB 
+	|Exp LP RP 
+	|Exp LP ExpList RP 
+	|Exp DOT ID 
+	|Exp PTR ID 
+	|Exp INC 
+	|Exp DEC 
+	|INC Exp 
+	|DEC Exp 
+	|AND Exp 
+	|MULT Exp 
+	|ADD Exp 
+	|SUB Exp 
+	|NOT Exp 
+	|LNOT Exp 
+	|SIZEOF Exp 
+	|SIZEOF LP TypeName RP 
+	|LP TypeName RP Exp 
+	|Exp MULT Exp 
+	|Exp DIV Exp 
+	|Exp MOD Exp 
+	|Exp ADD Exp 
+	|Exp SUB Exp 
+	|Exp LSHIFT Exp 
+	|Exp RSHIFT Exp 
+	|Exp LT Exp 
+	|Exp GT Exp 
+	|Exp LE Exp 
+	|Exp GE Exp 
+	|Exp EQ Exp 
+	|Exp NE Exp 
+	|Exp AND Exp 
+	|Exp XOR Exp 
+	|Exp OR Exp 
+	|Exp LAND Exp 
+	|Exp LOR Exp 
+	|Exp QOP Exp COLON Exp 
+	|Exp ASSIGNOP Exp 
+	|Exp MULTE Exp 
+	|Exp DIVE Exp 
+	|Exp MODE Exp 
+	|Exp ADDE Exp 
+	|Exp SUBE Exp 
+	|Exp LSHIFTE Exp 
+	|Exp RSHIFTE Exp 
+	|Exp ANDE Exp 
+	|Exp XORE Exp 
+	|Exp ORE Exp 
+	|Exp COMMA Exp 
+;
 
 ```
 
