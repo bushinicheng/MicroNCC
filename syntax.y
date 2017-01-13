@@ -30,6 +30,7 @@ extern Node *astroot;
 	CASE DEFAULT IF ELSE SWITCH WHILE DO FOR GOTO CONTINUE BREAK RETURN
 	LC RC LB RB LP RP SEMI
 	BOOL INT8T INT16T INT32T INT64T UINT8T UINT16T UINT32T UINT64T
+	FLOAT32T FLOAT64T
 	SIZET UINTPTRT OFFT NIL TRUE FALSE
 
 %left COMMA
@@ -62,11 +63,10 @@ extern Node *astroot;
 	TypeSpec
 	CompSpec
 	CompType
-	StructDeclnList
-	StructDecln
-	SpecQulfrList
-	StructDeclrList
-	StructDeclr
+	CompDeclnList
+	CompDecln
+	CompDeclrList
+	CompDeclr
 	EnumSpec
 	EnumorList
 	Enumor
@@ -176,6 +176,8 @@ TypeSpec
 	|UINT16T {$$=build_subast(AST_TypeSpec_is_UINT16T, &@$, $1);}
 	|UINT32T {$$=build_subast(AST_TypeSpec_is_UINT32T, &@$, $1);}
 	|UINT64T {$$=build_subast(AST_TypeSpec_is_UINT64T, &@$, $1);}
+	|FLOAT32T {$$=build_subast(AST_TypeSpec_is_FLOAT32T, &@$, $1);}
+	|FLOAT64T {$$=build_subast(AST_TypeSpec_is_FLOAT64T, &@$, $1);}
 	|UINTPTRT {$$=build_subast(AST_TypeSpec_is_UINTPTRT, &@$, $1);}
 	|SIZET {$$=build_subast(AST_TypeSpec_is_SIZET, &@$, $1);}
 	|OFFT {$$=build_subast(AST_TypeSpec_is_OFFT, &@$, $1);}
@@ -185,8 +187,8 @@ TypeSpec
 ;
 
 CompSpec
-	:CompType ID LC StructDeclnList RC {$$=build_subast(AST_CompSpec_is_CompType_ID_LC_StructDeclnList_RC, &@$, $1, $2, $3, $4, $5);}
-	|CompType LC StructDeclnList RC {$$=build_subast(AST_CompSpec_is_CompType_LC_StructDeclnList_RC, &@$, $1, $2, $3, $4);}
+	:CompType ID LC CompDeclnList RC {$$=build_subast(AST_CompSpec_is_CompType_ID_LC_CompDeclnList_RC, &@$, $1, $2, $3, $4, $5);}
+	|CompType LC CompDeclnList RC {$$=build_subast(AST_CompSpec_is_CompType_LC_CompDeclnList_RC, &@$, $1, $2, $3, $4);}
 	|CompType ID {$$=build_subast(AST_CompSpec_is_CompType_ID, &@$, $1, $2);}
 ;
 
@@ -195,37 +197,32 @@ CompType
 	|UNION {$$=build_subast(AST_CompType_is_UNION, &@$, $1);}
 ;
 
-StructDeclnList
-	:StructDecln {$$=build_subast(AST_StructDeclnList_is_StructDecln, &@$, $1);}
-	|StructDeclnList StructDecln {$$=build_subast(AST_StructDeclnList_is_StructDeclnList_StructDecln, &@$, $1, $2);}
+CompDeclnList
+	:CompDecln {$$=build_subast(AST_CompDeclnList_is_CompDecln, &@$, $1);}
+	|CompDeclnList CompDecln {$$=build_subast(AST_CompDeclnList_is_CompDeclnList_CompDecln, &@$, $1, $2);}
 ;
 
-StructDecln
-	:SpecQulfrList SEMI {$$=build_subast(AST_StructDecln_is_SpecQulfrList_SEMI, &@$, $1, $2);}
-	|SpecQulfrList StructDeclrList SEMI {$$=build_subast(AST_StructDecln_is_SpecQulfrList_StructDeclrList_SEMI, &@$, $1, $2, $3);}
+CompDecln
+	:DeclnSpec SEMI {$$=build_subast(AST_CompDecln_is_DeclnSpec_SEMI, &@$, $1, $2);}
+	|DeclnSpec CompDeclrList SEMI {$$=build_subast(AST_CompDecln_is_DeclnSpec_CompDeclrList_SEMI, &@$, $1, $2, $3);}
 ;
 
-SpecQulfrList
-	:TypeSpec SpecQulfrList {$$=build_subast(AST_SpecQulfrList_is_TypeSpec_SpecQulfrList, &@$, $1, $2);}
-	|TypeSpec {$$=build_subast(AST_SpecQulfrList_is_TypeSpec, &@$, $1);}
-	|TypeQulfr SpecQulfrList {$$=build_subast(AST_SpecQulfrList_is_TypeQulfr_SpecQulfrList, &@$, $1, $2);}
-	|TypeQulfr {$$=build_subast(AST_SpecQulfrList_is_TypeQulfr, &@$, $1);}
+CompDeclrList
+	:CompDeclr {$$=build_subast(AST_CompDeclrList_is_CompDeclr, &@$, $1);}
+	|CompDeclrList COMMA CompDeclr {$$=build_subast(AST_CompDeclrList_is_CompDeclrList_COMMA_CompDeclr, &@$, $1, $2, $3);}
 ;
 
-StructDeclrList
-	:StructDeclr {$$=build_subast(AST_StructDeclrList_is_StructDeclr, &@$, $1);}
-	|StructDeclrList COMMA StructDeclr {$$=build_subast(AST_StructDeclrList_is_StructDeclrList_COMMA_StructDeclr, &@$, $1, $2, $3);}
-;
-
-StructDeclr
-	:Declr {$$=build_subast(AST_StructDeclr_is_Declr, &@$, $1);}
-	|COLON Exp {$$=build_subast(AST_StructDeclr_is_COLON_Exp, &@$, $1, $2);}
-	|Declr COLON Exp {$$=build_subast(AST_StructDeclr_is_Declr_COLON_Exp, &@$, $1, $2, $3);}
+CompDeclr
+	:Declr {$$=build_subast(AST_CompDeclr_is_Declr, &@$, $1);}
+	|COLON Exp {$$=build_subast(AST_CompDeclr_is_COLON_Exp, &@$, $1, $2);}
+	|Declr COLON Exp {$$=build_subast(AST_CompDeclr_is_Declr_COLON_Exp, &@$, $1, $2, $3);}
 ;
 
 EnumSpec
 	:ENUM LC EnumorList RC {$$=build_subast(AST_EnumSpec_is_ENUM_LC_EnumorList_RC, &@$, $1, $2, $3, $4);}
+	|ENUM LC EnumorList COMMA RC {$$=build_subast(AST_EnumSpec_is_ENUM_LC_EnumorList_COMMA_RC, &@$, $1, $2, $3, $4, $5);}
 	|ENUM ID LC EnumorList RC {$$=build_subast(AST_EnumSpec_is_ENUM_ID_LC_EnumorList_RC, &@$, $1, $2, $3, $4, $5);}
+	|ENUM ID LC EnumorList COMMA RC {$$=build_subast(AST_EnumSpec_is_ENUM_ID_LC_EnumorList_COMMA_RC, &@$, $1, $2, $3, $4, $5, $6);}
 	|ENUM ID {$$=build_subast(AST_EnumSpec_is_ENUM_ID, &@$, $1, $2);}
 ;
 
@@ -288,8 +285,8 @@ IdList
 ;
 
 TypeName
-	:SpecQulfrList {$$=build_subast(AST_TypeName_is_SpecQulfrList, &@$, $1);}
-	|SpecQulfrList AbstDeclr {$$=build_subast(AST_TypeName_is_SpecQulfrList_AbstDeclr, &@$, $1, $2);}
+	:DeclnSpec {$$=build_subast(AST_TypeName_is_DeclnSpec, &@$, $1);}
+	|DeclnSpec AbstDeclr {$$=build_subast(AST_TypeName_is_DeclnSpec_AbstDeclr, &@$, $1, $2);}
 ;
 
 AbstDeclr

@@ -21,13 +21,19 @@ Spec *register_complex_var_with_type(Spec *type, Node *root, char **varname);
  */
 size_t get_size_of_btype(int btype) {
 	switch(btype) {
-		case SpecTypeConst:    return 0;
-		case SpecTypeVoid:     return 4;
-		case SpecTypeInt8:     return 1;
-		case SpecTypeInt32:      return 4;
-		case SpecTypeUint32: return 4;
-		case SpecTypeFloat32:    return 4;
-		case SpecTypePointer:  return 4;
+		case SpecTypeConst:		return 0;
+		case SpecTypeVoid:		return 4;
+		case SpecTypeInt8:		return 1;
+		case SpecTypeUint8:		return 1;
+		case SpecTypeInt16:		return 2;
+		case SpecTypeUint16:	return 2;
+		case SpecTypeInt32:		return 4;
+		case SpecTypeUint32:	return 4;
+		case SpecTypeInt64:		return 8;
+		case SpecTypeUint64:	return 8;
+		case SpecTypeFloat32:	return 4;
+		case SpecTypeFloat64:	return 8;
+		case SpecTypePointer:	return 4;
 	}
 	return 0;
 }
@@ -51,39 +57,38 @@ Spec *new_spec() {
 Spec *get_spec_of_const(Spec *const_spec) {
 	if(const_spec->btype != SpecTypeConst)
 		return NULL;
-	switch(const_spec->cons.suptype) {
-		case 'i':return get_spec_by_btype(SpecTypeInt32, SpecRvalue);
-		case 'u':return get_spec_by_btype(SpecTypeUint32, SpecRvalue);
-		case 'f':return get_spec_by_btype(SpecTypeFloat32, SpecRvalue);
-		case 's':return get_spec_by_btype(SpecTypeString, SpecLvalue);
-		case 'c':return get_spec_by_btype(SpecTypeInt8, SpecRvalue);
-		default:wt_assert(0);
-	}
-	return NULL;
+	int lr = SpecRvalue;
+	if(const_spec->cons.suptype == SpecTypeString)
+		lr = SpecLvalue;
+	return get_spec_by_btype(const_spec->cons.suptype, lr);
 }
 
 bool type_is_bit(Spec *type) {
 	if(!type) return false;
-	switch(type->btype) {
-		case SpecTypeUint8:     return true;
-		case SpecTypeInt8:     return true;
-		case SpecTypeInt32:      return true;
-		case SpecTypeUint32: return true;
+	int btype = type->btype;
+	if(type->btype == SpecTypeConst)
+		btype = type->cons.suptype;
+	switch(btype) {
+		case SpecTypeInt8:
+		case SpecTypeUint8:
+		case SpecTypeInt16:
+		case SpecTypeUint16:
+		case SpecTypeInt32:
+		case SpecTypeUint32:
+		case SpecTypeInt64:
+		case SpecTypeUint64:
+			return true;
 	}
-
-	if(type->btype == SpecTypeConst && type->cons.suptype == 'i') {
-		return true;
-	}
-
 	return false;
 }
 
 bool type_is_float(Spec *type) {
 	if(!type) return false;
-	if(type->btype == SpecTypeFloat32) return true;
-	if(type->btype == SpecTypeConst
-	&& type->cons.suptype == 'f')
-		return true;
+	int btype = type->btype;
+	if(type->btype == SpecTypeConst)
+		btype = type->cons.suptype;
+	if(btype == SpecTypeFloat32 || btype == SpecTypeFloat64)
+			return true;
 	return false;
 }
 
@@ -103,24 +108,16 @@ bool type_is_compatible(Spec *typeA, Spec *typeB) {
 Spec *type_more_accurate(Spec *typeA, Spec *typeB) {
 	if(!type_is_num(typeA) || !type_is_num(typeB))
 		return NULL;
-	if(typeA->btype == SpecTypeConst
-	|| typeB->btype == SpecTypeConst) {
-		if(typeA->cons.suptype == 'f'
-		|| typeB->cons.suptype == 'f') {
-			return get_spec_by_btype(SpecTypeFloat32, SpecRvalue);
-		}else if(typeA->cons.suptype == 'i'
-		      || typeB->cons.suptype == 'i') {
-			return get_spec_by_btype(SpecTypeInt32, SpecRvalue);
-		}
-	}else{
-		if(typeA->btype > typeB->btype)
-			return get_spec_by_btype(typeA->btype, SpecRvalue);
-		else
-			return get_spec_by_btype(typeB->btype, SpecRvalue);
-	}
-	/**/
-	logw("maybe ... :(");
-	return NULL;
+	int btypeA = typeA->btype;
+	int btypeB = typeB->btype;
+	if(btypeA == SpecTypeConst)
+		btypeA = typeA->cons.suptype;
+	if(btypeB == SpecTypeConst)
+		btypeB = typeB->cons.suptype;
+	if(btypeA > btypeB)
+		return get_spec_by_btype(btypeA, SpecRvalue);
+	else
+		return get_spec_by_btype(btypeB, SpecRvalue);
 }
 
 /* IN[0]: struct tagSpec *
@@ -199,11 +196,16 @@ Spec *get_spec_by_btype(int btype, int lr) {
 	switch(btype) {
 		case SpecTypeConst:
 		case SpecTypeVoid:
-		case SpecTypeUint8:
 		case SpecTypeInt8:
+		case SpecTypeUint8:
+		case SpecTypeInt16:
+		case SpecTypeUint16:
 		case SpecTypeInt32:
 		case SpecTypeUint32:
+		case SpecTypeInt64:
+		case SpecTypeUint64:
 		case SpecTypeFloat32:
+		case SpecTypeFloat64:
 		case SpecTypeString:
 			return &specpool[2 * btype + lr];
 	}
@@ -240,12 +242,17 @@ char *type_format(Spec *type) {
 			else
 				type->format_string = "constant";
 			break;
-		case SpecTypeVoid:     type->format_string = "void";break;
-		case SpecTypeUint8:     type->format_string = "bool";break;
-		case SpecTypeInt8:     type->format_string = "char";break;
-		case SpecTypeInt32:      type->format_string = "int";break;
-		case SpecTypeUint32: type->format_string = "unsigned";break;
-		case SpecTypeFloat32:    type->format_string = "float";break;
+		case SpecTypeVoid:    type->format_string = "void";break;
+		case SpecTypeInt8:    type->format_string = "char";break;
+		case SpecTypeUint8:   type->format_string = "bool";break;
+		case SpecTypeInt16:   type->format_string = "short";break;
+		case SpecTypeUint16:  type->format_string = "ushort";break;
+		case SpecTypeInt32:   type->format_string = "int";break;
+		case SpecTypeUint32:  type->format_string = "uint";break;
+		case SpecTypeInt64:   type->format_string = "int64_t";break;
+		case SpecTypeUint64:  type->format_string = "uint64_t";break;
+		case SpecTypeFloat32: type->format_string = "float";break;
+		case SpecTypeFloat64: type->format_string = "double";break;
 		case SpecTypeStruct:
 			type->format_string = sformat("struct %s", type->struc.struc_name);
 			break;
@@ -342,6 +349,85 @@ bool compare_type(Spec *s, Spec *t) {
  *          |STRUCT ID
  * */
 
+/*
+ *
+ */
+Spec *register_type_complex(Node *root) {
+	if(!root) return NULL;
+	wt_assert(root->token == CompSpec);
+}
+
+/*
+ *
+ */
+Spec *get_type_by_specnode(Node *root) {
+	if(!root) return NULL;
+	wt_assert(root->token == DeclnSpec || root->token == TypeSpec);
+}
+
+/*
+ *
+ * 
+ * FuncDef
+ *     :DeclnSpec Declr DeclnList CompSt
+ *     |DeclnSpec Declr CompSt
+ *     |Declr DeclnList CompSt
+ *     |Declr CompSt
+ *
+ * DeclnSpec:
+ *     :TypeSpec|TypeQulfr|%0 DeclnSpec
+ *
+ * Declr:
+ *     :StarList DirectDeclr
+ *     |DirectDeclr
+ *
+ * DirectDeclr
+ *     :ID
+ *     |LP Declr RP
+ *     |DirectDeclr LB Exp RB // array
+ *     |DirectDeclr LB RB     // array
+ *     |DirectDeclr LP ParaTypeList RP
+ *     |DirectDeclr LP IdList RP
+ *     |DirectDeclr LP RP
+ *
+ * AbstDeclr:
+ *     :StarList
+ *     |DirectAbstDeclr
+ *     |StarList DirectAbstDeclr
+ *
+ * DirectAbstDeclr:
+ *     :LP AbstDeclr RP
+ *     |LB RB
+ *     |LB Exp RB
+ *     |DirectAbstDeclr LB RB
+ *     |DirectAbstDeclr LB Exp RB
+ *     |LP RP
+ *     |LP ParaTypeList RP
+ *     |DirectAbstDeclr LP RP
+ *     |DirectAbstDeclr LP ParaTypeList RP
+ *
+ * ParaTypeList:ParaList | ParaList COMMA ELLIPSIS
+ *
+ * ParaList::ParaDecln | ParaList COMMA ParaDecln
+ *
+ * ParaDecln: DeclnSpec Declr | DeclnSpec AbstDeclr | DeclnSpec
+ *
+ */
+
+Spec *register_type_funcdef(Node *root) {
+	if(!root) return NULL;
+	wt_assert(root->token == FuncDef);
+	Spec *bret = NULL;
+	Spec *newspec = new_spec();
+	newspec->btype = SpecTypeFunc;
+	Node *declnspec = get_child_node(root, DeclnSpec);
+	if(!declnspec) bret = get_spec_by_btype(SpecTypeVoid, SpecLvalue); //FuncDef ==> DeclnSpec ...
+	else bret = get_type_by_specnode(declnspec);//FuncDef ==> Declr ...
+	
+	//declr: int `**func` (int a);
+	Node *declr = get_child_node_w(root, Declr);
+	return newspec;
+}
 
 void reset_spec_state() {
 #define btype_register(b, w, l) do {\

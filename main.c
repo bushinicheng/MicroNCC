@@ -48,12 +48,12 @@ void parse_arguments(int argc, char *argv[]) {
 			is_print_ast=true;
 		else if(strcmp(argv[i], "--print-reduce") == 0)
 			is_print_reduce_step=true;
-		else if(!is_file)
-		{
+		else if(!is_file) {
 			fp=fopen(argv[i], "rb");
-			if(fp != NULL)
-			{
+			if(fp != NULL) {
 				is_file=true;
+			}else{
+				fp = stdin;
 			}
 		}
 	}

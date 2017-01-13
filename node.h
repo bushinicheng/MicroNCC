@@ -17,7 +17,7 @@ enum {
 	SpecTypeFloat32,
 	SpecTypeFloat64,
 	/*number*/
-	SpecTypeString, //char *s = "asdfda";
+	SpecTypeString, //char *s = "string"; equivalent to `char *`
 	//the above must be registered firstly
 	SpecTypeArray,
 	SpecTypePointer,

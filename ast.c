@@ -217,16 +217,10 @@ void dump_ast(Node *root)
 		case STRUCT:	printf("struct ");break;
 		case NUM:
 			switch(root->idtype->cons.suptype) {
-				case 'i':
+				case SpecTypeInt32:
 					printf("%d", root->idtype->cons.supval.i);
 					break;
-				case 'o':
-					printf("0%o", root->idtype->cons.supval.i);
-					break;
-				case 'x':
-					printf("0x%x", root->idtype->cons.supval.i);
-					break;
-				case 'f':
+				case SpecTypeFloat32:
 					printf("%f", root->idtype->cons.supval.f);
 					break;
 				default:
@@ -283,19 +277,13 @@ void print_ast(Node *root)
 
 	/* print semanval or lexval */
 	if(root->token == ID)
-		printf("%s:%s\n", str_lexval[root->token], root->idtype->cons.supval.st);
+		printf("ID:%s\n", root->idtype->cons.supval.st);
 	else if(root->token == NUM) {
 		switch(root->idtype->cons.suptype) {
-		case 'i':
+		case SpecTypeInt32:
 			printf("NUM:%d\n", root->idtype->cons.supval.i);
 			break;
-		case 'o':
-			printf("NUM:0%o\n", root->idtype->cons.supval.i);
-			break;
-		case 'x':
-			printf("NUM:0x%x\n", root->idtype->cons.supval.i);
-			break;
-		case 'f':
+		case SpecTypeFloat32:
 			printf("NUM:%f\n", root->idtype->cons.supval.f);
 			break;
 		default:

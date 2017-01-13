@@ -2,6 +2,43 @@ bool is_syntax_error = false;
 int last_syntax_error;
 
 int (*func)(int, int);
+//basic data type
+enum {
+	SpecTypeConst,
+	SpecTypeVoid,
+	/*number*/
+	SpecTypeInt8,//also SpecTypeChar
+	SpecTypeUint8,//also SpecTypeBool
+	SpecTypeInt16,
+	SpecTypeUint16,
+	SpecTypeInt32,
+	SpecTypeUint32,
+	SpecTypeInt64,
+	SpecTypeUint64,
+	SpecTypeFloat32,
+	SpecTypeFloat64,
+	/*number*/
+	SpecTypeString, //char *s = "string"; equivalent to `char *`
+	//the above must be registered firstly
+	SpecTypeArray,
+	SpecTypePointer,
+	SpecTypeComplex,
+	SpecTypeStruct,
+	SpecTypeUnion,
+	SpecTypeFunc,
+};
+
+enum {
+	SpecLvalue = 0,
+	SpecRvalue = 1,
+};
+
+struct tagSpec;
+
+typedef struct tagSinArg {
+	struct tagSpec *type;
+	char *varname;
+} SinArg;
 
 struct SinArg {
 	struct Spec *type;
@@ -16,7 +53,7 @@ struct Spec {
 	int btype;
 	int width;
 	char *format_string;
-	struct {
+	union {
 		struct {
 			struct Spec *ret;
 			struct SinArg *arglist;

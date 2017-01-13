@@ -138,12 +138,14 @@ extern int yydebug;
     UINT16T = 348,
     UINT32T = 349,
     UINT64T = 350,
-    SIZET = 351,
-    UINTPTRT = 352,
-    OFFT = 353,
-    NIL = 354,
-    TRUE = 355,
-    FALSE = 356
+    FLOAT32T = 351,
+    FLOAT64T = 352,
+    SIZET = 353,
+    UINTPTRT = 354,
+    OFFT = 355,
+    NIL = 356,
+    TRUE = 357,
+    FALSE = 358
   };
 #endif
 
@@ -156,7 +158,7 @@ union YYSTYPE
 
 	Node *pnd;
 
-#line 160 "syntax.h" /* yacc.c:1909  */
+#line 162 "syntax.h" /* yacc.c:1909  */
 };
 
 typedef union YYSTYPE YYSTYPE;

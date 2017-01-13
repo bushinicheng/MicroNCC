@@ -116,13 +116,15 @@ invalidcomment   \/\*([^\*]|\*[^\/])*$
 {char}              {tokout("CHAR");	return symbol(CHAR);}
 
 void                {tokout("VOID");	return type(VOID);}
-bool                {tokout("BOOL");	return type(BOOL);}
-char                {tokout("CHAR");	return type(CHAR);}
-short               {tokout("SHORT");	return type(SHORT);}
-int                 {tokout("INT");		return type(INT);}
-unsigned            {tokout("UNSIGNED");return type(UNSIGNED);}
-float               {tokout("FLOAT");	return type(FLOAT);}
-double              {tokout("DOUBLE");	return type(DOUBLE);}
+bool                {tokout("BOOL");	return type(UINT8T);}
+char                {tokout("CHAR");	return type(INT8T);}
+short               {tokout("SHORT");	return type(INT16T);}
+int                 {tokout("INT");		return type(INT32T);}
+long                {tokout("LONG");	return type(INT32T);}
+signed              {tokout("SIGNED");	return type(INT32T);}
+unsigned            {tokout("UNSIGNED");return type(UINT32T);}
+float               {tokout("FLOAT");	return type(FLOAT32T);}
+double              {tokout("DOUBLE");	return type(FLOAT64T);}
 int8_t              {tokout("INT8T");	return type(INT8T);}
 int16_t             {tokout("INT16T");	return type(INT16T);}
 int32_t             {tokout("INT32T");	return type(INT32T);}
@@ -131,9 +133,9 @@ uint8_t             {tokout("UINT8T");	return type(UINT8T);}
 uint16_t            {tokout("UINT16T");	return type(UINT16T);}
 uint32_t            {tokout("UINT32T");	return type(UINT32T);}
 uint64_t            {tokout("UINT64T");	return type(UINT64T);}
-size_t              {tokout("SIZET");	return type(SIZET);}
-uintptr_t           {tokout("UINTPTRT");return type(UINTPTRT);}
-off_t               {tokout("OFFT");	return type(OFFT);}
+size_t              {tokout("SIZET");	return type(UINT32T);}
+uintptr_t           {tokout("UINTPTRT");return type(UINT32T);}
+off_t               {tokout("OFFT");	return type(UINT32T);}
 
 enum                {tokout("ENUM");	return symbol(ENUM);}
 union               {tokout("UNION");	return symbol(UNION);}
@@ -217,7 +219,7 @@ static int type(int specval)
 	return specval;
 }
 
-static int num(int specval)
+static int num(int numtype)
 {
 	int syntaxval = NUM;
 	char *pstr = yytext;
@@ -226,29 +228,28 @@ static int num(int specval)
 	pnd->idtype = new_spec();
 	pnd->idtype->lval = 1;
 	pnd->idtype->btype = SpecTypeConst;
-	pnd->idtype->cons.suptype = 'i';
 	pnd->lineno = yylineno;
 	pnd->column = yycolumn;
 	yylval.pnd = pnd;
 
-	switch(specval)
+	switch(numtype)
 	{
 	case 'i':
-		pnd->idtype->cons.suptype = 'i';
+		pnd->idtype->cons.suptype = SpecTypeInt32;
 		pnd->idtype->cons.supval.i = next_number(&pstr, 10);
 		break;
 	case 'o':
-		pnd->idtype->cons.suptype = 'i';
+		pnd->idtype->cons.suptype = SpecTypeInt32;
 		pstr++;
 		pnd->idtype->cons.supval.i = next_number(&pstr, 8);
 		break;
 	case 'x':
-		pnd->idtype->cons.suptype = 'i';
+		pnd->idtype->cons.suptype = SpecTypeInt32;
 		pstr+=2;
 		pnd->idtype->cons.supval.i = next_number(&pstr, 16);
 		break;
 	case 'f':
-		pnd->idtype->cons.suptype = 'f';
+		pnd->idtype->cons.suptype = SpecTypeFloat32;
 		pnd->idtype->cons.supval.f = atof(pstr);
 		break;
 	}
