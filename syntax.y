@@ -120,14 +120,14 @@ ExpList
 	|ExpList COMMA Exp {$$=build_subast(AST_ExpList_is_ExpList_COMMA_Exp, &@$, $1, $2, $3);}
 ;
 
-Decln
-	:DeclnSpec SEMI {$$=build_subast(AST_Decln_is_DeclnSpec_SEMI, &@$, $1, $2);}
-	|DeclnSpec InitorDeclrList SEMI {$$=build_subast(AST_Decln_is_DeclnSpec_InitorDeclrList_SEMI, &@$, $1, $2, $3);}
-;
-
 DeclnList
 	:Decln {$$=build_subast(AST_DeclnList_is_Decln, &@$, $1);}
 	|DeclnList Decln {$$=build_subast(AST_DeclnList_is_DeclnList_Decln, &@$, $1, $2);}
+;
+
+Decln
+	:DeclnSpec SEMI {$$=build_subast(AST_Decln_is_DeclnSpec_SEMI, &@$, $1, $2);}
+	|DeclnSpec InitorDeclrList SEMI {$$=build_subast(AST_Decln_is_DeclnSpec_InitorDeclrList_SEMI, &@$, $1, $2, $3);}
 ;
 
 DeclnSpec

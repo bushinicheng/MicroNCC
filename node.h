@@ -25,6 +25,8 @@ enum {
 	SpecTypeStruct,
 	SpecTypeUnion,
 	SpecTypeFunc,
+	SpecTypeQulfr,
+	SpecTypeRen,
 };
 
 enum {
@@ -46,21 +48,24 @@ typedef struct tagSpec {
 			//0 for global declaration, 1 for local declaration
 	int btype;
 	int width;
+	int qulfr;
 	char *format_string;
 	union {
+		struct tagSpec *spec;//for some special types
+
 		struct {
 			struct tagSpec *ret;
-			SinArg *arglist;
-			size_t argv;
+			SinArg *argv;
+			size_t argc;
 		} func;//func type
 
 		struct {
 			char *struc_name;
 			struct {
-				char *varname;
-				off_t offset;//offset of current var in struct
+				char *var;
+				off_t off;//offset of current var in struct
 				struct tagSpec *spec;
-			} *varlist;
+			} *argv;
 			size_t size;
 		} struc;//for structure
 
@@ -68,7 +73,7 @@ typedef struct tagSpec {
 			struct tagSpec *spec;//actual spec,such as `struct A`
 			size_t *dim;//dimension array:a[2][3][4]=>[2,3,4]
 			size_t size;//length of(dim)
-			int plevel;//pointer level
+			int pl;//pointer level
 					   //default to be zero(not pointer)
 		} comp;//complex variable, array or pointer or both
 

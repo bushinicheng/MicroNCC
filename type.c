@@ -134,8 +134,8 @@ Spec *find_type_of_struct_member(Spec *type, char *member) {
 	if(!type || type->btype != SpecTypeStruct) return NULL;
 	
 	for(int i = 0; i < type->struc.size; i++) {
-		if(strcmp(type->struc.varlist[i].varname, member) == 0) {
-			return type->struc.varlist[i].spec;
+		if(strcmp(type->struc.argv[i].var, member) == 0) {
+			return type->struc.argv[i].spec;
 		}
 	}
 
@@ -260,15 +260,15 @@ char *type_format(Spec *type) {
 
 	if(type->btype == SpecTypeFunc)	{
 		char **args_str = (char **)get_memory_pointer();
-		require_memory(type->func.argv * sizeof(char *));
+		require_memory(type->func.argc * sizeof(char *));
 		char *ret_str = type_format(type->func.ret);
-		for(int i = 0; i < type->func.argv; i++) {
-			args_str[i] = type_format(type->func.arglist[i].type);
+		for(int i = 0; i < type->func.argc; i++) {
+			args_str[i] = type_format(type->func.argv[i].type);
 		}
-		type->format_string = sformat("%s (%s)", ret_str, strjoin(args_str, type->func.argv, ", "));
+		type->format_string = sformat("%s (%s)", ret_str, strjoin(args_str, type->func.argc, ", "));
 	} else if(type->btype == SpecTypeComplex) {
 		char *rawtype_str = type_format(type->comp.spec);
-		char *star_str = strmul("*", type->comp.plevel);
+		char *star_str = strmul("*", type->comp.pl);
 
 		int arr_size = 0;
 		char *arr_str = (char *)get_memory_pointer();
@@ -306,7 +306,7 @@ bool compare_type(Spec *s, Spec *t) {
 			wt_assert(0);
 			break;
 		case SpecTypeComplex:
-			if(s->comp.plevel != t->comp.plevel)
+			if(s->comp.pl != t->comp.pl)
 				return false;
 			else if(!compare_type(s->comp.spec, t->comp.spec))
 				return false;
@@ -364,6 +364,163 @@ Spec *get_type_by_specnode(Node *root) {
 	if(!root) return NULL;
 	wt_assert(root->token == DeclnSpec || root->token == TypeSpec);
 }
+
+/*
+ * return NULL if fail
+ */
+Spec *register_type_declnspec(Node *root) {
+	if(!root) return NULL;
+	wt_assert(root->token == DeclnSpec);
+	Node *declnspec = root;
+	int curtype = 0, qulfr = 0;
+	while(declnspec) {
+		Node *fc = root->child;
+		if(fc->token == TypeSpec) {
+			if(curtype == 0) curtype = 1;
+			/* valid combination
+			 *     unsigned(1) long(<=2)
+			 *     signed(1) long(<=2)
+			 *     long long, unsigned char, signed char
+			 * curtype value:
+			 *     char:2, signed:3, unsigned:4, long:5,
+			 *     long long:6,
+			 *     signed long:7, unsigned long:8
+			 *     signed char:101, unsigned char:102
+			 *     signed long long:103, unsigned long long:104
+			 */
+			//curtype >= 100 means incompatible to any more type
+			switch(fc->child->token) {
+				case CHAR:
+					if(curtype == 1) curtype = 2;//+char
+					else if(curtype == 4) curtype = 102;//unsigned+char
+					else {
+						yyerr("cannot combine 'char' with imcompatible type.\n");
+						return NULL;
+					}
+					//error for other combination
+					break;
+				case LONG:
+					if(curtype == 1) curtype = 5;//+long
+					else if(curtype == 5) curtype = 6;//long+long
+					else if(curtype == 8) curtype = 104;//unsigned long+long
+					else {
+						yyerr("cannot combine 'long' with imcompatible type.\n");
+						return NULL;
+					}
+					//error for other combination
+					break;
+				case SIGNED:
+					if(curtype == 1) curtype = 3;//+signed
+					else if(curtype == 2) curtype = 101;//char+signed
+					else if(curtype == 5) curtype = 7;//long+signed
+					else if(curtype == 6) curtype = 103;//long long+signed
+					else {
+						yyerr("cannot combine 'signed' with imcompatible type.\n");
+						return NULL;
+					}
+					//error for other combination
+					break;
+				case UNSIGNED:
+					if(curtype == 1) curtype = 4;//+unsigned
+					else if(curtype == 2) curtype = 102;//char+unsigned
+					else if(curtype == 5) curtype = 8;//long+unsigned
+					else if(curtype == 6) curtype = 104;//long long+unsigned
+					else {
+						yyerr("cannot combine 'unsigned' with imcompatible type.\n");
+						return NULL;
+					}
+					//error for other combination
+					break;
+				default:
+					if(curtype == 1) curtype = 200 + fc->child->token;
+					else {
+						yyerr("cannot combine '?' with imcompatible type.\n");
+						return NULL;
+					}
+					//error for other combination
+					break;
+			}
+		}else if(fc->token == TypeQulfr){
+			/* valid attribute
+			 *     storage class:typedef extern static auto
+			 *	                 register
+			 *	   qualifier:const volatile
+			 *     typedef:1, extern:2, static:3
+			 *     auto:4, register:5,
+			 *     const:100, volatile:200
+			 */
+			if(qulfr == 0)
+				qulfr = fc->child->token;
+			else {
+				switch(fc->child->token) {
+					//storage class
+					case TYPEDEF:
+						wt_assert(0);
+						break;
+					case EXTERN:
+						/* no need to alloc memory for
+						 * these variables
+						 */
+						wt_assert(0);
+						break;
+					case STATIC:
+						/* 
+						 */
+						wt_assert(0);
+						break;
+					case AUTO:
+						/*
+						 */
+						wt_assert(0);
+						break;
+					case REGISTER:
+						wt_assert(0);
+						break;
+					//type qulfr
+					case CONST:
+						if(qulfr == 0) qulfr = 6;
+						break;
+					case VOLATILE:
+						if(qulfr == 0) qulfr = 7;
+						break;
+				}
+				yyerr("multiple storage classes in declaration specifiers\n");
+				return NULL;
+			}
+		}else{
+			logw("check here :(\n");
+		}
+		declnspec = get_child_node_w(declnspec, DeclnSpec);
+	}
+
+	if(curtype >= 200) {
+		curtype -= 200;
+		switch(curtype) {
+			case VOID:return get_spec_by_btype(SpecTypeVoid, SpecLvalue);
+			case BOOL:return get_spec_by_btype(SpecTypeVoid, SpecLvalue);
+			case CHAR:return get_spec_by_btype(SpecTypeVoid, SpecLvalue);
+			case SHORT:return get_spec_by_btype(SpecTypeVoid, SpecLvalue);
+			case INT:return get_spec_by_btype(SpecTypeVoid, SpecLvalue);
+			case LONG:return get_spec_by_btype(SpecTypeVoid, SpecLvalue);
+			case FLOAT:return get_spec_by_btype(SpecTypeVoid, SpecLvalue);
+			case DOUBLE:return get_spec_by_btype(SpecTypeVoid, SpecLvalue);
+			case SIGNED:return get_spec_by_btype(SpecTypeVoid, SpecLvalue);
+			case UNSIGNED:return get_spec_by_btype(SpecTypeVoid, SpecLvalue);
+			case INT8T:return get_spec_by_btype(SpecTypeVoid, SpecLvalue);
+			case INT16T:return get_spec_by_btype(SpecTypeVoid, SpecLvalue);
+			case INT32T:return get_spec_by_btype(SpecTypeVoid, SpecLvalue);
+			case INT64T:return get_spec_by_btype(SpecTypeVoid, SpecLvalue);
+			case INT8T:return get_spec_by_btype(SpecTypeVoid, SpecLvalue);
+			case INT16T:return get_spec_by_btype(SpecTypeVoid, SpecLvalue);
+			case INT32T:return get_spec_by_btype(SpecTypeVoid, SpecLvalue);
+			case INT64T:return get_spec_by_btype(SpecTypeVoid, SpecLvalue);
+			case SIZET:return get_spec_by_btype(SpecTypeVoid, SpecLvalue);
+			case UINTPTRT:return get_spec_by_btype(SpecTypeVoid, SpecLvalue);
+			case OFFT:return get_spec_by_btype(SpecTypeVoid, SpecLvalue);
+		}
+	}
+}
+
 
 /*
  *
@@ -425,7 +582,35 @@ Spec *register_type_funcdef(Node *root) {
 	else bret = get_type_by_specnode(declnspec);//FuncDef ==> Declr ...
 	
 	//declr: int `**func` (int a);
+	int retplevel = 0;
 	Node *declr = get_child_node_w(root, Declr);
+	Node *starlist = get_child_node(declr, StarList);
+	while(starlist) {
+		retplevel ++;
+		starlist = get_child_node(starlist, StarList);
+	}
+	if(retplevel) {
+		Spec *realret = new_spec();
+		realret->btype = SpecTypeComplex;
+		realret->comp.pl = retplevel;
+		realret->comp.spec = bret;
+		newspec->func.ret = realret;//StarList ID
+	}else{
+		newspec->func.ret = bret;//pure ID
+	}
+
+	//DirectDeclr: funcname, paratype
+	Node *directdeclr = get_child_node_w(declr, DirectDeclr);
+	if(get_child_node(directdeclr, LP) == NULL) {
+		//error: int a`[]` {return 0;}
+		logw("FIXME!\n");
+	}else{
+		if(directdeclr->reduce_rule == AST_DirectDeclr_is_DirectDeclr_LP_RP) {
+		}else if(directdeclr->reduce_rule == AST_DirectDeclr_is_DirectDeclr_LP_IdList_RP){
+		}else if(directdeclr->reduce_rule == AST_DirectDeclr_is_DirectDeclr_LP_ParaTypeList_RP){
+		}
+	}
+
 	return newspec;
 }
 
@@ -465,13 +650,13 @@ void reset_spec_state() {
 	specpool[specptr].lval = SpecLvalue;
 	specpool[specptr].btype = SpecTypeComplex;
 	specpool[specptr].comp.spec = &specpool[2 * SpecTypeInt8];
-	specpool[specptr].comp.plevel = 1;
+	specpool[specptr].comp.pl = 1;
 	specpool[specptr].aslevel = 1;
 	specptr ++;
 	specpool[specptr].lval = SpecRvalue;
 	specpool[specptr].btype = SpecTypeComplex;
 	specpool[specptr].comp.spec = &specpool[2 * SpecTypeInt8];
-	specpool[specptr].comp.plevel = 1;
+	specpool[specptr].comp.pl = 1;
 	specpool[specptr].aslevel = 1;
 	specptr ++;
 }

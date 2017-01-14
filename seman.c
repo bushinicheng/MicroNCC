@@ -156,6 +156,9 @@ void pop_scope() {
 	}
 }
 
+/*
+ *
+ */
 
 int semantic_analysis(Node *root)
 {
