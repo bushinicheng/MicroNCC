@@ -351,6 +351,36 @@ bool compare_type(Spec *s, Spec *t) {
 Spec *register_type_complex(Node *root) {
 	if(!root) return NULL;
 	wt_assert(root->token == CompSpec);
+
+	if(root->reduce_rule == AST_CompSpec_is_CompType_ID) {
+		//TODO:check complex type;
+		wt_assert(0);
+	}else{
+		Node *id = get_child_node(root, ID);
+		Node *declnlist = get_child_node_w(root, CompDeclnList);
+		if(!id) {
+			//check aslevel, maybe anonymous structure
+		}
+
+		//analyse CompDeclnList
+		while(declnlist) {
+			Node *decln = get_child_node_w(declnlist, CompDecln);
+			Node *declnspec = get_child_node_w(decln, DeclnSpec);
+			Spec *curtype = register_type_declnspec(declnspec);
+
+
+
+			declnlist = get_child_node(root, CompDeclnList);
+		}
+	}
+}
+
+/*
+ *
+ */
+Spec *register_type_enum(Node *root) {
+	if(!root) return NULL;
+	wt_assert(root->token == EnumSpec);
 }
 
 /*
@@ -360,6 +390,7 @@ Spec *get_type_by_specnode(Node *root) {
 	if(!root) return NULL;
 	wt_assert(root->token == DeclnSpec || root->token == TypeSpec);
 }
+
 
 /*
  * return NULL if fail
@@ -373,8 +404,18 @@ Spec *register_type_declnspec(Node *root) {
 	while(declnspec) {
 		Node *fc = root->child;
 		if(fc->token == TypeSpec) {
-			if(fc->reduce_rule == AST_TypeSpec_is_TYPE) {
-				if(curtype == 0) curtype = 1;
+			if(curtype == 0) curtype = 1;
+			if(fc->reduce_rule == AST_TypeSpec_is_CompSpec) {
+				curtype = 51;
+				retspec = register_type_complex(get_child_node_w(fc, EnumSpec));
+			}else if(fc->reduce_rule == AST_TypeSpec_is_EnumSpec){
+				curtype = 52;
+				register_type_enum(get_child_node_w(fc, EnumSpec));
+				retspec = get_spec_by_btype(SpecTypeInt32, SpecLvalue);
+			}else if(fc->reduce_rule == AST_TypeSpec_is_TYPE_NAME){
+				curtype = 53;
+				wt_assert(0);
+			}else if(fc->reduce_rule == AST_TypeSpec_is_TYPE) {
 				/* valid combination
 				 *     unsigned(1) long(<=2)
 				 *     signed(1) long(<=2)
@@ -513,6 +554,8 @@ Spec *register_type_declnspec(Node *root) {
 			default:wt_assert(0);
 		}
 	}
+	//no error occurs
+	return retspec;
 }
 
 
