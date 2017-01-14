@@ -189,27 +189,18 @@ void dump_ast(Node *root)
 		case BREAK:		printf("break ");break;
 		case DEFAULT:	printf("default ");break;
 		case GOTO:		printf("goto ");break;
-		case TypeSpec:
-			switch(root->idtype->cons.suptype) {
-				case VOID:		printf("void ");break;
-				case BOOL:		printf("bool ");break;
-				case CHAR:		printf("char ");break;
-				case SHORT:		printf("short ");break;
-				case INT:		printf("int ");break;
-				case UNSIGNED:	printf("unsigned ");break;
-				case FLOAT:		printf("float ");break;
-				case DOUBLE:	printf("double ");break;
-				case INT8T:		printf("int8_t ");break;
-				case INT16T:	printf("int16_t ");break;
-				case INT32T:	printf("int32_t ");break;
-				case INT64T:	printf("int64_t ");break;
-				case UINT8T:	printf("uint8_t ");break;
-				case UINT16T:	printf("uint16_t ");break;
-				case UINT32T:	printf("uint32_t ");break;
-				case UINT64T:	printf("uint64_t ");break;
-				case SIZET:		printf("size_t ");break;
-				case OFFT:		printf("off_t ");break;
-				case UINTPTRT:	printf("uintptr_t ");break;
+		case TYPE:
+			switch(root->idtype->btype) {
+				case SpecTypeFloat32:printf("float ");break;
+				case SpecTypeFloat64:printf("double ");break;
+				case SpecTypeInt8:   printf("int8_t ");break;
+				case SpecTypeInt16:	 printf("int16_t ");break;
+				case SpecTypeInt32:	 printf("int32_t ");break;
+				case SpecTypeInt64:	 printf("int64_t ");break;
+				case SpecTypeUint8:	 printf("uint8_t ");break;
+				case SpecTypeUint16: printf("uint16_t ");break;
+				case SpecTypeUint32: printf("uint32_t ");break;
+				case SpecTypeUint64: printf("uint64_t ");break;
 			}
 			break;
 		case ENUM:		printf("enum ");break;

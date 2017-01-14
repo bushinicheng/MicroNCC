@@ -763,7 +763,7 @@ extern YYLTYPE yylloc;
 	} while(0);
 
 static int symbol(int syntaxval);
-static int type(int specval);
+static int type(int, int);
 static int num(int specval);
 static int reg(int syntaxval);
 
@@ -1298,107 +1298,107 @@ YY_RULE_SETUP
 case 49:
 YY_RULE_SETUP
 #line 118 "lexical.l"
-{tokout("VOID");	return type(VOID);}
+{tokout("VOID");	return type(SpecTypeVoid, VOID);}
 	YY_BREAK
 case 50:
 YY_RULE_SETUP
 #line 119 "lexical.l"
-{tokout("BOOL");	return type(UINT8T);}
+{tokout("BOOL");	return type(SpecTypeUint8, BOOL);}
 	YY_BREAK
 case 51:
 YY_RULE_SETUP
 #line 120 "lexical.l"
-{tokout("CHAR");	return type(INT8T);}
+{tokout("CHAR");	return type(SpecTypeInt8, CHAR);}
 	YY_BREAK
 case 52:
 YY_RULE_SETUP
 #line 121 "lexical.l"
-{tokout("SHORT");	return type(INT16T);}
+{tokout("SHORT");	return type(SpecTypeInt16, SHORT);}
 	YY_BREAK
 case 53:
 YY_RULE_SETUP
 #line 122 "lexical.l"
-{tokout("INT");		return type(INT32T);}
+{tokout("INT");		return type(SpecTypeInt32, INT);}
 	YY_BREAK
 case 54:
 YY_RULE_SETUP
 #line 123 "lexical.l"
-{tokout("LONG");	return type(INT32T);}
+{tokout("LONG");	return type(SpecTypeInt32, LONG);}
 	YY_BREAK
 case 55:
 YY_RULE_SETUP
 #line 124 "lexical.l"
-{tokout("SIGNED");	return type(INT32T);}
+{tokout("SIGNED");	return type(SpecTypeInt32, SIGNED);}
 	YY_BREAK
 case 56:
 YY_RULE_SETUP
 #line 125 "lexical.l"
-{tokout("UNSIGNED");return type(UINT32T);}
+{tokout("UNSIGNED");return type(SpecTypeUint32, UNSIGNED);}
 	YY_BREAK
 case 57:
 YY_RULE_SETUP
 #line 126 "lexical.l"
-{tokout("FLOAT");	return type(FLOAT32T);}
+{tokout("FLOAT");	return type(SpecTypeFloat32, FLOAT);}
 	YY_BREAK
 case 58:
 YY_RULE_SETUP
 #line 127 "lexical.l"
-{tokout("DOUBLE");	return type(FLOAT64T);}
+{tokout("DOUBLE");	return type(SpecTypeFloat64, DOUBLE);}
 	YY_BREAK
 case 59:
 YY_RULE_SETUP
 #line 128 "lexical.l"
-{tokout("INT8T");	return type(INT8T);}
+{tokout("INT8T");	return type(SpecTypeInt8, INT8T);}
 	YY_BREAK
 case 60:
 YY_RULE_SETUP
 #line 129 "lexical.l"
-{tokout("INT16T");	return type(INT16T);}
+{tokout("INT16T");	return type(SpecTypeInt16, INT16T);}
 	YY_BREAK
 case 61:
 YY_RULE_SETUP
 #line 130 "lexical.l"
-{tokout("INT32T");	return type(INT32T);}
+{tokout("INT32T");	return type(SpecTypeInt32, INT32T);}
 	YY_BREAK
 case 62:
 YY_RULE_SETUP
 #line 131 "lexical.l"
-{tokout("INT64T");	return type(INT64T);}
+{tokout("INT64T");	return type(SpecTypeInt64, INT64T);}
 	YY_BREAK
 case 63:
 YY_RULE_SETUP
 #line 132 "lexical.l"
-{tokout("UINT8T");	return type(UINT8T);}
+{tokout("UINT8T");	return type(SpecTypeUint8, UINT8T);}
 	YY_BREAK
 case 64:
 YY_RULE_SETUP
 #line 133 "lexical.l"
-{tokout("UINT16T");	return type(UINT16T);}
+{tokout("UINT16T");	return type(SpecTypeUint16, UINT16T);}
 	YY_BREAK
 case 65:
 YY_RULE_SETUP
 #line 134 "lexical.l"
-{tokout("UINT32T");	return type(UINT32T);}
+{tokout("UINT32T");	return type(SpecTypeUint32, UINT32T);}
 	YY_BREAK
 case 66:
 YY_RULE_SETUP
 #line 135 "lexical.l"
-{tokout("UINT64T");	return type(UINT64T);}
+{tokout("UINT64T");	return type(SpecTypeUint64, UINT64T);}
 	YY_BREAK
 case 67:
 YY_RULE_SETUP
 #line 136 "lexical.l"
-{tokout("SIZET");	return type(UINT32T);}
+{tokout("SIZET");	return type(SpecTypeUint32, SIZET);}
 	YY_BREAK
 case 68:
 YY_RULE_SETUP
 #line 137 "lexical.l"
-{tokout("UINTPTRT");return type(UINT32T);}
+{tokout("UINTPTRT");return type(SpecTypeUint32, UINTPTRT);}
 	YY_BREAK
 case 69:
 YY_RULE_SETUP
 #line 138 "lexical.l"
-{tokout("OFFT");	return type(UINT32T);}
+{tokout("OFFT");	return type(SpecTypeUint32, OFFT);}
 	YY_BREAK
 case 70:
 YY_RULE_SETUP
@@ -2642,17 +2642,16 @@ static int symbol(int syntaxval)
 	return syntaxval;
 }
 
-static int type(int specval)
+static int type(int spectype, int rawtoken)
 {
 	Node *pnd = new_node();
-	pnd->token = specval;
-	pnd->idtype = new_spec();
-	pnd->idtype->btype = SpecTypeConst;
-	pnd->idtype->cons.suptype = specval;
+	pnd->token = TYPE;
+	pnd->reduce_rule = rawtoken;
+	pnd->idtype = get_spec_by_btype(spectype, SpecLvalue);
 	pnd->lineno = yylineno;
 	pnd->column = yycolumn;
 	yylval.pnd = pnd;
-	return specval;
+	return TYPE;
 }
 
 static int num(int numtype)

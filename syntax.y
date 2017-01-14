@@ -25,13 +25,13 @@ extern Node *astroot;
 	LSHIFT RSHIFT ADD SUB MULT DIV MOD
 	INC DEC LNOT NOT
 	TYPEDEF EXTERN STATIC AUTO REGISTER CONST VOLATILE
-	CHAR SHORT INT LONG SIGNED UNSIGNED FLOAT DOUBLE VOID
 	STRUCT UNION ENUM ELLIPSIS
 	CASE DEFAULT IF ELSE SWITCH WHILE DO FOR GOTO CONTINUE BREAK RETURN
 	LC RC LB RB LP RP SEMI
+	TYPE NIL TRUE FALSE
+	CHAR SHORT INT LONG SIGNED UNSIGNED FLOAT DOUBLE VOID
 	BOOL INT8T INT16T INT32T INT64T UINT8T UINT16T UINT32T UINT64T
-	FLOAT32T FLOAT64T
-	SIZET UINTPTRT OFFT NIL TRUE FALSE
+	FLOAT32T FLOAT64T SIZET OFFT UINTPTRT
 
 %left COMMA
 %right ASSIGNOP DIVE MULTE MODE ADDE SUBE LSHIFTE RSHIFTE ANDE XORE ORE
@@ -158,29 +158,7 @@ TypeQulfr
 ;
 
 TypeSpec
-	:VOID {$$=build_subast(AST_TypeSpec_is_VOID, &@$, $1);}
-	|BOOL {$$=build_subast(AST_TypeSpec_is_BOOL, &@$, $1);}
-	|CHAR {$$=build_subast(AST_TypeSpec_is_CHAR, &@$, $1);}
-	|SHORT {$$=build_subast(AST_TypeSpec_is_SHORT, &@$, $1);}
-	|INT {$$=build_subast(AST_TypeSpec_is_INT, &@$, $1);}
-	|LONG {$$=build_subast(AST_TypeSpec_is_LONG, &@$, $1);}
-	|FLOAT {$$=build_subast(AST_TypeSpec_is_FLOAT, &@$, $1);}
-	|DOUBLE {$$=build_subast(AST_TypeSpec_is_DOUBLE, &@$, $1);}
-	|SIGNED {$$=build_subast(AST_TypeSpec_is_SIGNED, &@$, $1);}
-	|UNSIGNED {$$=build_subast(AST_TypeSpec_is_UNSIGNED, &@$, $1);}
-	|INT8T {$$=build_subast(AST_TypeSpec_is_INT8T, &@$, $1);}
-	|INT16T {$$=build_subast(AST_TypeSpec_is_INT16T, &@$, $1);}
-	|INT32T {$$=build_subast(AST_TypeSpec_is_INT32T, &@$, $1);}
-	|INT64T {$$=build_subast(AST_TypeSpec_is_INT64T, &@$, $1);}
-	|UINT8T {$$=build_subast(AST_TypeSpec_is_UINT8T, &@$, $1);}
-	|UINT16T {$$=build_subast(AST_TypeSpec_is_UINT16T, &@$, $1);}
-	|UINT32T {$$=build_subast(AST_TypeSpec_is_UINT32T, &@$, $1);}
-	|UINT64T {$$=build_subast(AST_TypeSpec_is_UINT64T, &@$, $1);}
-	|FLOAT32T {$$=build_subast(AST_TypeSpec_is_FLOAT32T, &@$, $1);}
-	|FLOAT64T {$$=build_subast(AST_TypeSpec_is_FLOAT64T, &@$, $1);}
-	|UINTPTRT {$$=build_subast(AST_TypeSpec_is_UINTPTRT, &@$, $1);}
-	|SIZET {$$=build_subast(AST_TypeSpec_is_SIZET, &@$, $1);}
-	|OFFT {$$=build_subast(AST_TypeSpec_is_OFFT, &@$, $1);}
+	:TYPE {$$=build_subast(AST_TypeSpec_is_TYPE, &@$, $1);}
 	|CompSpec {$$=build_subast(AST_TypeSpec_is_CompSpec, &@$, $1);}
 	|EnumSpec {$$=build_subast(AST_TypeSpec_is_EnumSpec, &@$, $1);}
 	|TYPE_NAME {$$=build_subast(AST_TypeSpec_is_TYPE_NAME, &@$, $1);}

@@ -38,7 +38,7 @@ extern YYLTYPE yylloc;
 	} while(0);
 
 static int symbol(int syntaxval);
-static int type(int specval);
+static int type(int, int);
 static int num(int specval);
 static int reg(int syntaxval);
 
@@ -115,27 +115,27 @@ invalidcomment   \/\*([^\*]|\*[^\/])*$
 "..."               {tokout("ELLIPSIS");return symbol(ELLIPSIS);}
 {char}              {tokout("CHAR");	return symbol(CHAR);}
 
-void                {tokout("VOID");	return type(VOID);}
-bool                {tokout("BOOL");	return type(UINT8T);}
-char                {tokout("CHAR");	return type(INT8T);}
-short               {tokout("SHORT");	return type(INT16T);}
-int                 {tokout("INT");		return type(INT32T);}
-long                {tokout("LONG");	return type(INT32T);}
-signed              {tokout("SIGNED");	return type(INT32T);}
-unsigned            {tokout("UNSIGNED");return type(UINT32T);}
-float               {tokout("FLOAT");	return type(FLOAT32T);}
-double              {tokout("DOUBLE");	return type(FLOAT64T);}
-int8_t              {tokout("INT8T");	return type(INT8T);}
-int16_t             {tokout("INT16T");	return type(INT16T);}
-int32_t             {tokout("INT32T");	return type(INT32T);}
-int64_t             {tokout("INT64T");	return type(INT64T);}
-uint8_t             {tokout("UINT8T");	return type(UINT8T);}
-uint16_t            {tokout("UINT16T");	return type(UINT16T);}
-uint32_t            {tokout("UINT32T");	return type(UINT32T);}
-uint64_t            {tokout("UINT64T");	return type(UINT64T);}
-size_t              {tokout("SIZET");	return type(UINT32T);}
-uintptr_t           {tokout("UINTPTRT");return type(UINT32T);}
-off_t               {tokout("OFFT");	return type(UINT32T);}
+void                {tokout("VOID");	return type(SpecTypeVoid, VOID);}
+bool                {tokout("BOOL");	return type(SpecTypeUint8, BOOL);}
+char                {tokout("CHAR");	return type(SpecTypeInt8, CHAR);}
+short               {tokout("SHORT");	return type(SpecTypeInt16, SHORT);}
+int                 {tokout("INT");		return type(SpecTypeInt32, INT);}
+long                {tokout("LONG");	return type(SpecTypeInt32, LONG);}
+signed              {tokout("SIGNED");	return type(SpecTypeInt32, SIGNED);}
+unsigned            {tokout("UNSIGNED");return type(SpecTypeUint32, UNSIGNED);}
+float               {tokout("FLOAT");	return type(SpecTypeFloat32, FLOAT);}
+double              {tokout("DOUBLE");	return type(SpecTypeFloat64, DOUBLE);}
+int8_t              {tokout("INT8T");	return type(SpecTypeInt8, INT8T);}
+int16_t             {tokout("INT16T");	return type(SpecTypeInt16, INT16T);}
+int32_t             {tokout("INT32T");	return type(SpecTypeInt32, INT32T);}
+int64_t             {tokout("INT64T");	return type(SpecTypeInt64, INT64T);}
+uint8_t             {tokout("UINT8T");	return type(SpecTypeUint8, UINT8T);}
+uint16_t            {tokout("UINT16T");	return type(SpecTypeUint16, UINT16T);}
+uint32_t            {tokout("UINT32T");	return type(SpecTypeUint32, UINT32T);}
+uint64_t            {tokout("UINT64T");	return type(SpecTypeUint64, UINT64T);}
+size_t              {tokout("SIZET");	return type(SpecTypeUint32, SIZET);}
+uintptr_t           {tokout("UINTPTRT");return type(SpecTypeUint32, UINTPTRT);}
+off_t               {tokout("OFFT");	return type(SpecTypeUint32, OFFT);}
 
 enum                {tokout("ENUM");	return symbol(ENUM);}
 union               {tokout("UNION");	return symbol(UNION);}
@@ -206,17 +206,16 @@ static int symbol(int syntaxval)
 	return syntaxval;
 }
 
-static int type(int specval)
+static int type(int spectype, int rawtoken)
 {
 	Node *pnd = new_node();
-	pnd->token = specval;
-	pnd->idtype = new_spec();
-	pnd->idtype->btype = SpecTypeConst;
-	pnd->idtype->cons.suptype = specval;
+	pnd->token = TYPE;
+	pnd->reduce_rule = rawtoken;
+	pnd->idtype = get_spec_by_btype(spectype, SpecLvalue);
 	pnd->lineno = yylineno;
 	pnd->column = yycolumn;
 	yylval.pnd = pnd;
-	return specval;
+	return TYPE;
 }
 
 static int num(int numtype)

@@ -162,10 +162,6 @@ Spec *find_type_of_spec(Node *root) {
 		switch(get_child_node_w(root, TypeSpec)->idtype->cons.suptype){
 			case CHAR:
 				return get_spec_by_btype(SpecTypeInt8, SpecLvalue);
-			case INT:
-				return get_spec_by_btype(SpecTypeInt32, SpecLvalue);
-			case FLOAT:
-				return get_spec_by_btype(SpecTypeFloat32, SpecLvalue);
 			default:
 				yyerr("error type B:type `%s` not supported!\n",\
 						type_format(get_child_node_w(root, TypeSpec)->idtype));
@@ -372,73 +368,79 @@ Spec *register_type_declnspec(Node *root) {
 	if(!root) return NULL;
 	wt_assert(root->token == DeclnSpec);
 	Node *declnspec = root;
+	Spec *retspec = NULL;
 	int curtype = 0, qulfr = 0;
 	while(declnspec) {
 		Node *fc = root->child;
 		if(fc->token == TypeSpec) {
-			if(curtype == 0) curtype = 1;
-			/* valid combination
-			 *     unsigned(1) long(<=2)
-			 *     signed(1) long(<=2)
-			 *     long long, unsigned char, signed char
-			 * curtype value:
-			 *     char:2, signed:3, unsigned:4, long:5,
-			 *     long long:6,
-			 *     signed long:7, unsigned long:8
-			 *     signed char:101, unsigned char:102
-			 *     signed long long:103, unsigned long long:104
-			 */
-			//curtype >= 100 means incompatible to any more type
-			switch(fc->child->token) {
-				case CHAR:
-					if(curtype == 1) curtype = 2;//+char
-					else if(curtype == 4) curtype = 102;//unsigned+char
-					else {
-						yyerr("cannot combine 'char' with imcompatible type.\n");
-						return NULL;
-					}
-					//error for other combination
-					break;
-				case LONG:
-					if(curtype == 1) curtype = 5;//+long
-					else if(curtype == 5) curtype = 6;//long+long
-					else if(curtype == 8) curtype = 104;//unsigned long+long
-					else {
-						yyerr("cannot combine 'long' with imcompatible type.\n");
-						return NULL;
-					}
-					//error for other combination
-					break;
-				case SIGNED:
-					if(curtype == 1) curtype = 3;//+signed
-					else if(curtype == 2) curtype = 101;//char+signed
-					else if(curtype == 5) curtype = 7;//long+signed
-					else if(curtype == 6) curtype = 103;//long long+signed
-					else {
-						yyerr("cannot combine 'signed' with imcompatible type.\n");
-						return NULL;
-					}
-					//error for other combination
-					break;
-				case UNSIGNED:
-					if(curtype == 1) curtype = 4;//+unsigned
-					else if(curtype == 2) curtype = 102;//char+unsigned
-					else if(curtype == 5) curtype = 8;//long+unsigned
-					else if(curtype == 6) curtype = 104;//long long+unsigned
-					else {
-						yyerr("cannot combine 'unsigned' with imcompatible type.\n");
-						return NULL;
-					}
-					//error for other combination
-					break;
-				default:
-					if(curtype == 1) curtype = 200 + fc->child->token;
-					else {
-						yyerr("cannot combine '?' with imcompatible type.\n");
-						return NULL;
-					}
-					//error for other combination
-					break;
+			if(fc->reduce_rule == AST_TypeSpec_is_TYPE) {
+				if(curtype == 0) curtype = 1;
+				/* valid combination
+				 *     unsigned(1) long(<=2)
+				 *     signed(1) long(<=2)
+				 *     long long, unsigned char, signed char
+				 * curtype value:
+				 *     char:2, signed:3, unsigned:4, long:5,
+				 *     long long:6,
+				 *     signed long:7, unsigned long:8
+				 *     signed char:101, unsigned char:102
+				 *     signed long long:103, unsigned long long:104
+				 */
+				//curtype >= 100 means incompatible to any more type
+				Node *typenode = get_child_node_w(fc, TYPE);
+				switch(typenode->reduce_rule) {
+					case CHAR:
+						if(curtype == 1) curtype = 2;//+char
+						else if(curtype == 4) curtype = 102;//unsigned+char
+						else {
+							yyerr("cannot combine 'char' with imcompatible type.\n");
+							return NULL;
+						}
+						//error for other combination
+						break;
+					case LONG:
+						if(curtype == 1) curtype = 5;//+long
+						else if(curtype == 5) curtype = 6;//long+long
+						else if(curtype == 8) curtype = 104;//unsigned long+long
+						else {
+							yyerr("cannot combine 'long' with imcompatible type.\n");
+							return NULL;
+						}
+						//error for other combination
+						break;
+					case SIGNED:
+						if(curtype == 1) curtype = 3;//+signed
+						else if(curtype == 2) curtype = 101;//char+signed
+						else if(curtype == 5) curtype = 7;//long+signed
+						else if(curtype == 6) curtype = 103;//long long+signed
+						else {
+							yyerr("cannot combine 'signed' with imcompatible type.\n");
+							return NULL;
+						}
+						//error for other combination
+						break;
+					case UNSIGNED:
+						if(curtype == 1) curtype = 4;//+unsigned
+						else if(curtype == 2) curtype = 102;//char+unsigned
+						else if(curtype == 5) curtype = 8;//long+unsigned
+						else if(curtype == 6) curtype = 104;//long long+unsigned
+						else {
+							yyerr("cannot combine 'unsigned' with imcompatible type.\n");
+							return NULL;
+						}
+						//error for other combination
+						break;
+					default:
+						if(curtype == 1) {
+							curtype = 200;
+							retspec = typenode->idtype;
+						}else{
+							yyerr("cannot combine '?' with imcompatible type.\n");
+							return NULL;
+						}
+						//error for other combination
+						break;
+				}
 			}
 		}else if(fc->token == TypeQulfr){
 			/* valid attribute
@@ -493,30 +495,22 @@ Spec *register_type_declnspec(Node *root) {
 		declnspec = get_child_node_w(declnspec, DeclnSpec);
 	}
 
-	if(curtype >= 200) {
-		curtype -= 200;
+	if(curtype == 200) {
+		return retspec;
+	}else{
 		switch(curtype) {
-			case VOID:return get_spec_by_btype(SpecTypeVoid, SpecLvalue);
-			case BOOL:return get_spec_by_btype(SpecTypeVoid, SpecLvalue);
-			case CHAR:return get_spec_by_btype(SpecTypeVoid, SpecLvalue);
-			case SHORT:return get_spec_by_btype(SpecTypeVoid, SpecLvalue);
-			case INT:return get_spec_by_btype(SpecTypeVoid, SpecLvalue);
-			case LONG:return get_spec_by_btype(SpecTypeVoid, SpecLvalue);
-			case FLOAT:return get_spec_by_btype(SpecTypeVoid, SpecLvalue);
-			case DOUBLE:return get_spec_by_btype(SpecTypeVoid, SpecLvalue);
-			case SIGNED:return get_spec_by_btype(SpecTypeVoid, SpecLvalue);
-			case UNSIGNED:return get_spec_by_btype(SpecTypeVoid, SpecLvalue);
-			case INT8T:return get_spec_by_btype(SpecTypeVoid, SpecLvalue);
-			case INT16T:return get_spec_by_btype(SpecTypeVoid, SpecLvalue);
-			case INT32T:return get_spec_by_btype(SpecTypeVoid, SpecLvalue);
-			case INT64T:return get_spec_by_btype(SpecTypeVoid, SpecLvalue);
-			case INT8T:return get_spec_by_btype(SpecTypeVoid, SpecLvalue);
-			case INT16T:return get_spec_by_btype(SpecTypeVoid, SpecLvalue);
-			case INT32T:return get_spec_by_btype(SpecTypeVoid, SpecLvalue);
-			case INT64T:return get_spec_by_btype(SpecTypeVoid, SpecLvalue);
-			case SIZET:return get_spec_by_btype(SpecTypeVoid, SpecLvalue);
-			case UINTPTRT:return get_spec_by_btype(SpecTypeVoid, SpecLvalue);
-			case OFFT:return get_spec_by_btype(SpecTypeVoid, SpecLvalue);
+			case 2:return get_spec_by_btype(SpecTypeInt8, SpecLvalue);
+			case 3:return get_spec_by_btype(SpecTypeInt32, SpecLvalue);
+			case 4:return get_spec_by_btype(SpecTypeUint32, SpecLvalue);
+			case 5:return get_spec_by_btype(SpecTypeInt32, SpecLvalue);
+			case 6:return get_spec_by_btype(SpecTypeInt64, SpecLvalue);
+			case 7:return get_spec_by_btype(SpecTypeInt32, SpecLvalue);
+			case 8:return get_spec_by_btype(SpecTypeUint32, SpecLvalue);
+			case 101:return get_spec_by_btype(SpecTypeInt8, SpecLvalue);
+			case 102:return get_spec_by_btype(SpecTypeUint8, SpecLvalue);
+			case 103:return get_spec_by_btype(SpecTypeInt64, SpecLvalue);
+			case 104:return get_spec_by_btype(SpecTypeUint64, SpecLvalue);
+			default:wt_assert(0);
 		}
 	}
 }
