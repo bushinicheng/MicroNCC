@@ -187,7 +187,7 @@ CompDecln
 
 CompDeclrList
 	:CompDeclr {$$=build_subast(AST_CompDeclrList_is_CompDeclr, &@$, $1);}
-	|CompDeclrList COMMA CompDeclr {$$=build_subast(AST_CompDeclrList_is_CompDeclrList_COMMA_CompDeclr, &@$, $1, $2, $3);}
+	|CompDeclr COMMA CompDeclrList {$$=build_subast(AST_CompDeclrList_is_CompDeclr_COMMA_CompDeclrList, &@$, $1, $2, $3);}
 ;
 
 CompDeclr

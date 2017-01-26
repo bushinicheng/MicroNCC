@@ -9,11 +9,7 @@ static uintptr_t specptr = 0;
 Spec specpool[MAX_SIZE];
 
 void print_spec(Spec *type);
-Spec *register_type_function(Node *root);
-Spec *register_type_array(Node *root);
-Spec *register_type_struct(Node *root);
-Spec *register_type_complex_var(Node *root, char **varname);
-Spec *register_complex_var_with_type(Spec *type, Node *root, char **varname);
+Spec *register_type_declnspec(Node *root);
 
 
 /* function:
@@ -358,20 +354,30 @@ Spec *register_type_complex(Node *root) {
 	}else{
 		Node *id = get_child_node(root, ID);
 		Node *declnlist = get_child_node_w(root, CompDeclnList);
-		if(!id) {
-			//check aslevel, maybe anonymous structure
-		}
-
 		//analyse CompDeclnList
 		while(declnlist) {
 			Node *decln = get_child_node_w(declnlist, CompDecln);
 			Node *declnspec = get_child_node_w(decln, DeclnSpec);
 			Spec *curtype = register_type_declnspec(declnspec);
 
+			//FIXME:auto, extern, ..
+			if(!curtype) {
+				Node *compdeclrlist = get_child_node(decln, CompDeclrList);
+				//FIXME:anonymous struct
+				while(compdeclrlist) {
+
+					compdeclrlist = get_child_node(decln, CompDeclrList);
+				}
+			}
 
 
 			declnlist = get_child_node(root, CompDeclnList);
 		}
+
+		if(!id) {
+			//check aslevel, maybe anonymous structure
+		}
+
 	}
 }
 
