@@ -578,19 +578,6 @@ void __attribute__((noinline)) make_node(Node *root, int reduce_rule, int token,
 Node* new_node();
 Node* new_sym_node(int lexval, YYLTYPE *yyinfo);
 Node* __attribute__((noinline)) build_subast(int nodetype, YYLTYPE *yyinfo, ...);
-void dump_ast(Node *root);
 void print_ast(Node *root);
-void print_exp(Node *exp);
-Node* get_sibling_node(Node *root, int token);
-Node* get_sibling_node_w(Node *root, int token);
-Node* get_child_node_with_skip(Node *root, int token, int skip);
-Node* get_child_node(Node *root, int token);
-Node* get_child_node_with_skip_w(Node *root, int token, int skip);
-Node* get_child_node_w(Node *root, int token);
-Node* __attribute__((noinline))get_child_node_dw(Node *root, int depth, ...);
-Node* find_child_node_with_depth(Node *root, int token, uint32_t depth);
-Node* find_child_node(Node *root, int token);
-Node* find_node_by_rule(Node *root, int rule);
-int init_ast();
 
 #endif

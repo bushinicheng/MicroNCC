@@ -211,7 +211,7 @@ static int type(int spectype, int rawtoken)
 	Node *pnd = new_node();
 	pnd->token = TYPE;
 	pnd->reduce_rule = rawtoken;
-	pnd->idtype = get_spec_by_btype(spectype, SpecLvalue);
+	pnd->dt = get_spec_by_btype(spectype, SpecLvalue);
 	pnd->lineno = yylineno;
 	pnd->column = yycolumn;
 	yylval.pnd = pnd;
@@ -224,9 +224,9 @@ static int num(int numtype)
 	char *pstr = yytext;
 	Node *pnd = new_node();
 	pnd->token = NUM;
-	pnd->idtype = new_spec();
-	pnd->idtype->lval = 1;
-	pnd->idtype->btype = SpecTypeConst;
+	pnd->dt = new_spec();
+	pnd->dt->leftvalue = 1;
+	pnd->dt->bt = SpecTypeConst;
 	pnd->lineno = yylineno;
 	pnd->column = yycolumn;
 	yylval.pnd = pnd;
@@ -234,22 +234,22 @@ static int num(int numtype)
 	switch(numtype)
 	{
 	case 'i':
-		pnd->idtype->cons.suptype = SpecTypeInt32;
-		pnd->idtype->cons.supval.i = next_number(&pstr, 10);
+		pnd->cv.st = SpecTypeInt32;
+		pnd->cv.sv.i = next_number(&pstr, 10);
 		break;
 	case 'o':
-		pnd->idtype->cons.suptype = SpecTypeInt32;
+		pnd->cv.st = SpecTypeInt32;
 		pstr++;
-		pnd->idtype->cons.supval.i = next_number(&pstr, 8);
+		pnd->cv.sv.i = next_number(&pstr, 8);
 		break;
 	case 'x':
-		pnd->idtype->cons.suptype = SpecTypeInt32;
+		pnd->cv.st = SpecTypeInt32;
 		pstr+=2;
-		pnd->idtype->cons.supval.i = next_number(&pstr, 16);
+		pnd->cv.sv.i = next_number(&pstr, 16);
 		break;
 	case 'f':
-		pnd->idtype->cons.suptype = SpecTypeFloat32;
-		pnd->idtype->cons.supval.f = atof(pstr);
+		pnd->cv.st = SpecTypeFloat32;
+		pnd->cv.sv.f = atof(pstr);
 		break;
 	}
 
@@ -263,18 +263,18 @@ static int reg(int syntaxval)
 	pnd->lineno = yylineno;
 	pnd->column = yycolumn;
 	yylval.pnd = pnd;
-	pnd->idtype = new_spec();
-	pnd->idtype->btype = SpecTypeConst;
+	pnd->dt = new_spec();
+	pnd->dt->bt = SpecTypeConst;
 
 	switch(syntaxval)
 	{
 	case ID:
-		pnd->idtype->cons.supval.st = register_id(yytext);
+		pnd->cv.sv.st = register_id(yytext);
 		break;
 	case STRING:
-		pnd->idtype->lval = 0;
-		pnd->idtype->cons.suptype = 's';
-		pnd->idtype->cons.supval.st = register_string(yytext);
+		pnd->dt->leftvalue = 0;
+		pnd->cv.st = 's';
+		pnd->cv.sv.st = register_string(yytext);
 		break;
 	}
 

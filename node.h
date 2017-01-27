@@ -21,12 +21,35 @@ enum {
 	//the above must be registered firstly
 	SpecTypeArray,
 	SpecTypePointer,
-	SpecTypeComplex,
+	SpecTypeComplex,//array and pointer
 	SpecTypeStruct,
 	SpecTypeUnion,
 	SpecTypeFunc,
 	SpecTypeQulfr,
 	SpecTypeRen,
+};
+
+enum {
+	//qualifier
+	QulfrTypedef = 1,
+	QulfrExtern = 2,
+	QulfrStatic = 4,
+	QulfrAuto = 8,
+	QulfrRegister = 16,
+	//class storage
+	QulfrConst = 32,
+	QulfrVolatile = 64,
+};
+
+enum {
+	CombineTypeSigned = 1,
+	CombineTypeUnsigned = 2,
+	CombineTypeChar = 4,
+	CombineTypeInt = 8,
+	CombineTypeLong = 16,
+	CombineTypeLongLong = 32,
+	CombineTypeFloat = 64,
+	CombineTypeDouble = 128,
 };
 
 enum {
@@ -37,21 +60,64 @@ enum {
 struct tagSpec;
 
 typedef struct tagSinArg {
-	struct tagSpec *type;
-	char *varname;
+	struct tagSpec *t;//type pointer
+	char *vn;//var name
 } SinArg;
 
-typedef struct tagSpec {
-	bool lval;//default to be zero
-			//0 for lval, 1 for rval
-	bool aslevel;//default to be zero
-			//0 for global declaration, 1 for local declaration
-	int btype;
-	int width;
-	int qulfr;
-	char *format_string;
+typedef struct tagVarAddr {
+	//for variable
+	int bt;//0 for code area
+				  //1 for global data
+				  //2 for local stack
+				  //3 for register
+	uintptr_t ba;//base addr
+	size_t vs;//variable size, structure need size
+	uint32_t cc;
+	off_t off;
+} VarAddr;
+
+typedef struct tagSpecConstValue{
+	//warning:string is not constant
+	//        string == char *[no const]
+	int st; //suptype
+			//SpecTypeInt32, ...
+			//SpecTypeUint32, ...
+			//SpecTypeFloat32, ...
 	union {
-		struct tagSpec *spec;//for some special types
+		int8_t _8;int16_t _16;int32_t _32;int64_t _64;
+		uint8_t _u8;uint16_t _u16;uint32_t _u32;uint64_t _u64;
+		float _f32; double _f64;
+		int i;float f;double llf;void *p;
+		char* st;// the address of string or id
+	} sv;//supval
+} SpecConstValue;
+
+typedef struct tagSpec {
+	int bt;
+	int w;
+	int qulfr;
+	char *fs;//format_string
+	bool leftvalue;//default to be zero
+			//0 for lval, 1 for rval
+	bool actionlevel;//default to be zero
+			//0 for global declaration, 1 for local declaration
+	union {
+		struct {
+			struct tagSpec *dt;
+		} aut;//wait for fill, auto a = 456;
+
+		//ex. int a[10][20];
+		struct {
+			struct tagSpec *dt;//dst type, such as `struct A`
+			size_t *dim;//dimension array:a[2][3][4]=>[2,3,4]
+			size_t size;//length of(dim)
+		} arr;//complex variable, array or pointer or both
+
+		//ex. int ***p = NULL; high level pointer is meaningless
+		struct {
+			struct tagSpec *dt;//actual spec,such as `struct A`
+			int pl;//pointer level
+		} ptr;//complex variable, array or pointer or both
 
 		struct {
 			struct tagSpec *ret;
@@ -60,38 +126,23 @@ typedef struct tagSpec {
 		} func;//func type
 
 		struct {
-			char *struc_name;
+			char *sn;//struct name
 			struct {
-				char *var;
+				char *vn;//var name
 				off_t off;//offset of current var in struct
-				struct tagSpec *spec;
+				struct tagSpec *dt;
 			} *argv;
 			size_t size;
 		} struc;//for structure
 
+		//ex. int **a[10][20]; type(a) is complex
 		struct {
 			struct tagSpec *spec;//actual spec,such as `struct A`
 			size_t *dim;//dimension array:a[2][3][4]=>[2,3,4]
 			size_t size;//length of(dim)
 			int pl;//pointer level
-					   //default to be zero(not pointer)
+					   //must not be zero(not pointer)
 		} comp;//complex variable, array or pointer or both
-
-		//for constant, such as "hello", 12, 5.1
-		struct {
-			int suptype;//such as INT for TYPE or float for NUM
-					//'i' for INT, 'u' for unsigned
-					//'o' for OCT, 'x' for HEX
-					//**for convenience, just 'i' is used
-					//'f' for FLOAT
-					//'c' for char, 's' for string
-					//'p' for pointer, maybe never use
-			union {
-				int i;float f;double llf;void *p;
-				char* st;// the address of string or id
-				uintptr_t da;//dest addr of structure or function
-			} supval;
-		} cons; //constant value
 	};
 } Spec;
 
@@ -104,17 +155,10 @@ typedef struct tagNode {
 	int token;//syntax value like `Program` `TYPE` `INT`
 	int reduce_rule;//semantic value like `AST_Exp_is_ID`
 
-	/****************declared just for ID******************/
 	/*id type*/
-	Spec *idtype;//specify the type of identifier
-	//for variable
-	int base_type;//0 for code area
-				  //1 for global data
-				  //2 for local stack
-				  //3 for register
-	uintptr_t base_addr;
-	size_t var_size;//structure need size
-	/****************declared just for ID******************/
+	Spec *dt;//data type
+	VarAddr *va;
+	SpecConstValue cv;//constant value
 
 	/* for debugging */
 	int error;
@@ -130,7 +174,7 @@ Spec *get_spec_by_btype(int btype, int lr);
 Spec *get_spec_of_const(Spec *const_spec);
 bool type_is_compatible(Spec *typeA, Spec *typeB);
 Spec *find_type_of_spec(struct tagNode *root);
-Spec *find_type_of_struct_member(Spec *type, char *member);
+Spec *find_type_of_struct_member(Spec *type, char *member, off_t *off);
 Spec *register_type_function(struct tagNode *root);
 Spec *register_type_struct(struct tagNode *root);
 Spec *register_type_complex_var(Node *root, char **varname);

@@ -64,11 +64,8 @@ int main(int argc, char *argv[])
 	/*dont't move it*/
 	parse_arguments(argc, argv);
 
-	init_ast();
 	init_component();
 	init_vector();
-	init_spec();
-	init_seman();
 
 #ifdef __DEBUG_LEX__
 	logd("enter debug mode, while(yylex()>0)\n");
@@ -82,11 +79,9 @@ int main(int argc, char *argv[])
 	logd("call yyparse().\n");
 	yyparse();
 	logd("call print_ast(astroot), is_print_ast=%d.\n", is_print_ast);
-	if(is_dump_ast) dump_ast(astroot);
 	if(is_print_ast) print_ast(astroot);
 	if(fp && fp != stdin) fclose(fp);
 #endif
-	semantic_analysis(astroot);
 	logd("normal exit.\n");
     return 0;
 }

@@ -93,7 +93,7 @@ Program
 
 ExtDeclnList
 	:ExtDecln
-	|ExtDeclnList ExtDecln
+	|ExtDecln ExtDeclnList
 ;
 
 ExtDecln
@@ -101,7 +101,7 @@ ExtDecln
 	|Decln
 ;
 
-FuncDef
+FuncDef:functype
 	:DeclnSpec Declr DeclnList CompSt
 	|DeclnSpec Declr CompSt
 	|Declr DeclnList CompSt
