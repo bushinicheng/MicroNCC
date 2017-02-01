@@ -38,6 +38,7 @@ extern YYLTYPE yylloc;
 	} while(0);
 
 static int symbol(int syntaxval);
+static int qulfr(int token);
 static int type(int, int);
 static int num(int specval);
 static int reg(int syntaxval);
@@ -156,11 +157,11 @@ break               {tokout("BREAK");	return symbol(BREAK);}
 default             {tokout("DEFAULT");	return symbol(DEFAULT);}
 goto                {tokout("GOTO");	return symbol(GOTO);}
 
-typedef             {tokout("TYPEDEF");	return symbol(TYPEDEF);}
-extern              {tokout("EXTERN");	return symbol(EXTERN);}
-static              {tokout("STATIC");	return symbol(STATIC);}
-auto                {tokout("AUTO");	return symbol(AUTO);}
-register            {tokout("REGISTER");return symbol(REGISTER);}
+typedef             {tokout("TYPEDEF");	return qulfr(TYPEDEF);}
+extern              {tokout("EXTERN");	return qulfr(EXTERN);}
+static              {tokout("STATIC");	return qulfr(STATIC);}
+auto                {tokout("AUTO");	return qulfr(AUTO);}
+register            {tokout("REGISTER");return qulfr(REGISTER);}
 
 const               {tokout("CONST");	return symbol(CONST);}
 volatile            {tokout("VOLATILE");return symbol(VOLATILE);}
@@ -195,6 +196,16 @@ volatile            {tokout("VOLATILE");return symbol(VOLATILE);}
 					}
 
 %%
+
+static int qulfr(int token) {
+	Node *pnd = new_node();
+	pnd->token = TypeQulfr;
+	pnd->lineno = yylineno;
+	pnd->column = yycolumn;
+	pnd->cv.st = token;
+	yylval.pnd = pnd;
+	return TypeQulfr;
+}
 
 static int symbol(int syntaxval)
 {

@@ -32,6 +32,7 @@ extern Node *astroot;
 	CHAR SHORT INT LONG SIGNED UNSIGNED FLOAT DOUBLE VOID
 	BOOL INT8T INT16T INT32T INT64T UINT8T UINT16T UINT32T UINT64T
 	FLOAT32T FLOAT64T SIZET OFFT UINTPTRT
+	TypeQulfr
 
 %left COMMA
 %right ASSIGNOP DIVE MULTE MODE ADDE SUBE LSHIFTE RSHIFTE ANDE XORE ORE
@@ -70,7 +71,6 @@ extern Node *astroot;
 	EnumSpec
 	EnumorList
 	Enumor
-	TypeQulfr
 	Declr
 	DirectDeclr
 	StarList
@@ -145,16 +145,6 @@ InitorDeclrList
 InitorDeclr
 	:Declr {$$=build_subast(AST_InitorDeclr_is_Declr, &@$, $1);}
 	|Declr ASSIGNOP Initor {$$=build_subast(AST_InitorDeclr_is_Declr_ASSIGNOP_Initor, &@$, $1, $2, $3);}
-;
-
-TypeQulfr
-	:TYPEDEF {$$=build_subast(AST_TypeQulfr_is_TYPEDEF, &@$, $1);}
-	|EXTERN {$$=build_subast(AST_TypeQulfr_is_EXTERN, &@$, $1);}
-	|STATIC {$$=build_subast(AST_TypeQulfr_is_STATIC, &@$, $1);}
-	|AUTO {$$=build_subast(AST_TypeQulfr_is_AUTO, &@$, $1);}
-	|REGISTER {$$=build_subast(AST_TypeQulfr_is_REGISTER, &@$, $1);}
-	|CONST {$$=build_subast(AST_TypeQulfr_is_CONST, &@$, $1);}
-	|VOLATILE {$$=build_subast(AST_TypeQulfr_is_VOLATILE, &@$, $1);}
 ;
 
 TypeSpec
