@@ -33,5 +33,8 @@ void *mempool_new(MemPool *mp);
 void *mempool_free(MemPool *mp);
 void *get_memory_pointer();
 void *require_memory(size_t size);
+char *strmul(char *str, int dup);
+char *strjoin(char **strlist, int size, char *delim);
+int strcnt(const char *strin, char ch);
 
 #endif

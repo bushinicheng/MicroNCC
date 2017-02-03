@@ -109,7 +109,7 @@ typedef struct tagSpec {
 	int bt;
 	int w;
 	int qulfr;
-	char *fs;//format_string
+	char *format_string;//format_string
 	bool leftvalue;//default to be zero
 			//0 for lval, 1 for rval
 	bool actionlevel;//default to be zero

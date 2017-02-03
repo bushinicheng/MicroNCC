@@ -17,6 +17,19 @@ Spec *find_type_of_struct_member(Spec *type, char *vn, off_t *off){
 	return NULL;
 }
 
+static const char *btype_format_string[] = {
+	[SpecTypeInt8] = "char",
+	[SpecTypeUint8] = "uchar",
+	[SpecTypeInt16] = "int16_t",
+	[SpecTypeUint16] = "uint16_t",
+	[SpecTypeInt32] = "int32_t",
+	[SpecTypeUint32] = "uint32_t",
+	[SpecTypeInt64] = "int64_t",
+	[SpecTypeUint64] = "uint64_t",
+	[SpecTypeFloat32] = "float",
+	[SpecTypeFloat64] = "double",
+};
+
 #define TYPE_CNT SpecTypeRen
 
 static int type_relations[TYPE_CNT][TYPE_CNT];
@@ -59,6 +72,48 @@ Spec *new_spec() {
 
 void free_spec() {
 	mempool_free(&specpool);
+}
+
+
+/* IN[0]: struct tagSpec *
+ *   type pointer
+ * OUT[0]:char *
+ *   string pointer
+ * function:
+ *   format given type to string
+ */
+char *type_format(Spec *type) {
+	if(!type) return NULL;
+	if(type->format_string) return type->format_string;
+	if(type->bt == SpecTypeStruct)
+		type->format_string = sformat("struct %s", type->struc.sn);
+	else if(type->bt < SpecTypeString) {
+		type->format_string = (char*)btype_format_string[type->bt];
+	}
+
+	if(type->bt == SpecTypeFunc)	{
+		char **args_str = (char **)get_memory_pointer();
+		require_memory(type->func.argc * sizeof(char *));
+		char *ret_str = type_format(type->func.ret);
+		for(int i = 0; i < type->func.argc; i++) {
+			args_str[i] = type_format(type->func.argv[i].t);
+		}
+		type->format_string = sformat("%s (%s)", ret_str, strjoin(args_str, type->func.argc, ", "));
+	} else if(type->bt == SpecTypeComplex) {
+		char *rawtype_str = type_format(type->comp.spec);
+		char *star_str = strmul("*", type->comp.pl);
+
+		int arr_size = 0;
+		char *arr_str = (char *)get_memory_pointer();
+		char *p = arr_str;
+		for(int i = type->comp.size - 1; i >= 0; i--) {
+			arr_size += sprintf(&p[arr_size], "[%lu]", type->comp.dim[i]);
+		}
+		require_memory(arr_size + 1);
+		type->format_string = sformat("%s %s%s", rawtype_str, star_str, arr_str);
+	}
+
+	return type->format_string;
 }
 
 /* function:

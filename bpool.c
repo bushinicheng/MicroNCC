@@ -129,8 +129,7 @@ char *strjoin(char **strlist, int size, char *delim) {
 	return require_memory((size_t)p - (size_t)ret + 1);
 }
 
-int strcnt(const char *strin, char ch)
-{
+int strcnt(const char *strin, char ch) {
 	int ret = 0;
 	char *p = (char*)strin;
 	do{ret+=(*p==ch);}while(*p++);

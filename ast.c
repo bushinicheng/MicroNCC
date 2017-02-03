@@ -143,7 +143,7 @@ void print_ast(Node *root)
 		}
 	}
 	else if(root->token == TYPE)
-		printf("TYPE:%s", str_lexval[root->cv.st]);
+		printf("TYPE:%s", str_lexval[root->reduce_rule]);
 	else
 		printf("%s", str_lexval[root->token]);
 #if 0

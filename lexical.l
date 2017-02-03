@@ -390,7 +390,7 @@ char* register_id(const char *text)
 {
 	int len = strlen(text) + 1;
 	char *strbuf = get_memory_pointer();
-	strcat(strbuf, text);
+	strcpy(strbuf, text);
 	return (char*)require_memory(len);
 }
 
