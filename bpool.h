@@ -25,4 +25,13 @@ typedef struct MemPool {
 	void **p;
 } MemPool;
 
+
+void *wt_alloc(size_t size);
+void *wt_realloc(size_t size, void *prev_page);
+void mempool_init(MemPool *mp, size_t unit_size);
+void *mempool_new(MemPool *mp);
+void *mempool_free(MemPool *mp);
+void *get_memory_pointer();
+void *require_memory(size_t size);
+
 #endif

@@ -4,7 +4,7 @@
 #include "common.h"
 #include "ast.h"
 
-void init_bpool();
+int init_bpool();
 int yyparse();
 int init_ast();
 int init_spec();
@@ -68,6 +68,7 @@ int main(int argc, char *argv[])
 	init_bpool();
 	init_component();
 	init_vector();
+	init_ast();
 
 #ifdef __DEBUG_LEX__
 	logd("enter debug mode, while(yylex()>0)\n");
@@ -77,10 +78,11 @@ int main(int argc, char *argv[])
 
 
 	/*grammer:shift and reduce*/
+	logd("call yyrestart(fp=%p).\n", fp);
 	yyrestart(fp);
-	logd("call yyparse().\n");
+	logd("call yyparse(void).\n");
 	yyparse();
-	logd("call print_ast(astroot), is_print_ast=%d.\n", is_print_ast);
+	logd("call print_ast(astroot=%p), is_print_ast=%d.\n", astroot, is_print_ast);
 	if(is_print_ast) print_ast(astroot);
 	if(fp && fp != stdin) fclose(fp);
 #endif

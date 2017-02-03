@@ -4,10 +4,11 @@
  * act like variable-length array
  */
 
-#define POOL_SIZE (16*1024*1024)
+#define POOL_SIZE (1024*1024)
 static int toggle = 0;
-static uintptr_t ptr = 0;
+static uint32_t ptr = 0;
 static uint8_t bpool[POOL_SIZE];
+static Vector bpool_state_stack;
 
 void *wt_alloc(size_t size) {
 	void *ptr = malloc(size);
@@ -31,11 +32,12 @@ void mempool_init(MemPool *mp, size_t unit_size) {
 	mp->bs = (size_t*)malloc(sizeof(size_t) * mp->index_size);
 	mp->p = (void **)malloc(sizeof(void*) * mp->index_size);
 	//first block size
-	mp->bs[0] = 1 * unit_size;
+	mp->bs[0] = 1024 * unit_size;
 	mp->p[0] = (void *)malloc(mp->bs[0]);
 }
 
 void *mempool_new(MemPool *mp) {
+	if(!mp->index_size) return NULL;
 	void *ret = NULL;
 	if(mp->block_ptr < mp->bs[mp->index_ptr]) {
 		//most common case
@@ -71,25 +73,31 @@ void *mempool_free(MemPool *mp) {
 	mp->block_ptr = 0;
 }
 
-void wt_free(void *ptr) {
-	assert(0);
+
+void push_bpool_state(off_t op) {
+	vector_push(&bpool_state_stack, &op);
 }
 
+void pop_bpool_state() {
+	vector_pop(&bpool_state_stack);
+}
 
 void *get_memory_pointer() {
-	toggle ++;
+	push_bpool_state(ptr);
 	return &bpool[ptr];
 }
 
-void require_memory(size_t size) {
-	ptr += size;
-	toggle --;
+void *require_memory(size_t size) {
+	void *ret = malloc(size);
+	memcpy(ret, &bpool[ptr], size);
+	wt_assert(ptr + size <= POOL_SIZE);
+	pop_bpool_state();
 	if(toggle > 0) {
 		logw("some function else has hold the memptr\n");
 	} else if(toggle < 0) {
 		logw("this should not happen!\n");
 	}
-	assert(ptr <= POOL_SIZE);
+	return ret;
 }
 
 char *strmul(char *str, int dup) {
@@ -100,8 +108,7 @@ char *strmul(char *str, int dup) {
 		strcpy(p, str);
 		p += len;
 	}
-	require_memory(len * dup + 1);
-	return ret;
+	return require_memory(len * dup + 1);
 }
 
 char *strjoin(char **strlist, int size, char *delim) {
@@ -116,8 +123,7 @@ char *strjoin(char **strlist, int size, char *delim) {
 			p += delimlen;
 		}
 	}
-	require_memory((size_t)p - (size_t)ret + 1);
-	return ret;
+	return require_memory((size_t)p - (size_t)ret + 1);
 }
 
 int strcnt(const char *strin, char ch)
@@ -128,8 +134,10 @@ int strcnt(const char *strin, char ch)
 	return ret;
 }
 
-void init_bpool() {
+int init_bpool() {
+	vector_init(&bpool_state_stack, sizeof(off_t));
 #ifdef __DEBUG__
+	UNIT_TEST_START;
 	MemPool mp;
 	mempool_init(&mp, sizeof(int));
 	const int test_size = 65536;
@@ -140,7 +148,9 @@ void init_bpool() {
 	}
 
 	for(int i = 0; i < test_size; i++) {
+		UNIT_TEST_EQUAL(p[i][0], i);
 	}
 	mempool_free(&mp);
+	UNIT_TEST_END;
 #endif
 }

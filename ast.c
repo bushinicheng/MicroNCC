@@ -5,9 +5,8 @@
 #define MAX_SIZE (1024*1024*2)
 
 int curlineno;
-static Node ndpool[MAX_SIZE];
+static MemPool ndpool;
 Node *astroot = NULL;
-static int ndpool_ptr;
 
 extern bool is_print_reduce_step;
 
@@ -49,9 +48,7 @@ void __attribute__((noinline)) make_node(Node *root, int reduce_rule, int token,
 
 Node* new_node()
 {
-	wt_assert(ndpool_ptr < MAX_SIZE);
-	ndpool_ptr ++;
-	return &ndpool[ndpool_ptr];
+	return (Node*)mempool_new(&ndpool);
 }
 
 Node* new_sym_node(int lexval, YYLTYPE *yyinfo)
@@ -168,4 +165,8 @@ void print_ast(Node *root)
 	//dec call_depth
 	call_depth --;
 	if(call_depth == 0) require_memory(0);
+}
+
+int init_ast() {
+	mempool_init(&ndpool, sizeof(Node));
 }

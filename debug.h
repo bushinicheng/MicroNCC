@@ -45,12 +45,12 @@ char *sformat(const char *format, ...);
 #define logl() \
 	yylog(stderr, "\033[" YYLOG_STYLE_NORMAL ";" YYLOG_COLOR_BLUE "m[DEBUG] \033[0m", "line: %-3d, func:%s\n", __LINE__, __func__)
 
-//#ifdef __DEBUG__
+#ifdef __DEBUG__
 #define logd(...) \
-	yylog(stderr, "\033[0m[LOG] ", __VA_ARGS__)
-//#else
-//#define logd(...) do{}while(0)
-//#endif
+	yylog(stderr, "\033[" YYLOG_STYLE_NORMAL ";" YYLOG_COLOR_BLUE "m[DEBUG] \033[0m", __VA_ARGS__)
+#else
+#define logd(...) do{}while(0)
+#endif
 
 #define logG(...) do { \
 	fprintf(stderr, "\033[" YYLOG_STYLE_NORMAL ";" YYLOG_COLOR_GREEN "m"); \
@@ -66,7 +66,7 @@ char *sformat(const char *format, ...);
 
 
 #define __TEST_START__(info)\
-	logi("[%-5s test]func:%s, line:%d...", #info, __func__, __LINE__);
+	logi("\033[" YYLOG_STYLE_NORMAL ";" YYLOG_COLOR_BLUE "m[%-5s test]\033[0m func:%s, line:%d...", #info, __func__, __LINE__);
 
 #define __TEST_AVOID__(info, cond) \
 	if(cond) {\

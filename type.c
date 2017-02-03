@@ -115,5 +115,6 @@ void reset_spec_state() {
 }
 
 void init_spec() {
+	construct_type_relations();
 	reset_spec_state();
 }

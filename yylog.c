@@ -2,8 +2,6 @@
 
 extern bool is_syntax_error;
 extern int last_syntax_error;
-void *get_memory_pointer();
-void require_memory(size_t size);
 
 static const char *ErrorReason[] = {
 	[ErrorInvalidNUM] = "error type A: invalid number.",
@@ -44,8 +42,7 @@ char *sformat(const char *format, ...) {
 	va_list ap;
 	va_start(ap, format);
 	int len = vsprintf(ret_str, format, ap);
-	require_memory(len + 1);
-	return ret_str;
+	return (char *)require_memory(len + 1);
 }
 
 int yydbg(int lineno, int column, int tokenlen, enum ErrorType errortype)

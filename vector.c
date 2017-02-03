@@ -2,45 +2,78 @@
 #include "vector.h"
 #include <time.h>
 
-typedef struct tagVectorTest {
-	int num;
-} VectorTest;
+void vector_init(Vector *v, size_t unit_size) {
+	v->ptr = 0;
+	v->unit_size = unit_size;
+	v->size = 128 * v->unit_size;
+	v->p = malloc(v->size);
+}
+
+void vector_push(Vector *v, void *t) {
+	if(!v->size) return;
+	if(v->ptr >= v->size) {
+		v->size *= 2;
+		v->p = realloc(v->p, v->size);
+	}
+	memcpy(v->p + v->ptr, t, v->unit_size);
+	v->ptr += v->unit_size;
+}
+
+void *vector_pop(Vector *v) {
+	if(v->ptr > 0) {
+		v->ptr -= v->unit_size;
+		return (v->p + v->ptr);
+	}else{
+		return NULL;
+	}
+}
+
+void vector_resize(Vector *v, size_t size) {
+	v->p = realloc(v->p, v->unit_size * size);
+}
+
+void vector_free(Vector *v) {
+	free(v->p);
+	v->size = 0;
+	v->ptr = 0;
+}
 
 int init_vector()
 {
 #ifdef __DEBUG__
 	srand(time(NULL));
 	UNIT_TEST_START;
-	const int test_size = 5000;
-	int ans[test_size], pans = 0;
-	VectorTest *pvt, vt;
-	vector_init(VectorTest, pvt);
+	Vector v;
+	const int test_size = 65536;
+	int ans[test_size], pans = 0, num;
+	vector_init(&v, sizeof(int));
 	for(int i = 0; i < test_size; i++)
 	{
-		vt.num = rand();
+		num = rand();
 		if(rand()%3==0 && pans > 0)
 		{
 			pans --;
-			vector_pop(pvt);
+			vector_pop(&v);
 		}
 		else
 		{
-			ans[pans++] = vt.num;
-			vector_push(pvt, vt);
+			ans[pans++] = num;
+			vector_push(&v, &num);
 		}
 	}
 
 	/*test push operation*/
+	int *p = (int*)(v.p);
 	for(int i = 0; i < pans; i++)
 	{
-		UNIT_TEST_ASSERT((pvt[i].num == ans[i]), \
-			"\nfail at case #%d, should be '%d' but got '%d'", i, ans[i], pvt[i].num);
+		UNIT_TEST_ASSERT(p[i] == ans[i], \
+			"\nfail at case #%d, should be '%d' but got '%d'", i, ans[i], p[i]);
 	}
 
-	UNIT_TEST_ASSERT(pans == vector_size(pvt), \
+	UNIT_TEST_ASSERT(pans * sizeof(int) == v.ptr, \
 			"\ntest failed: inconsistent vector size..");
 
-	vector_free(pvt);
+	vector_free(&v);
 
 	UNIT_TEST_END;
 

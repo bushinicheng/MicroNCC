@@ -1,12 +1,6 @@
 %{
 #include "common.h"
 
-/*data structure for registering string and identifier*/
-#define STRBUF_SIZE (1024*1024*2)
-
-char strbuf[STRBUF_SIZE]; 
-static int strbuf_ptr = 0;;
-
 /*function declaration*/
 int strcnt(const char *strin, char ch);
 int next_number(char **str, int base);
@@ -363,12 +357,10 @@ int next_number(char **str, int base)
 /* return value is the start position of registered string */
 char* register_string(const char *str)
 {
-	int ret_ptr = strbuf_ptr;
+	int strbuf_ptr = 0;
+	char *strbuf = get_memory_pointer();
 	char *p = (char *)str;
 	bool in_str = true;
-#ifdef __DEBUG__
-	wt_assert(strbuf_ptr + strlen(str) < STRBUF_SIZE);
-#endif
 	while(*(++p)) //since the first char is always `"`
 	{
 		if(*p == '"') {in_str = !in_str;continue;}
@@ -390,16 +382,15 @@ char* register_string(const char *str)
 			}
 	}
 	strbuf[strbuf_ptr ++] = 0;
-	return &strbuf[ret_ptr];
+	return (char*)require_memory(strbuf_ptr);
 }
 
 char* register_id(const char *text)
 {
-	int ret_ptr = strbuf_ptr;
-	int len = strlen(text);
-	strcat(&strbuf[strbuf_ptr], text);
-	strbuf_ptr += len + 1;
-	return &strbuf[ret_ptr];
+	int len = strlen(text) + 1;
+	char *strbuf = get_memory_pointer();
+	strcat(strbuf, text);
+	return (char*)require_memory(len);
 }
 
 
