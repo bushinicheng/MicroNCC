@@ -32,10 +32,10 @@ extern Node *astroot;
 	CHAR SHORT INT LONG SIGNED UNSIGNED FLOAT DOUBLE VOID
 	BOOL INT8T INT16T INT32T INT64T UINT8T UINT16T UINT32T UINT64T
 	FLOAT32T FLOAT64T SIZET OFFT UINTPTRT
-	TypeQulfr
+	TypeQulfr EQUOP RELOP UNARYOP
 
 %left COMMA
-%right ASSIGNOP DIVE MULTE MODE ADDE SUBE LSHIFTE RSHIFTE ANDE XORE ORE
+%right ASSIGNOP DIVE MULTE MODE ADDE SUBE LSHIFTE RSHIFTE ANDE XORE ORE EQUOP
 %right QOP COLON
 %left LOR
 %left LAND
@@ -43,7 +43,7 @@ extern Node *astroot;
 %left XOR
 %left AND
 %left EQ NE
-%left LT LE GE GT
+%left LT LE GE GT RELOP
 %left LSHIFT RSHIFT
 %left ADD SUB
 %left MULT DIV MOD
@@ -359,10 +359,7 @@ Exp
 	|Exp SUB Exp {$$=build_subast(AST_Exp_is_Exp_SUB_Exp, &@$, $1, $2, $3);}
 	|Exp LSHIFT Exp {$$=build_subast(AST_Exp_is_Exp_LSHIFT_Exp, &@$, $1, $2, $3);}
 	|Exp RSHIFT Exp {$$=build_subast(AST_Exp_is_Exp_RSHIFT_Exp, &@$, $1, $2, $3);}
-	|Exp LT Exp {$$=build_subast(AST_Exp_is_Exp_LT_Exp, &@$, $1, $2, $3);}
-	|Exp GT Exp {$$=build_subast(AST_Exp_is_Exp_GT_Exp, &@$, $1, $2, $3);}
-	|Exp LE Exp {$$=build_subast(AST_Exp_is_Exp_LE_Exp, &@$, $1, $2, $3);}
-	|Exp GE Exp {$$=build_subast(AST_Exp_is_Exp_GE_Exp, &@$, $1, $2, $3);}
+	|Exp RELOP Exp {$$=build_subast(AST_Exp_is_Exp_RELOP_Exp, &@$, $1, $2, $3);}
 	|Exp EQ Exp {$$=build_subast(AST_Exp_is_Exp_EQ_Exp, &@$, $1, $2, $3);}
 	|Exp NE Exp {$$=build_subast(AST_Exp_is_Exp_NE_Exp, &@$, $1, $2, $3);}
 	|Exp AND Exp {$$=build_subast(AST_Exp_is_Exp_AND_Exp, &@$, $1, $2, $3);}
@@ -371,16 +368,6 @@ Exp
 	|Exp LAND Exp {$$=build_subast(AST_Exp_is_Exp_LAND_Exp, &@$, $1, $2, $3);}
 	|Exp LOR Exp {$$=build_subast(AST_Exp_is_Exp_LOR_Exp, &@$, $1, $2, $3);}
 	|Exp QOP Exp COLON Exp {$$=build_subast(AST_Exp_is_Exp_QOP_Exp_COLON_Exp, &@$, $1, $2, $3, $4, $5);}
-	|Exp ASSIGNOP Exp {$$=build_subast(AST_Exp_is_Exp_ASSIGNOP_Exp, &@$, $1, $2, $3);}
-	|Exp MULTE Exp {$$=build_subast(AST_Exp_is_Exp_MULTE_Exp, &@$, $1, $2, $3);}
-	|Exp DIVE Exp {$$=build_subast(AST_Exp_is_Exp_DIVE_Exp, &@$, $1, $2, $3);}
-	|Exp MODE Exp {$$=build_subast(AST_Exp_is_Exp_MODE_Exp, &@$, $1, $2, $3);}
-	|Exp ADDE Exp {$$=build_subast(AST_Exp_is_Exp_ADDE_Exp, &@$, $1, $2, $3);}
-	|Exp SUBE Exp {$$=build_subast(AST_Exp_is_Exp_SUBE_Exp, &@$, $1, $2, $3);}
-	|Exp LSHIFTE Exp {$$=build_subast(AST_Exp_is_Exp_LSHIFTE_Exp, &@$, $1, $2, $3);}
-	|Exp RSHIFTE Exp {$$=build_subast(AST_Exp_is_Exp_RSHIFTE_Exp, &@$, $1, $2, $3);}
-	|Exp ANDE Exp {$$=build_subast(AST_Exp_is_Exp_ANDE_Exp, &@$, $1, $2, $3);}
-	|Exp XORE Exp {$$=build_subast(AST_Exp_is_Exp_XORE_Exp, &@$, $1, $2, $3);}
-	|Exp ORE Exp {$$=build_subast(AST_Exp_is_Exp_ORE_Exp, &@$, $1, $2, $3);}
+	|Exp EQUOP Exp {$$=build_subast(AST_Exp_is_Exp_EQUOP_Exp, &@$, $1, $2, $3);}
 	|Exp COMMA Exp {$$=build_subast(AST_Exp_is_Exp_COMMA_Exp, &@$, $1, $2, $3);}
 ;

@@ -147,7 +147,10 @@ extern int yydebug;
     SIZET = 357,
     OFFT = 358,
     UINTPTRT = 359,
-    TypeQulfr = 360
+    TypeQulfr = 360,
+    EQUOP = 361,
+    RELOP = 362,
+    UNARYOP = 363
   };
 #endif
 
@@ -160,7 +163,7 @@ union YYSTYPE
 
 	Node *pnd;
 
-#line 164 "syntax.h" /* yacc.c:1909  */
+#line 167 "syntax.h" /* yacc.c:1909  */
 };
 
 typedef union YYSTYPE YYSTYPE;

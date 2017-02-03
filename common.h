@@ -32,6 +32,16 @@ typedef unsigned char bool;
 #include "node.h"
 #include "syntax.h"
 #include "ast.h"
+#include "bpool.h"
+
+#define MAKE_DWORD2(a, b) ((a) << 16 | (b))
+#define MAKE_DWORD4(a, b, c, d) ((a) << 24 | (b) << 16 | (c) << 8 | (d))
+#define DWORD2_PART1(a) (((a)>>16) & 0xffff)
+#define DWORD2_PART2(a) ((a) & 0xffff)
+#define DWORD4_PART1(a) (((a)>>24) & 0xff)
+#define DWORD4_PART2(a) (((a)>>16) & 0xff)
+#define DWORD4_PART3(a) (((a)>> 8) & 0xff)
+#define DWORD4_PART4(a) ((a) & 0xff)
 
 #define wt_assert(cond) do { \
 	if(!(cond)) set_break(); \

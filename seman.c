@@ -12,6 +12,27 @@ typedef struct tagVarElement {
 } VarElement;
 
 static int asptr, actionlevel;
-VarElement actionscope[102400];//action scope of variable
+VarElement *actionscope;//action scope of variable
 
+void analyse_exp_is_id(Node *root) {
+}
 
+static SemanFunc analyse_function[] = {
+	[AST_Exp_is_ID] = analyse_exp_is_id,
+};
+
+SemanFunc get_safe_seman_func(int reduce_rule) {
+	if(reduce_rule < sizeof(analyse_function)/sizeof(analyse_function[0])) {
+		return analyse_function[reduce_rule];
+	}else{
+		return NULL;
+	}
+}
+
+void syntax_analysis(Node *root) {
+	if(root->reduce_rule != 0) {
+		int reduce_rule = root->reduce_rule;
+		SemanFunc func = get_safe_seman_func(reduce_rule);
+		if(func) func(root);
+	}
+}

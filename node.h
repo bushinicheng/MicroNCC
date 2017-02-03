@@ -3,8 +3,8 @@
 
 //basic data type
 enum {
-	SpecTypeConst,
-	SpecTypeVoid,
+	SpecTypeConst,//not data type
+	SpecTypeVoid,//special data type
 	/*number*/
 	SpecTypeInt8,//also SpecTypeChar
 	SpecTypeUint8,//also SpecTypeBool
@@ -17,16 +17,28 @@ enum {
 	SpecTypeFloat32,
 	SpecTypeFloat64,
 	/*number*/
+	SpecTypePointer,//pointer type
+	SpecTypeArray,
+	SpecTypeComplex,//pointer array
 	SpecTypeString, //char *s = "string"; equivalent to `char *`
 	//the above must be registered firstly
-	SpecTypeArray,
-	SpecTypePointer,
-	SpecTypeComplex,//array and pointer
+	SpecTypeFunc,
 	SpecTypeStruct,
 	SpecTypeUnion,
-	SpecTypeFunc,
 	SpecTypeQulfr,
 	SpecTypeRen,
+};
+
+//unary op:! ~ & ++ -- +a -a
+enum {
+	CAssign = 1,//a=b
+	CAddSub = 2,//a+b,a-b,a++,a--,++a,--a,a+=b,a-=b
+	CMultDiv = 4,//a*b,a/b,a*=b,a/=b
+	CAndOr = 8,//a&b,a|b,a^b,~a,a&=b,a|=b,a^=b
+	CRelop = 16,//a<b,a>b,a<=b,a>=b,a==b,a!=b
+	CLogic = 32,//a && b, a || b, !a
+	CMoreAccurate = 64,//both 1 means eq, both 0 means unable to compare
+	CLessAccurate = 128,
 };
 
 enum {
@@ -72,7 +84,7 @@ typedef struct tagVarAddr {
 				  //3 for register
 	uintptr_t ba;//base addr
 	size_t vs;//variable size, structure need size
-	uint32_t cc;
+	uint32_t ref;
 	off_t off;
 } VarAddr;
 
@@ -185,5 +197,7 @@ bool type_is_float(Spec *type);
 bool type_is_num(Spec *type);
 Spec *type_more_accurate(Spec *typeA, Spec *typeB);
 
+typedef void (*SemanFunc)(Node *);
+void syntax_analysis(Node *root);
 
 #endif

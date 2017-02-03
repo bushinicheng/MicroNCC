@@ -42,6 +42,8 @@ static int qulfr(int token);
 static int type(int, int);
 static int num(int specval);
 static int reg(int syntaxval);
+static int relop(int token);
+static int equop(int token);
 
 %}
 
@@ -63,13 +65,13 @@ linecomment      \/\/.*$
 invalidcomment   \/\*([^\*]|\*[^\/])*$
 
 %%
-"="                 {tokout("AS");		return symbol(ASSIGNOP);}
+"="                 {tokout("AS");		return equop(ASSIGNOP);}
 "=="                {tokout("EQ");		return symbol(EQ);}
-"<"                 {tokout("LT");		return symbol(LT);}
-"<="                {tokout("LE");		return symbol(LE);}
 "!="                {tokout("NE");		return symbol(NE);}
-">"                 {tokout("GT");		return symbol(GT);}
-">="                {tokout("GE");		return symbol(GE);}
+"<"                 {tokout("LT");		return relop(LT);}
+"<="                {tokout("LE");		return relop(LE);}
+">"                 {tokout("GT");		return relop(GT);}
+">="                {tokout("GE");		return relop(GE);}
 
 "<<"                {tokout("LSHIFT");	return symbol(LSHIFT);}
 ">>"                {tokout("RSHIFT");	return symbol(RSHIFT);}
@@ -81,16 +83,16 @@ invalidcomment   \/\*([^\*]|\*[^\/])*$
 "*"                 {tokout("MULT");	return symbol(MULT);}
 "/"                 {tokout("DIV");		return symbol(DIV);}
 "%"                 {tokout("MOD");		return symbol(MOD);}
-"+="                {tokout("ADDE");	return symbol(ADDE);}
-"-="                {tokout("SUBE");	return symbol(SUBE);}
-"*="                {tokout("MULTE");	return symbol(MULTE);}
-"/="                {tokout("DIVE");	return symbol(DIVE);}
-"%="                {tokout("MODE");	return symbol(MODE);}
-"++"                {tokout("INC"); 	return symbol(INC);}
-"--"                {tokout("DEC");		return symbol(DEC);}
-"&="                {tokout("ANDE");	return symbol(ANDE);}
-"|="                {tokout("ORE");		return symbol(ORE);}
-"^="                {tokout("XORE");	return symbol(XORE);}
+"+="                {tokout("ADDE");	return equop(ADDE);}
+"-="                {tokout("SUBE");	return equop(SUBE);}
+"*="                {tokout("MULTE");	return equop(MULTE);}
+"/="                {tokout("DIVE");	return equop(DIVE);}
+"%="                {tokout("MODE");	return equop(MODE);}
+"++"                {tokout("INC"); 	return equop(INC);}
+"--"                {tokout("DEC");		return equop(DEC);}
+"&="                {tokout("ANDE");	return equop(ANDE);}
+"|="                {tokout("ORE");		return equop(ORE);}
+"^="                {tokout("XORE");	return equop(XORE);}
 
 "&"                 {tokout("AND");		return symbol(AND);}
 "|"                 {tokout("OR");		return symbol(OR);}
@@ -205,6 +207,24 @@ static int qulfr(int token) {
 	pnd->cv.st = token;
 	yylval.pnd = pnd;
 	return TypeQulfr;
+}
+
+static int equop(int token) {
+	Node *pnd = new_node();
+	pnd->token = token;
+	pnd->lineno = yylineno;
+	pnd->column = yycolumn;
+	yylval.pnd = pnd;
+	return EQUOP;
+}
+
+static int relop(int token) {
+	Node *pnd = new_node();
+	pnd->token = token;
+	pnd->lineno = yylineno;
+	pnd->column = yycolumn;
+	yylval.pnd = pnd;
+	return RELOP;
 }
 
 static int symbol(int syntaxval)

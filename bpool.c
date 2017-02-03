@@ -4,51 +4,75 @@
  * act like variable-length array
  */
 
-/* memory model:
- *
- *  NULL
- *   ^
- *   |
- * +-----------------------------------------------------+
- * | p |                                                 |
- * +-----------------------------------------------------+
- *   ^
- *   |
- * +-----------------------------------------------------+
- * | p |                                                 |
- * +-----------------------------------------------------+
- *
- * extend memory by realloc
- *
- */
-
 #define POOL_SIZE (16*1024*1024)
 static int toggle = 0;
 static uintptr_t ptr = 0;
 static uint8_t bpool[POOL_SIZE];
 
 void *wt_alloc(size_t size) {
-	void *ptr = malloc(size + sizeof(void *));
-	((void **)ptr)[0] = NULL;
+	void *ptr = malloc(size);
 	if(!ptr) loge("memory shortage\n");
-	return ptr + sizeof(void *);
+	return ptr;
 }
 
 void *wt_realloc(size_t size, void *prev_page) {
-	void *ptr = malloc(size + sizeof(void *));
-	((void **)ptr)[0] = prev_page;
+	void *ptr = realloc(ptr, size);
 	if(!ptr) loge("memory shortage\n");
-	return ptr + sizeof(void *);
+	return ptr;
 }
 
-void *wt_prevpage(void *nowpage) {
-	if(!ptr) logw("check here\n");
-	return ((void **)(ptr - sizeof(void *)))[0];
+void mempool_init(MemPool *mp, size_t unit_size) {
+	mp->unit_size = unit_size;
+	//index
+	mp->index_ptr = 0;
+	mp->block_ptr = 0;
+	//index size
+	mp->index_size = 1;
+	mp->bs = (size_t*)malloc(sizeof(size_t) * mp->index_size);
+	mp->p = (void **)malloc(sizeof(void*) * mp->index_size);
+	//first block size
+	mp->bs[0] = 1 * unit_size;
+	mp->p[0] = (void *)malloc(mp->bs[0]);
+}
+
+void *mempool_new(MemPool *mp) {
+	void *ret = NULL;
+	if(mp->block_ptr < mp->bs[mp->index_ptr]) {
+		//most common case
+		ret = mp->p[mp->index_ptr] + mp->block_ptr;
+		mp->block_ptr += mp->unit_size;
+		return ret;
+	}else{
+		if(mp->index_ptr >= mp->index_size) {
+			mp->index_size *= 2;
+			mp->bs = realloc(mp->bs, sizeof(size_t) * mp->index_size);
+			mp->p = realloc(mp->p, sizeof(void*) * mp->index_size);
+		}
+		mp->block_ptr = 0;
+		mp->index_ptr ++;
+		if(!mp->p[mp->index_ptr]) {
+			mp->bs[mp->index_ptr] = mp->bs[mp->index_ptr - 1] * 2;
+			mp->p[mp->index_ptr] = malloc(mp->bs[mp->index_ptr]);
+		}
+		ret = mp->p[mp->index_ptr] + mp->block_ptr;
+		mp->block_ptr += mp->unit_size;
+	}
+	return ret;
+}
+
+void *mempool_free(MemPool *mp) {
+	for(int i = 0; i < mp->index_size; i++) {
+		if(mp->p[i]) free(mp->p[i]);
+	}
+	free(mp->p);
+	free(mp->bs);
+	mp->index_size = 0;
+	mp->index_ptr = 0;
+	mp->block_ptr = 0;
 }
 
 void wt_free(void *ptr) {
-	if(!ptr) logw("check here\n");
-	free(ptr - sizeof(void *));
+	assert(0);
 }
 
 
@@ -100,6 +124,23 @@ int strcnt(const char *strin, char ch)
 {
 	int ret = 0;
 	char *p = (char*)strin;
-	do{ret+=*p==ch;}while(*p++);
+	do{ret+=(*p==ch);}while(*p++);
 	return ret;
+}
+
+void init_bpool() {
+#ifdef __DEBUG__
+	MemPool mp;
+	mempool_init(&mp, sizeof(int));
+	const int test_size = 65536;
+	int *p[test_size];
+	for(int i = 0; i < test_size; i++) {
+		p[i] = mempool_new(&mp);
+		p[i][0] = i;
+	}
+
+	for(int i = 0; i < test_size; i++) {
+	}
+	mempool_free(&mp);
+#endif
 }

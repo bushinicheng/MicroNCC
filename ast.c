@@ -95,6 +95,7 @@ Node* __attribute__((noinline)) build_subast(int nodetype, YYLTYPE *yyinfo, ...)
 	}
 	parent_node->child = first_child;
 	va_end(vlist);
+	syntax_analysis(parent_node);
 	return parent_node;
 }
 

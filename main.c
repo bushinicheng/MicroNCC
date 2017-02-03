@@ -4,6 +4,7 @@
 #include "common.h"
 #include "ast.h"
 
+void init_bpool();
 int yyparse();
 int init_ast();
 int init_spec();
@@ -64,6 +65,7 @@ int main(int argc, char *argv[])
 	/*dont't move it*/
 	parse_arguments(argc, argv);
 
+	init_bpool();
 	init_component();
 	init_vector();
 
