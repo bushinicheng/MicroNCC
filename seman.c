@@ -11,8 +11,24 @@ typedef struct tagVarElement {
 	VarAddr *va;//variale address, maybe :(
 } VarElement;
 
-static int asptr, actionlevel;
-VarElement *actionscope;//action scope of variable
+static int actionlevel;
+static MemPool varpool;//action scope of variable
+Vector asv;//hash table vector
+
+
+void push_variale(char *vn, Spec *type, Node *node) {
+	VarElement *ve = mempool_new(&varpool);
+	VarElement *as = asv.p;
+	ve->vn = vn;
+	ve->type = type;
+	ve->node = node;
+	hash_push(as[actionlevel], vn, strlen(vn), ve);
+}
+
+void update_actionlevel() {
+	actionlevel ++;
+	VarElement *as = asv.p;
+}
 
 void analyse_exp_is_id(Node *root) {
 }
@@ -35,4 +51,9 @@ void syntax_analysis(Node *root) {
 		SemanFunc func = get_safe_seman_func(reduce_rule);
 		if(func) func(root);
 	}
+}
+
+int init_seman() {
+	mempool_init(&varpool, sizeof(VarElement));
+	vector_init(&asv, sizeof(HashTable));
 }

@@ -12,6 +12,7 @@ static Vector bpool_state_stack;
 
 void *wt_alloc(size_t size) {
 	void *ptr = malloc(size);
+	memset(ptr, 0, size);
 	if(!ptr) loge("memory shortage\n");
 	return ptr;
 }

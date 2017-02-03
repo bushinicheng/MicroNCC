@@ -47,16 +47,12 @@ int init_vector()
 	const int test_size = 65536;
 	int ans[test_size], pans = 0, num;
 	vector_init(&v, sizeof(int));
-	for(int i = 0; i < test_size; i++)
-	{
+	for(int i = 0; i < test_size; i++) {
 		num = rand();
-		if(rand()%3==0 && pans > 0)
-		{
+		if(rand()%3==0 && pans > 0) {
 			pans --;
 			vector_pop(&v);
-		}
-		else
-		{
+		}else{
 			ans[pans++] = num;
 			vector_push(&v, &num);
 		}
@@ -64,17 +60,14 @@ int init_vector()
 
 	/*test push operation*/
 	int *p = (int*)(v.p);
-	for(int i = 0; i < pans; i++)
-	{
+	for(int i = 0; i < pans; i++) {
 		UNIT_TEST_ASSERT(p[i] == ans[i], \
 			"\nfail at case #%d, should be '%d' but got '%d'", i, ans[i], p[i]);
 	}
 
 	UNIT_TEST_ASSERT(pans * sizeof(int) == v.ptr, \
 			"\ntest failed: inconsistent vector size..");
-
 	vector_free(&v);
-
 	UNIT_TEST_END;
 
 #endif

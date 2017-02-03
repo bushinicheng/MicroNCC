@@ -34,6 +34,7 @@ typedef unsigned char bool;
 #include "syntax.h"
 #include "ast.h"
 #include "bpool.h"
+#include "hash.h"
 
 #define MAKE_DWORD2(a, b) ((a) << 16 | (b))
 #define MAKE_DWORD4(a, b, c, d) ((a) << 24 | (b) << 16 | (c) << 8 | (d))

@@ -5,6 +5,7 @@
 #include "ast.h"
 
 int init_bpool();
+int init_hash();
 int yyparse();
 int init_ast();
 int init_spec();
@@ -66,10 +67,12 @@ int main(int argc, char *argv[])
 	parse_arguments(argc, argv);
 
 	init_bpool();
+	init_hash();
 	init_component();
 	init_vector();
 	init_ast();
 	init_spec();
+	init_seman();
 
 #ifdef __DEBUG_LEX__
 	logd("enter debug mode, while(yylex()>0)\n");
