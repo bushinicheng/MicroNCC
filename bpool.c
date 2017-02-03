@@ -5,7 +5,7 @@
  */
 
 #define POOL_SIZE (1024*1024)
-static int toggle = 0;
+static int toggle_caller_state = 0;
 static uint32_t ptr = 0;
 static uint8_t bpool[POOL_SIZE];
 static Vector bpool_state_stack;
@@ -75,28 +75,31 @@ void *mempool_free(MemPool *mp) {
 
 
 void push_bpool_state(off_t op) {
-	vector_push(&bpool_state_stack, &op);
+	toggle_caller_state = 0;
+	vector_push(&bpool_state_stack, &ptr);
+	ptr = op;
 }
 
 void pop_bpool_state() {
-	vector_pop(&bpool_state_stack);
+	int *p = vector_pop(&bpool_state_stack);
+	if(!p) loge("bpool state stack should not be empty.\n");
+	ptr = p[0];
 }
 
 void *get_memory_pointer() {
-	push_bpool_state(ptr);
+	if(toggle_caller_state) {
+		logw("some function else has hold the memptr\n");
+	}
+	toggle_caller_state = 1;
 	return &bpool[ptr];
 }
 
 void *require_memory(size_t size) {
+	if(!size) return NULL;
+	toggle_caller_state = 0;
 	void *ret = malloc(size);
 	memcpy(ret, &bpool[ptr], size);
 	wt_assert(ptr + size <= POOL_SIZE);
-	pop_bpool_state();
-	if(toggle > 0) {
-		logw("some function else has hold the memptr\n");
-	} else if(toggle < 0) {
-		logw("this should not happen!\n");
-	}
 	return ret;
 }
 
