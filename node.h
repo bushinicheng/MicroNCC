@@ -3,24 +3,25 @@
 
 //basic data type
 enum {
+	/*number*/
+	SpecTypeInt8 = 0,//also SpecTypeChar
+	SpecTypeUint8 = 1,//also SpecTypeBool
+	SpecTypeInt16 = 2,
+	SpecTypeUint16 = 3,
+	SpecTypeInt32 = 4,
+	SpecTypeUint32 = 5,
+	SpecTypeInt64 = 6,
+	SpecTypeUint64 = 7,
+	SpecTypeFloat32 = 8,
+	SpecTypeFloat64 = 9,
+	SpecTypeString = 10, //char *s="hello";equivalent to `char *`
+	//
 	SpecTypeConst,//not data type
 	SpecTypeVoid,//special data type
-	/*number*/
-	SpecTypeInt8,//also SpecTypeChar
-	SpecTypeUint8,//also SpecTypeBool
-	SpecTypeInt16,
-	SpecTypeUint16,
-	SpecTypeInt32,
-	SpecTypeUint32,
-	SpecTypeInt64,
-	SpecTypeUint64,
-	SpecTypeFloat32,
-	SpecTypeFloat64,
 	/*number*/
 	SpecTypePointer,//pointer type
 	SpecTypeArray,
 	SpecTypeComplex,//pointer array
-	SpecTypeString, //char *s = "string"; equivalent to `char *`
 	//the above must be registered firstly
 	SpecTypeFunc,
 	SpecTypeStruct,

@@ -15,6 +15,7 @@ int fileno(FILE *stream);
 static int yycolumn = 1;
 char yylinetext[MAX_SIZE];
 
+//#define __DEBUG_LEX__
 #ifdef __DEBUG_LEX__
 #define tokout(a) \
 	do{printf("{%s,%s}\n", a, yytext);strcat(yylinetext, yytext);}while(0)
@@ -59,7 +60,7 @@ linecomment      \/\/.*$
 invalidcomment   \/\*([^\*]|\*[^\/])*$
 
 %%
-"="                 {tokout("AS");		return equop(ASSIGNOP);}
+"="                 {tokout("AS");		return symbol(ASSIGNOP);}
 "=="                {tokout("EQ");		return symbol(EQ);}
 "!="                {tokout("NE");		return symbol(NE);}
 "<"                 {tokout("LT");		return relop(LT);}
@@ -77,13 +78,13 @@ invalidcomment   \/\*([^\*]|\*[^\/])*$
 "*"                 {tokout("MULT");	return symbol(MULT);}
 "/"                 {tokout("DIV");		return symbol(DIV);}
 "%"                 {tokout("MOD");		return symbol(MOD);}
+"++"                {tokout("INC"); 	return symbol(INC);}
+"--"                {tokout("DEC");		return symbol(DEC);}
 "+="                {tokout("ADDE");	return equop(ADDE);}
 "-="                {tokout("SUBE");	return equop(SUBE);}
 "*="                {tokout("MULTE");	return equop(MULTE);}
 "/="                {tokout("DIVE");	return equop(DIVE);}
 "%="                {tokout("MODE");	return equop(MODE);}
-"++"                {tokout("INC"); 	return equop(INC);}
-"--"                {tokout("DEC");		return equop(DEC);}
 "&="                {tokout("ANDE");	return equop(ANDE);}
 "|="                {tokout("ORE");		return equop(ORE);}
 "^="                {tokout("XORE");	return equop(XORE);}

@@ -368,6 +368,7 @@ Exp
 	|Exp LAND Exp {$$=build_subast(AST_Exp_is_Exp_LAND_Exp, &@$, $1, $2, $3);}
 	|Exp LOR Exp {$$=build_subast(AST_Exp_is_Exp_LOR_Exp, &@$, $1, $2, $3);}
 	|Exp QOP Exp COLON Exp {$$=build_subast(AST_Exp_is_Exp_QOP_Exp_COLON_Exp, &@$, $1, $2, $3, $4, $5);}
+	|Exp ASSIGNOP Exp {$$=build_subast(AST_Exp_is_Exp_ASSIGNOP_Exp, &@$, $1, $2, $3);}
 	|Exp EQUOP Exp {$$=build_subast(AST_Exp_is_Exp_EQUOP_Exp, &@$, $1, $2, $3);}
 	|Exp COMMA Exp {$$=build_subast(AST_Exp_is_Exp_COMMA_Exp, &@$, $1, $2, $3);}
 ;

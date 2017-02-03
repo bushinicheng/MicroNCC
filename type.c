@@ -4,9 +4,7 @@
 
 #define MAX_SIZE 1000000
 
-static uintptr_t specptr = 0;
-Spec *specpool = NULL;
-Spec *specindex = NULL;
+static MemPool specpool;
 
 void print_spec(Spec *type);
 Spec *register_type_declnspec(Node *root);
@@ -54,13 +52,13 @@ void construct_type_relations() {
  *   return a new spec pointer point to a clean spec element
  */
 Spec *new_spec() {
-	wt_assert(specptr < MAX_SIZE);
-	Spec *spec = &specpool[specptr ++];
+	Spec *spec = (Spec *)mempool_new(&specpool);
 	memset(spec, 0, sizeof(Spec));
 	return spec;
 }
 
 void free_spec() {
+	mempool_free(&specpool);
 }
 
 /* function:
@@ -69,13 +67,14 @@ void free_spec() {
 
 void reset_spec_state() {
 #define btype_register(_b, _w, _l) do {\
-	specpool[specptr].bt = _b;\
-	specpool[specptr].w = _w;\
-	specpool[specptr].leftvalue  = _l;\
-	specptr ++;\
-} while(0)
+		spec = (Spec *)mempool_new(&specpool);\
+		spec->bt = _b;\
+		spec->w = _w;\
+		spec->leftvalue  = _l;\
+	} while(0)
 
-	specptr = 0;
+	Spec *spec = NULL;
+	Spec *specptr = (Spec *)specpool.p;
 	btype_register(SpecTypeConst,    0, SpecLvalue);
 	btype_register(SpecTypeConst,    0, SpecRvalue);
 	btype_register(SpecTypeVoid,     4, SpecLvalue);
@@ -100,21 +99,25 @@ void reset_spec_state() {
 	btype_register(SpecTypeFloat32,  4, SpecRvalue);
 	btype_register(SpecTypeFloat64,  8, SpecLvalue);
 	btype_register(SpecTypeFloat64,  8, SpecRvalue);
-	specpool[specptr].leftvalue = SpecLvalue;
-	specpool[specptr].actionlevel = 1;
-	specpool[specptr].bt = SpecTypeComplex;
-	specpool[specptr].comp.spec = &specpool[2 * SpecTypeInt8];
-	specpool[specptr].comp.pl = 1;
-	specptr ++;
-	specpool[specptr].leftvalue = SpecRvalue;
-	specpool[specptr].actionlevel = 1;
-	specpool[specptr].bt = SpecTypeComplex;
-	specpool[specptr].comp.spec = &specpool[2 * SpecTypeInt8];
-	specpool[specptr].comp.pl = 1;
-	specptr ++;
+	//char*/string left value
+	spec = (Spec *)mempool_new(&specpool);
+	spec->leftvalue = SpecLvalue;
+	spec->actionlevel = 1;
+	spec->bt = SpecTypeComplex;
+	spec->comp.spec = &specptr[2 * SpecTypeInt8];
+	spec->comp.pl = 1;
+	//char*/string right value
+	spec = (Spec *)mempool_new(&specpool);
+	spec->leftvalue = SpecRvalue;
+	spec->actionlevel = 1;
+	spec->bt = SpecTypeComplex;
+	spec->comp.spec = &specptr[2 * SpecTypeInt8];
+	spec->comp.pl = 1;
 }
 
 void init_spec() {
+	mempool_init(&specpool, sizeof(Spec));
+	wt_assert(specpool.bs[0] > 32);
 	construct_type_relations();
 	reset_spec_state();
 }

@@ -207,6 +207,7 @@ enum {
 	AST_Exp_is_Exp_LAND_Exp,
 	AST_Exp_is_Exp_LOR_Exp,
 	AST_Exp_is_Exp_QOP_Exp_COLON_Exp,
+	AST_Exp_is_Exp_ASSIGNOP_Exp,
 	AST_Exp_is_Exp_EQUOP_Exp,
 	AST_Exp_is_Exp_COMMA_Exp
 };
@@ -384,6 +385,7 @@ static ReduceRules syntax_rules[] = {
 	[AST_Exp_is_Exp_LAND_Exp] = {3, Exp, "AST_Exp_is_Exp_LAND_Exp", "Exp"},
 	[AST_Exp_is_Exp_LOR_Exp] = {3, Exp, "AST_Exp_is_Exp_LOR_Exp", "Exp"},
 	[AST_Exp_is_Exp_QOP_Exp_COLON_Exp] = {5, Exp, "AST_Exp_is_Exp_QOP_Exp_COLON_Exp", "Exp"},
+	[AST_Exp_is_Exp_ASSIGNOP_Exp] = {3, Exp, "AST_Exp_is_Exp_ASSIGNOP_Exp", "Exp"},
 	[AST_Exp_is_Exp_EQUOP_Exp] = {3, Exp, "AST_Exp_is_Exp_EQUOP_Exp", "Exp"},
 	[AST_Exp_is_Exp_COMMA_Exp] = {3, Exp, "AST_Exp_is_Exp_COMMA_Exp", "Exp"}
 };

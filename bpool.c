@@ -43,6 +43,7 @@ void *mempool_new(MemPool *mp) {
 		//most common case
 		ret = mp->p[mp->index_ptr] + mp->block_ptr;
 		mp->block_ptr += mp->unit_size;
+		memset(ret, 0, mp->unit_size);
 		return ret;
 	}else{
 		if(mp->index_ptr >= mp->index_size) {
@@ -52,14 +53,13 @@ void *mempool_new(MemPool *mp) {
 		}
 		mp->block_ptr = 0;
 		mp->index_ptr ++;
-		if(!mp->p[mp->index_ptr]) {
-			mp->bs[mp->index_ptr] = mp->bs[mp->index_ptr - 1] * 2;
-			mp->p[mp->index_ptr] = malloc(mp->bs[mp->index_ptr]);
-		}
+		mp->bs[mp->index_ptr] = mp->bs[mp->index_ptr - 1] * 2;
+		mp->p[mp->index_ptr] = malloc(mp->bs[mp->index_ptr]);
 		ret = mp->p[mp->index_ptr] + mp->block_ptr;
 		mp->block_ptr += mp->unit_size;
+		memset(ret, 0, mp->unit_size);
+		return ret;
 	}
-	return ret;
 }
 
 void *mempool_free(MemPool *mp) {

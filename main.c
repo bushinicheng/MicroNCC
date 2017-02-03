@@ -69,6 +69,7 @@ int main(int argc, char *argv[])
 	init_component();
 	init_vector();
 	init_ast();
+	init_spec();
 
 #ifdef __DEBUG_LEX__
 	logd("enter debug mode, while(yylex()>0)\n");

@@ -4,6 +4,7 @@
 /* some common macro will be defined in this file  */
 
 #define __DEBUG__
+//#define __DEBUG_LEX__
 
 /* some common header files will be included here. */
 #include <stdio.h>
