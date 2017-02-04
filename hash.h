@@ -8,14 +8,14 @@ typedef struct HashElement {
 	size_t size;
 	void *value;
 	struct HashElement *next;
-	struct HashElement *sibling;
 } HashElement;
 
 typedef struct HashTable {
 	HashElement *pool[HASH_SIZE];
-	HashElement *free_ptr;
-	HashElement *full_ptr;
 } HashTable;
 
+void hash_init(HashTable *ht);
+void hash_push(HashTable *ht, uint8_t *keybuf, size_t size, void *value);
+void *hash_get(HashTable *ht, uint8_t *keybuf, size_t size);
 
 #endif

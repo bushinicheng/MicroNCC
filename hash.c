@@ -37,11 +37,7 @@ void *hash_get(HashTable *ht, uint8_t *keybuf, size_t size) {
 }
 
 void hash_destroy_element(HashTable *ht) {
-	wt_assert(0);
-}
-
-HashTable *new_hash_table() {
-	return NULL;
+	memset(ht, 0, sizeof(HashTable));
 }
 
 void free_hash() {

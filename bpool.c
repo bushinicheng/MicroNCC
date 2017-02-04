@@ -17,10 +17,14 @@ void *wt_alloc(size_t size) {
 	return ptr;
 }
 
-void *wt_realloc(size_t size, void *prev_page) {
-	void *ptr = realloc(ptr, size);
-	if(!ptr) loge("memory shortage\n");
-	return ptr;
+void *wt_realloc(void *ptr, size_t oldsize, size_t newsize) {
+	if(newsize <= oldsize) return ptr;
+	void *ret = malloc(newsize);
+	if(!ret) loge("memory shortage\n");
+	memset(ret, 0, newsize);
+	memcpy(ret, ptr, oldsize);
+	free(ptr);
+	return ret;
 }
 
 void mempool_init(MemPool *mp, size_t unit_size) {

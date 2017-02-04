@@ -18,17 +18,22 @@ Vector asv;//hash table vector
 
 void push_variale(char *vn, Spec *type, Node *node) {
 	VarElement *ve = mempool_new(&varpool);
-	VarElement *as = asv.p;
+	HashTable *ht = asv.p;
 	ve->vn = vn;
 	ve->type = type;
 	ve->node = node;
-	hash_push(as[actionlevel], vn, strlen(vn), ve);
+	hash_push(&ht[actionlevel], vn, strlen(vn), ve);
 }
 
 void update_actionlevel() {
 	actionlevel ++;
-	VarElement *as = asv.p;
+	HashTable *ht = asv.p;
 }
+
+void decrease_actionlevel() {
+}
+
+/* syntax analysis related function*/
 
 void analyse_exp_is_id(Node *root) {
 }

@@ -27,7 +27,7 @@ typedef struct MemPool {
 
 
 void *wt_alloc(size_t size);
-void *wt_realloc(size_t size, void *prev_page);
+void *wt_realloc(void *ptr, size_t oldsize, size_t newsize);
 void mempool_init(MemPool *mp, size_t unit_size);
 void *mempool_new(MemPool *mp);
 void *mempool_free(MemPool *mp);

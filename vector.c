@@ -6,14 +6,16 @@ void vector_init(Vector *v, size_t unit_size) {
 	v->ptr = 0;
 	v->unit_size = unit_size;
 	v->size = 128 * v->unit_size;
-	v->p = malloc(v->size);
+	v->p = wt_alloc(v->size);
 }
 
 void vector_push(Vector *v, void *t) {
 	if(!v->size) return;
 	if(v->ptr >= v->size) {
+		int oldsize = v->size;
 		v->size *= 2;
-		v->p = realloc(v->p, v->size);
+		v->p = wt_realloc(v->p, oldsize, v->size);
+		//v->p = realloc(v->p, v->size);
 	}
 	memcpy(v->p + v->ptr, t, v->unit_size);
 	v->ptr += v->unit_size;
@@ -29,7 +31,9 @@ void *vector_pop(Vector *v) {
 }
 
 void vector_resize(Vector *v, size_t size) {
-	v->p = realloc(v->p, v->unit_size * size);
+	int oldsize = v->size;
+	v->size = v->unit_size * size;
+	v->p = wt_realloc(v->p, oldsize, v->size);
 }
 
 void vector_free(Vector *v) {
@@ -45,11 +49,11 @@ int init_vector()
 	UNIT_TEST_START;
 	Vector v;
 	const int test_size = 65536;
-	int ans[test_size], pans = 0, num;
+	int ans[65536], pans = 0, num;
 	vector_init(&v, sizeof(int));
 	for(int i = 0; i < test_size; i++) {
 		num = rand();
-		if(rand()%3==0 && pans > 0) {
+		if(rand()%16==0 && pans > 0) {
 			pans --;
 			vector_pop(&v);
 		}else{
