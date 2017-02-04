@@ -4,6 +4,7 @@
 /*function declaration*/
 int strcnt(const char *strin, char ch);
 int next_number(char **str, int base);
+char register_literal(const char *str);
 char* register_string(const char *str);
 char* register_id(const char *text);
 int init_component();
@@ -51,6 +52,7 @@ hex              0[xX][0-9a-fA-F]+
 oct              0[1-7][0-7]*
 invalidnum       \.*[0-9][_a-zA-Z0-9\.]*
 string           (\"([^\"]*(\\\")?)*\"[ \t\r\n]*)+
+literal          (\'([^\']*(\\\')?)*\'[ \t\r\n]*)+
 char             (\'([^\']*(\\\')?)*\'[ \t\r\n]*)+
 blank            [ \t\r]+
 newline          \n+
@@ -173,6 +175,7 @@ volatile            {tokout("VOLATILE");return symbol(VOLATILE);}
 						yydbg(yylineno, yycolumn-yyleng, yyleng, ErrorInvalidNUM);
 						return symbol(NUM);
 					}
+{literal}           {tokout("CHAR");	return reg(LITERAL);}
 {string}            {tokout("STR");		return reg(STRING);}
 {id}                {tokout("ID");		return reg(ID);}
 {blank}             {strcat(yylinetext, yytext);/*do nothing*/}
@@ -246,7 +249,6 @@ static int type(int spectype, int rawtoken)
 
 static int num(int numtype)
 {
-	int syntaxval = NUM;
 	char *pstr = yytext;
 	Node *pnd = new_node();
 	pnd->token = NUM;
@@ -279,7 +281,7 @@ static int num(int numtype)
 		break;
 	}
 
-	return syntaxval;
+	return NUM;
 }
 
 static int reg(int syntaxval)
@@ -298,32 +300,29 @@ static int reg(int syntaxval)
 		pnd->cv.sv.st = register_id(yytext);
 		break;
 	case STRING:
-		pnd->dt->leftvalue = 0;
+		pnd->dt->leftvalue = SpecLvalue;
 		pnd->cv.st = 's';
 		pnd->cv.sv.st = register_string(yytext);
+		break;
+	case LITERAL:
+		pnd->dt->leftvalue = SpecRvalue;
+		pnd->cv.st = SpecTypeInt8;
+		pnd->cv.sv._8 = register_literal(yytext);
 		break;
 	}
 
 	return syntaxval;
 }
 
-int double_buffer(void **buf, int size)
-{
-	void *tbuf = malloc(size * 2);
-	memcpy(tbuf, *buf, size);
-	free(*buf);
-	*buf = tbuf;
-	return 0;
-}
-
 int next_number(char **str, int base)
 {
 	int retval = 0;
 	/* 0xff,088,255 at most 4 nums */
-	for(int i = 0; i < 3; i++)
+	for(int i = 0; *str[0]; i++)
 	{
 		bool cur_valid = false;
-		int ch = *(str[0]++);
+		int ch = *(str[0]);
+		str[0]++;
 		switch(base)
 		{
 			case 16:
@@ -350,9 +349,27 @@ int next_number(char **str, int base)
 				break;
 		}
 		if(!cur_valid) {str[0]--;break;}
-		if(retval > 256) break;
 	}
 	return retval;
+}
+
+char register_literal(const char *str) {
+	if(str[1] == '\\') {
+		char *p = (char *)&str[2];
+		switch(str[2]){
+			case '\\':return '\\';
+			case 'n' :return '\n';
+			case 'r' :return '\r';
+			case 't' :return '\t';
+			case 'b' :return '\b';
+			case 'x' :
+			case 'X' :return next_number(&p, 16);break;
+			case '0' :return next_number(&p, 8);break;
+			default  :return str[2];
+		}
+	}else{
+		return str[1];
+	}
 }
 
 /* return value is the start position of registered string */
@@ -421,7 +438,33 @@ int init_component()
 	for(int i = 0; i < test_len; i++)
 	{
 		char* p = register_string(ss[i]);
-		UNIT_TEST_ASSERT(strcmp(p, ans[i]) == 0, "\nfail at case #%d, should be '%s' but got '%s'\n", i, ans[i], p);
+		UNIT_TEST_ASSERT(strcmp(p, ans[i]) == 0, "fail at case #%d, should be '%s' but got '%s'.", i, ans[i], p);
+	}
+
+	const char *ns[] = {
+		"12345678", "98765432", "87654321", "7654321",
+		"7fa", "6ffaewr",
+	};
+
+	const int nas[] = {
+		01234567, 12345678, 0x12345678,
+		00, 98765432, 0x98765432,
+		00, 87654321, 0x87654321,
+		07654321, 7654321, 0x7654321,
+		07, 7, 0x7fa,
+		06, 6, 0x6ffae,
+	};
+
+	for(int i = 0; i < sizeof(ns)/sizeof(ns[0]); i++) {
+		char *p = (char *)ns[i];
+		int a = next_number(&p, 8);
+		UNIT_TEST_ASSERT(a == nas[3 * i], "fail at case #%d, oct, should be %d but got %d.", i, nas[3 * i], a);
+		p = (char *)ns[i];
+		a = next_number(&p, 10);
+		UNIT_TEST_ASSERT(a == nas[3 * i + 1], "fail at case #%d, dec, should be %d but got %d.", i, nas[3 * i + 1], a);
+		p = (char *)ns[i];
+		a = next_number(&p, 16);
+		UNIT_TEST_ASSERT(a == nas[3 * i + 2], "fail at case #%d, hex, should be %d but got %d.", i, nas[3 * i + 2], a);
 	}
 
 	UNIT_TEST_END;

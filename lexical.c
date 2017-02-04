@@ -398,8 +398,8 @@ static void yy_fatal_error (yyconst char msg[]  );
 	*yy_cp = '\0'; \
 	(yy_c_buf_p) = yy_cp;
 
-#define YY_NUM_RULES 107
-#define YY_END_OF_BUFFER 108
+#define YY_NUM_RULES 108
+#define YY_END_OF_BUFFER 109
 /* This struct is not used in this scanner,
    but its presence is necessary. */
 struct yy_trans_info
@@ -409,38 +409,38 @@ struct yy_trans_info
 	};
 static yyconst flex_int16_t yy_accept[299] =
     {   0,
-        0,    0,  108,  106,  101,  102,   33,  106,   16,   27,
-      106,   35,   36,   14,   12,   43,   13,   41,   15,   94,
-       94,   45,   46,    4,    1,    6,   44,  100,  100,   37,
-       38,   29,  100,  100,  100,  100,  100,  100,  100,  100,
-      100,  100,  100,  100,  100,  100,  100,  100,   39,   28,
-       40,   30,  101,  102,    3,    0,   99,    0,   23,   31,
+        0,    0,  109,  107,  102,  103,   33,  107,   16,   27,
+      107,   35,   36,   14,   12,   43,   13,   41,   15,   94,
+       94,   45,   46,    4,    1,    6,   44,  101,  101,   37,
+       38,   29,  101,  101,  101,  101,  101,  101,  101,  101,
+      101,  101,  101,  101,  101,  101,  101,  101,   39,   28,
+       40,   30,  102,  103,    3,    0,  100,    0,   23,   31,
        24,    0,   48,    0,   21,   17,   19,   18,   20,   42,
         0,   97,    0,    0,   22,   97,   98,   96,   98,   98,
-       94,    8,    5,    2,    7,    9,  100,  100,   26,  100,
-      100,  100,  100,  100,  100,  100,   78,  100,  100,  100,
+       94,    8,    5,    2,    7,    9,  101,  101,   26,  101,
+      101,  101,  101,  101,  101,  101,   78,  101,  101,  101,
 
-      100,  100,  100,  100,   76,  100,  100,  100,  100,  100,
-      100,  100,  100,  100,  100,  100,  100,  100,  100,   25,
-       32,   99,    0,   99,   48,    0,   48,   47,   98,   97,
-       98,    0,  105,    0,    0,  104,   97,   96,   95,   10,
-       11,  100,  100,  100,  100,  100,  100,  100,  100,  100,
-      100,  100,  100,  100,  100,   80,  100,   53,  100,  100,
-      100,  100,  100,  100,  100,  100,  100,  100,  100,  100,
-      100,  100,  100,  100,  100,  100,   99,   99,   48,   48,
-        0,    0,   97,  103,   73,   90,   50,  100,   83,   51,
-      100,  100,  100,   77,   70,  100,  100,  100,   86,  100,
+      101,  101,  101,  101,   76,  101,  101,  101,  101,  101,
+      101,  101,  101,  101,  101,  101,  101,  101,  101,   25,
+       32,  100,    0,  100,   48,    0,   48,   47,   98,   97,
+       98,    0,  106,    0,    0,  105,   97,   96,   95,   10,
+       11,  101,  101,  101,  101,  101,  101,  101,  101,  101,
+      101,  101,  101,  101,  101,   80,  101,   53,  101,  101,
+      101,  101,  101,  101,  101,  101,  101,  101,  101,  101,
+      101,  101,  101,  101,  101,  101,  100,  100,   48,   48,
+        0,    0,   97,  104,   73,   90,   50,  101,   83,   51,
+      101,  101,  101,   77,   70,  101,  101,  101,   86,  101,
 
-      100,  100,  100,   54,  100,  100,  100,  100,  100,  100,
-      100,  100,  100,   74,  100,  100,  100,  100,   49,  100,
-      100,   97,   84,   92,  100,  100,  100,   75,   57,  100,
-      100,  100,  100,   69,  100,  100,   52,  100,  100,  100,
-      100,  100,  100,  100,  100,  100,  100,  100,  100,   71,
-      100,  100,   79,  100,   58,   88,  100,  100,  100,   59,
-      100,   81,   55,   67,   34,   89,   72,   82,  100,  100,
-      100,  100,  100,  100,  100,  100,   85,   60,   61,   62,
-      100,   87,  100,  100,  100,   63,  100,  100,  100,   91,
-       64,   65,   66,  100,   56,   93,   68,    0
+      101,  101,  101,   54,  101,  101,  101,  101,  101,  101,
+      101,  101,  101,   74,  101,  101,  101,  101,   49,  101,
+      101,   97,   84,   92,  101,  101,  101,   75,   57,  101,
+      101,  101,  101,   69,  101,  101,   52,  101,  101,  101,
+      101,  101,  101,  101,  101,  101,  101,  101,  101,   71,
+      101,  101,   79,  101,   58,   88,  101,  101,  101,   59,
+      101,   81,   55,   67,   34,   89,   72,   82,  101,  101,
+      101,  101,  101,  101,  101,  101,   85,   60,   61,   62,
+      101,   87,  101,  101,  101,   63,  101,  101,  101,   91,
+       64,   65,   66,  101,   56,   93,   68,    0
 
     } ;
 
@@ -699,14 +699,14 @@ static yyconst flex_int16_t yy_chk[579] =
     } ;
 
 /* Table of booleans, true if rule could match eol. */
-static yyconst flex_int32_t yy_rule_can_match_eol[108] =
+static yyconst flex_int32_t yy_rule_can_match_eol[109] =
     {   0,
 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 
-    0, 0, 1, 1, 0, 1, 0, 0,     };
+    1, 0, 0, 1, 1, 0, 1, 0, 0,     };
 
 static yy_state_type yy_last_accepting_state;
 static char *yy_last_accepting_cpos;
@@ -729,6 +729,7 @@ char *yytext;
 /*function declaration*/
 int strcnt(const char *strin, char ch);
 int next_number(char **str, int base);
+char register_literal(const char *str);
 char* register_string(const char *str);
 char* register_id(const char *text);
 int init_component();
@@ -765,7 +766,7 @@ static int reg(int syntaxval);
 static int relop(int token);
 static int equop(int token);
 
-#line 769 "lexical.c"
+#line 770 "lexical.c"
 
 #define INITIAL 0
 
@@ -983,9 +984,9 @@ YY_DECL
 		}
 
 	{
-#line 62 "lexical.l"
+#line 64 "lexical.l"
 
-#line 989 "lexical.c"
+#line 990 "lexical.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -1054,493 +1055,493 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 63 "lexical.l"
+#line 65 "lexical.l"
 {tokout("AS");		return symbol(ASSIGNOP);}
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 64 "lexical.l"
+#line 66 "lexical.l"
 {tokout("EQ");		return symbol(EQ);}
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 65 "lexical.l"
+#line 67 "lexical.l"
 {tokout("NE");		return symbol(NE);}
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 66 "lexical.l"
+#line 68 "lexical.l"
 {tokout("LT");		return relop(LT);}
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 67 "lexical.l"
+#line 69 "lexical.l"
 {tokout("LE");		return relop(LE);}
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 68 "lexical.l"
+#line 70 "lexical.l"
 {tokout("GT");		return relop(GT);}
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 69 "lexical.l"
+#line 71 "lexical.l"
 {tokout("GE");		return relop(GE);}
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 71 "lexical.l"
+#line 73 "lexical.l"
 {tokout("LSHIFT");	return symbol(LSHIFT);}
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 72 "lexical.l"
+#line 74 "lexical.l"
 {tokout("RSHIFT");	return symbol(RSHIFT);}
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 73 "lexical.l"
+#line 75 "lexical.l"
 {tokout("LSHIFTE");	return symbol(LSHIFTE);}
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 74 "lexical.l"
+#line 76 "lexical.l"
 {tokout("RSHIFTE");	return symbol(RSHIFTE);}
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 76 "lexical.l"
+#line 78 "lexical.l"
 {tokout("ADD");		return symbol(ADD);}
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 77 "lexical.l"
+#line 79 "lexical.l"
 {tokout("SUB");		return symbol(SUB);}
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 78 "lexical.l"
+#line 80 "lexical.l"
 {tokout("MULT");	return symbol(MULT);}
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 79 "lexical.l"
+#line 81 "lexical.l"
 {tokout("DIV");		return symbol(DIV);}
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 80 "lexical.l"
+#line 82 "lexical.l"
 {tokout("MOD");		return symbol(MOD);}
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 81 "lexical.l"
+#line 83 "lexical.l"
 {tokout("INC"); 	return symbol(INC);}
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 82 "lexical.l"
+#line 84 "lexical.l"
 {tokout("DEC");		return symbol(DEC);}
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 83 "lexical.l"
+#line 85 "lexical.l"
 {tokout("ADDE");	return equop(ADDE);}
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 84 "lexical.l"
+#line 86 "lexical.l"
 {tokout("SUBE");	return equop(SUBE);}
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 85 "lexical.l"
+#line 87 "lexical.l"
 {tokout("MULTE");	return equop(MULTE);}
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 86 "lexical.l"
+#line 88 "lexical.l"
 {tokout("DIVE");	return equop(DIVE);}
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 87 "lexical.l"
+#line 89 "lexical.l"
 {tokout("MODE");	return equop(MODE);}
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 88 "lexical.l"
+#line 90 "lexical.l"
 {tokout("ANDE");	return equop(ANDE);}
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 89 "lexical.l"
+#line 91 "lexical.l"
 {tokout("ORE");		return equop(ORE);}
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 90 "lexical.l"
+#line 92 "lexical.l"
 {tokout("XORE");	return equop(XORE);}
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 92 "lexical.l"
+#line 94 "lexical.l"
 {tokout("AND");		return symbol(AND);}
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 93 "lexical.l"
+#line 95 "lexical.l"
 {tokout("OR");		return symbol(OR);}
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 94 "lexical.l"
+#line 96 "lexical.l"
 {tokout("XOR");		return symbol(XOR);}
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 95 "lexical.l"
+#line 97 "lexical.l"
 {tokout("NOT");		return symbol(NOT);}
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 96 "lexical.l"
+#line 98 "lexical.l"
 {tokout("LAND");	return symbol(LAND);}
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 97 "lexical.l"
+#line 99 "lexical.l"
 {tokout("LOR");		return symbol(LOR);}
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 98 "lexical.l"
+#line 100 "lexical.l"
 {tokout("LNOT");	return symbol(LNOT);}
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 99 "lexical.l"
+#line 101 "lexical.l"
 {tokout("SIZEOF");	return symbol(SIZEOF);}
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 101 "lexical.l"
+#line 103 "lexical.l"
 {tokout("LP");		return symbol(LP);}
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 102 "lexical.l"
+#line 104 "lexical.l"
 {tokout("RP");		return symbol(RP);}
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 103 "lexical.l"
+#line 105 "lexical.l"
 {tokout("LB");		return symbol(LB);}
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 104 "lexical.l"
+#line 106 "lexical.l"
 {tokout("RB");		return symbol(RB);}
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 105 "lexical.l"
+#line 107 "lexical.l"
 {tokout("LC");		return symbol(LC);}
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 106 "lexical.l"
+#line 108 "lexical.l"
 {tokout("RC");		return symbol(RC);}
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 107 "lexical.l"
+#line 109 "lexical.l"
 {tokout("DOT");		return symbol(DOT);}
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 108 "lexical.l"
+#line 110 "lexical.l"
 {tokout("PT");		return symbol(PTR);}
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 109 "lexical.l"
+#line 111 "lexical.l"
 {tokout("COMMA");	return symbol(COMMA);}
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 110 "lexical.l"
+#line 112 "lexical.l"
 {tokout("QOP");		return symbol(QOP);}
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 111 "lexical.l"
+#line 113 "lexical.l"
 {tokout("COLON");	return symbol(COLON);}
 	YY_BREAK
 case 46:
 YY_RULE_SETUP
-#line 112 "lexical.l"
+#line 114 "lexical.l"
 {tokout("SEMI");	return symbol(SEMI);}
 	YY_BREAK
 case 47:
 YY_RULE_SETUP
-#line 113 "lexical.l"
+#line 115 "lexical.l"
 {tokout("ELLIPSIS");return symbol(ELLIPSIS);}
 	YY_BREAK
 case 48:
 /* rule 48 can match eol */
 YY_RULE_SETUP
-#line 114 "lexical.l"
+#line 116 "lexical.l"
 {tokout("CHAR");	return symbol(CHAR);}
 	YY_BREAK
 case 49:
 YY_RULE_SETUP
-#line 116 "lexical.l"
+#line 118 "lexical.l"
 {tokout("VOID");	return type(SpecTypeVoid, VOID);}
 	YY_BREAK
 case 50:
 YY_RULE_SETUP
-#line 117 "lexical.l"
+#line 119 "lexical.l"
 {tokout("BOOL");	return type(SpecTypeUint8, BOOL);}
 	YY_BREAK
 case 51:
 YY_RULE_SETUP
-#line 118 "lexical.l"
+#line 120 "lexical.l"
 {tokout("CHAR");	return type(SpecTypeInt8, CHAR);}
 	YY_BREAK
 case 52:
 YY_RULE_SETUP
-#line 119 "lexical.l"
+#line 121 "lexical.l"
 {tokout("SHORT");	return type(SpecTypeInt16, SHORT);}
 	YY_BREAK
 case 53:
 YY_RULE_SETUP
-#line 120 "lexical.l"
+#line 122 "lexical.l"
 {tokout("INT");		return type(SpecTypeInt32, INT);}
 	YY_BREAK
 case 54:
 YY_RULE_SETUP
-#line 121 "lexical.l"
+#line 123 "lexical.l"
 {tokout("LONG");	return type(SpecTypeInt32, LONG);}
 	YY_BREAK
 case 55:
 YY_RULE_SETUP
-#line 122 "lexical.l"
+#line 124 "lexical.l"
 {tokout("SIGNED");	return type(SpecTypeInt32, SIGNED);}
 	YY_BREAK
 case 56:
 YY_RULE_SETUP
-#line 123 "lexical.l"
+#line 125 "lexical.l"
 {tokout("UNSIGNED");return type(SpecTypeUint32, UNSIGNED);}
 	YY_BREAK
 case 57:
 YY_RULE_SETUP
-#line 124 "lexical.l"
+#line 126 "lexical.l"
 {tokout("FLOAT");	return type(SpecTypeFloat32, FLOAT);}
 	YY_BREAK
 case 58:
 YY_RULE_SETUP
-#line 125 "lexical.l"
+#line 127 "lexical.l"
 {tokout("DOUBLE");	return type(SpecTypeFloat64, DOUBLE);}
 	YY_BREAK
 case 59:
 YY_RULE_SETUP
-#line 126 "lexical.l"
+#line 128 "lexical.l"
 {tokout("INT8T");	return type(SpecTypeInt8, INT8T);}
 	YY_BREAK
 case 60:
 YY_RULE_SETUP
-#line 127 "lexical.l"
+#line 129 "lexical.l"
 {tokout("INT16T");	return type(SpecTypeInt16, INT16T);}
 	YY_BREAK
 case 61:
 YY_RULE_SETUP
-#line 128 "lexical.l"
+#line 130 "lexical.l"
 {tokout("INT32T");	return type(SpecTypeInt32, INT32T);}
 	YY_BREAK
 case 62:
 YY_RULE_SETUP
-#line 129 "lexical.l"
+#line 131 "lexical.l"
 {tokout("INT64T");	return type(SpecTypeInt64, INT64T);}
 	YY_BREAK
 case 63:
 YY_RULE_SETUP
-#line 130 "lexical.l"
+#line 132 "lexical.l"
 {tokout("UINT8T");	return type(SpecTypeUint8, UINT8T);}
 	YY_BREAK
 case 64:
 YY_RULE_SETUP
-#line 131 "lexical.l"
+#line 133 "lexical.l"
 {tokout("UINT16T");	return type(SpecTypeUint16, UINT16T);}
 	YY_BREAK
 case 65:
 YY_RULE_SETUP
-#line 132 "lexical.l"
+#line 134 "lexical.l"
 {tokout("UINT32T");	return type(SpecTypeUint32, UINT32T);}
 	YY_BREAK
 case 66:
 YY_RULE_SETUP
-#line 133 "lexical.l"
+#line 135 "lexical.l"
 {tokout("UINT64T");	return type(SpecTypeUint64, UINT64T);}
 	YY_BREAK
 case 67:
 YY_RULE_SETUP
-#line 134 "lexical.l"
+#line 136 "lexical.l"
 {tokout("SIZET");	return type(SpecTypeUint32, SIZET);}
 	YY_BREAK
 case 68:
 YY_RULE_SETUP
-#line 135 "lexical.l"
+#line 137 "lexical.l"
 {tokout("UINTPTRT");return type(SpecTypeUint32, UINTPTRT);}
 	YY_BREAK
 case 69:
 YY_RULE_SETUP
-#line 136 "lexical.l"
+#line 138 "lexical.l"
 {tokout("OFFT");	return type(SpecTypeUint32, OFFT);}
 	YY_BREAK
 case 70:
 YY_RULE_SETUP
-#line 138 "lexical.l"
+#line 140 "lexical.l"
 {tokout("ENUM");	return symbol(ENUM);}
 	YY_BREAK
 case 71:
 YY_RULE_SETUP
-#line 139 "lexical.l"
+#line 141 "lexical.l"
 {tokout("UNION");	return symbol(UNION);}
 	YY_BREAK
 case 72:
 YY_RULE_SETUP
-#line 140 "lexical.l"
+#line 142 "lexical.l"
 {tokout("STRUCT");	return symbol(STRUCT);}
 	YY_BREAK
 case 73:
 YY_RULE_SETUP
-#line 141 "lexical.l"
+#line 143 "lexical.l"
 {tokout("nil");		return symbol(NIL);}
 	YY_BREAK
 case 74:
 YY_RULE_SETUP
-#line 142 "lexical.l"
+#line 144 "lexical.l"
 {tokout("true");	return symbol(TRUE);}
 	YY_BREAK
 case 75:
 YY_RULE_SETUP
-#line 143 "lexical.l"
+#line 145 "lexical.l"
 {tokout("false");	return symbol(FALSE);}
 	YY_BREAK
 case 76:
 YY_RULE_SETUP
-#line 145 "lexical.l"
+#line 147 "lexical.l"
 {tokout("IF");		return symbol(IF);}
 	YY_BREAK
 case 77:
 YY_RULE_SETUP
-#line 146 "lexical.l"
+#line 148 "lexical.l"
 {tokout("ELSE");	return symbol(ELSE);}
 	YY_BREAK
 case 78:
 YY_RULE_SETUP
-#line 147 "lexical.l"
+#line 149 "lexical.l"
 {tokout("DO");		return symbol(DO);}
 	YY_BREAK
 case 79:
 YY_RULE_SETUP
-#line 148 "lexical.l"
+#line 150 "lexical.l"
 {tokout("WHILE");	return symbol(WHILE);}
 	YY_BREAK
 case 80:
 YY_RULE_SETUP
-#line 149 "lexical.l"
+#line 151 "lexical.l"
 {tokout("FOR");		return symbol(FOR);}
 	YY_BREAK
 case 81:
 YY_RULE_SETUP
-#line 150 "lexical.l"
+#line 152 "lexical.l"
 {tokout("RETURN");	return symbol(RETURN);}
 	YY_BREAK
 case 82:
 YY_RULE_SETUP
-#line 151 "lexical.l"
+#line 153 "lexical.l"
 {tokout("SWITCH");	return symbol(SWITCH);}
 	YY_BREAK
 case 83:
 YY_RULE_SETUP
-#line 152 "lexical.l"
+#line 154 "lexical.l"
 {tokout("CASE");	return symbol(CASE);}
 	YY_BREAK
 case 84:
 YY_RULE_SETUP
-#line 153 "lexical.l"
+#line 155 "lexical.l"
 {tokout("BREAK");	return symbol(BREAK);}
 	YY_BREAK
 case 85:
 YY_RULE_SETUP
-#line 154 "lexical.l"
+#line 156 "lexical.l"
 {tokout("DEFAULT");	return symbol(DEFAULT);}
 	YY_BREAK
 case 86:
 YY_RULE_SETUP
-#line 155 "lexical.l"
+#line 157 "lexical.l"
 {tokout("GOTO");	return symbol(GOTO);}
 	YY_BREAK
 case 87:
 YY_RULE_SETUP
-#line 157 "lexical.l"
+#line 159 "lexical.l"
 {tokout("TYPEDEF");	return qulfr(TYPEDEF);}
 	YY_BREAK
 case 88:
 YY_RULE_SETUP
-#line 158 "lexical.l"
+#line 160 "lexical.l"
 {tokout("EXTERN");	return qulfr(EXTERN);}
 	YY_BREAK
 case 89:
 YY_RULE_SETUP
-#line 159 "lexical.l"
+#line 161 "lexical.l"
 {tokout("STATIC");	return qulfr(STATIC);}
 	YY_BREAK
 case 90:
 YY_RULE_SETUP
-#line 160 "lexical.l"
+#line 162 "lexical.l"
 {tokout("AUTO");	return qulfr(AUTO);}
 	YY_BREAK
 case 91:
 YY_RULE_SETUP
-#line 161 "lexical.l"
+#line 163 "lexical.l"
 {tokout("REGISTER");return qulfr(REGISTER);}
 	YY_BREAK
 case 92:
 YY_RULE_SETUP
-#line 163 "lexical.l"
+#line 165 "lexical.l"
 {tokout("CONST");	return symbol(CONST);}
 	YY_BREAK
 case 93:
 YY_RULE_SETUP
-#line 164 "lexical.l"
+#line 166 "lexical.l"
 {tokout("VOLATILE");return symbol(VOLATILE);}
 	YY_BREAK
 case 94:
 YY_RULE_SETUP
-#line 166 "lexical.l"
+#line 168 "lexical.l"
 {tokout("NUM:i");	return num('i');}
 	YY_BREAK
 case 95:
 YY_RULE_SETUP
-#line 167 "lexical.l"
+#line 169 "lexical.l"
 {tokout("NUM:x");	return num('x');}
 	YY_BREAK
 case 96:
 YY_RULE_SETUP
-#line 168 "lexical.l"
+#line 170 "lexical.l"
 {tokout("NUM:o");	return num('o');}
 	YY_BREAK
 case 97:
 YY_RULE_SETUP
-#line 169 "lexical.l"
+#line 171 "lexical.l"
 {tokout("NUM:f");	return num('f');}
 	YY_BREAK
 case 98:
 YY_RULE_SETUP
-#line 171 "lexical.l"
+#line 173 "lexical.l"
 {
 						tokout("NUM:v");
 						yydbg(yylineno, yycolumn-yyleng, yyleng, ErrorInvalidNUM);
@@ -1550,70 +1551,76 @@ YY_RULE_SETUP
 case 99:
 /* rule 99 can match eol */
 YY_RULE_SETUP
-#line 176 "lexical.l"
-{tokout("STR");		return reg(STRING);}
+#line 178 "lexical.l"
+{tokout("CHAR");	return reg(LITERAL);}
 	YY_BREAK
 case 100:
+/* rule 100 can match eol */
 YY_RULE_SETUP
-#line 177 "lexical.l"
-{tokout("ID");		return reg(ID);}
+#line 179 "lexical.l"
+{tokout("STR");		return reg(STRING);}
 	YY_BREAK
 case 101:
 YY_RULE_SETUP
-#line 178 "lexical.l"
-{strcat(yylinetext, yytext);/*do nothing*/}
+#line 180 "lexical.l"
+{tokout("ID");		return reg(ID);}
 	YY_BREAK
 case 102:
-/* rule 102 can match eol */
 YY_RULE_SETUP
-#line 179 "lexical.l"
+#line 181 "lexical.l"
+{strcat(yylinetext, yytext);/*do nothing*/}
+	YY_BREAK
+case 103:
+/* rule 103 can match eol */
+YY_RULE_SETUP
+#line 182 "lexical.l"
 {
 						yycolumn = 1;
 						yylinetext[0] = 0;
 					}
 	YY_BREAK
-case 103:
-/* rule 103 can match eol */
+case 104:
+/* rule 104 can match eol */
 YY_RULE_SETUP
-#line 183 "lexical.l"
+#line 186 "lexical.l"
 {tokout("MC");	/*do nothing*/}
 	YY_BREAK
-case 104:
+case 105:
 *yy_cp = (yy_hold_char); /* undo effects of setting up yytext */
 (yy_c_buf_p) = yy_cp -= 1;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 184 "lexical.l"
+#line 187 "lexical.l"
 {tokout("SC");	/*do nothing*/}
 	YY_BREAK
-case 105:
-/* rule 105 can match eol */
+case 106:
+/* rule 106 can match eol */
 *yy_cp = (yy_hold_char); /* undo effects of setting up yytext */
 YY_LINENO_REWIND_TO(yy_cp - 1);
 (yy_c_buf_p) = yy_cp -= 1;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 185 "lexical.l"
+#line 188 "lexical.l"
 {
 						tokout("IC");
 						extern int curlineno;
 						logd("%d: error type A: invalid comment\n", curlineno);
 					}
 	YY_BREAK
-case 106:
+case 107:
 YY_RULE_SETUP
-#line 190 "lexical.l"
+#line 193 "lexical.l"
 {
 						tokout("UB");
 						yydbg(yylineno, yycolumn-yyleng, yyleng, ErrorUnknownToken);
 					}
 	YY_BREAK
-case 107:
+case 108:
 YY_RULE_SETUP
-#line 195 "lexical.l"
+#line 198 "lexical.l"
 ECHO;
 	YY_BREAK
-#line 1617 "lexical.c"
+#line 1624 "lexical.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -2626,7 +2633,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 195 "lexical.l"
+#line 198 "lexical.l"
 
 
 
@@ -2682,7 +2689,6 @@ static int type(int spectype, int rawtoken)
 
 static int num(int numtype)
 {
-	int syntaxval = NUM;
 	char *pstr = yytext;
 	Node *pnd = new_node();
 	pnd->token = NUM;
@@ -2715,7 +2721,7 @@ static int num(int numtype)
 		break;
 	}
 
-	return syntaxval;
+	return NUM;
 }
 
 static int reg(int syntaxval)
@@ -2734,32 +2740,29 @@ static int reg(int syntaxval)
 		pnd->cv.sv.st = register_id(yytext);
 		break;
 	case STRING:
-		pnd->dt->leftvalue = 0;
+		pnd->dt->leftvalue = SpecLvalue;
 		pnd->cv.st = 's';
 		pnd->cv.sv.st = register_string(yytext);
+		break;
+	case LITERAL:
+		pnd->dt->leftvalue = SpecRvalue;
+		pnd->cv.st = SpecTypeInt8;
+		pnd->cv.sv._8 = register_literal(yytext);
 		break;
 	}
 
 	return syntaxval;
 }
 
-int double_buffer(void **buf, int size)
-{
-	void *tbuf = malloc(size * 2);
-	memcpy(tbuf, *buf, size);
-	free(*buf);
-	*buf = tbuf;
-	return 0;
-}
-
 int next_number(char **str, int base)
 {
 	int retval = 0;
 	/* 0xff,088,255 at most 4 nums */
-	for(int i = 0; i < 3; i++)
+	for(int i = 0; *str[0]; i++)
 	{
 		bool cur_valid = false;
-		int ch = *(str[0]++);
+		int ch = *(str[0]);
+		str[0]++;
 		switch(base)
 		{
 			case 16:
@@ -2786,9 +2789,27 @@ int next_number(char **str, int base)
 				break;
 		}
 		if(!cur_valid) {str[0]--;break;}
-		if(retval > 256) break;
 	}
 	return retval;
+}
+
+char register_literal(const char *str) {
+	if(str[1] == '\\') {
+		char *p = (char *)&str[2];
+		switch(str[2]){
+			case '\\':return '\\';
+			case 'n' :return '\n';
+			case 'r' :return '\r';
+			case 't' :return '\t';
+			case 'b' :return '\b';
+			case 'x' :
+			case 'X' :return next_number(&p, 16);break;
+			case '0' :return next_number(&p, 8);break;
+			default  :return str[2];
+		}
+	}else{
+		return str[1];
+	}
 }
 
 /* return value is the start position of registered string */
@@ -2857,7 +2878,33 @@ int init_component()
 	for(int i = 0; i < test_len; i++)
 	{
 		char* p = register_string(ss[i]);
-		UNIT_TEST_ASSERT(strcmp(p, ans[i]) == 0, "\nfail at case #%d, should be '%s' but got '%s'\n", i, ans[i], p);
+		UNIT_TEST_ASSERT(strcmp(p, ans[i]) == 0, "fail at case #%d, should be '%s' but got '%s'.", i, ans[i], p);
+	}
+
+	const char *ns[] = {
+		"12345678", "98765432", "87654321", "7654321",
+		"7fa", "6ffaewr",
+	};
+
+	const int nas[] = {
+		01234567, 12345678, 0x12345678,
+		00, 98765432, 0x98765432,
+		00, 87654321, 0x87654321,
+		07654321, 7654321, 0x7654321,
+		07, 7, 0x7fa,
+		06, 6, 0x6ffae,
+	};
+
+	for(int i = 0; i < sizeof(ns)/sizeof(ns[0]); i++) {
+		char *p = (char *)ns[i];
+		int a = next_number(&p, 8);
+		UNIT_TEST_ASSERT(a == nas[3 * i], "fail at case #%d, oct, should be %d but got %d.", i, nas[3 * i], a);
+		p = (char *)ns[i];
+		a = next_number(&p, 10);
+		UNIT_TEST_ASSERT(a == nas[3 * i + 1], "fail at case #%d, dec, should be %d but got %d.", i, nas[3 * i + 1], a);
+		p = (char *)ns[i];
+		a = next_number(&p, 16);
+		UNIT_TEST_ASSERT(a == nas[3 * i + 2], "fail at case #%d, hex, should be %d but got %d.", i, nas[3 * i + 2], a);
 	}
 
 	UNIT_TEST_END;

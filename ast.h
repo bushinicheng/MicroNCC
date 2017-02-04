@@ -542,6 +542,11 @@ void __attribute__((noinline)) make_node(Node *root, int reduce_rule, int token,
 Node* new_node();
 Node* new_sym_node(int lexval, YYLTYPE *yyinfo);
 Node* __attribute__((noinline)) build_subast(int nodetype, YYLTYPE *yyinfo, ...);
+Node* get_child_node_with_skip(Node *root, int token, int skip);
+Node* get_child_node(Node *root, int token);
+Node* get_child_node_with_skip_w(Node *root, int token, int skip);
+Node* get_child_node_w(Node *root, int token);
+Node* __attribute__((noinline))get_child_node_dw(Node *root, int depth, ...);
 void print_ast(Node *root);
 
 #endif

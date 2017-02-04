@@ -6,19 +6,23 @@ void vector_init(Vector *v, size_t unit_size) {
 	v->ptr = 0;
 	v->unit_size = unit_size;
 	v->size = 128 * v->unit_size;
-	v->p = wt_alloc(v->size);
+	v->p = malloc(v->size);
+}
+
+void *vector_new(Vector *v) {
+	if(!v->size) return NULL;
+	int oldptr = v->ptr;
+	if(v->ptr >= v->size) {
+		v->size *= 2;
+		v->p = realloc(v->p, v->size);
+	}
+	v->ptr += v->unit_size;
+	return (v->p + oldptr);
 }
 
 void vector_push(Vector *v, void *t) {
-	if(!v->size) return;
-	if(v->ptr >= v->size) {
-		int oldsize = v->size;
-		v->size *= 2;
-		v->p = wt_realloc(v->p, oldsize, v->size);
-		//v->p = realloc(v->p, v->size);
-	}
-	memcpy(v->p + v->ptr, t, v->unit_size);
-	v->ptr += v->unit_size;
+	void *p = vector_new(v);
+	memcpy(p, t, v->unit_size);
 }
 
 void *vector_pop(Vector *v) {
@@ -31,9 +35,8 @@ void *vector_pop(Vector *v) {
 }
 
 void vector_resize(Vector *v, size_t size) {
-	int oldsize = v->size;
 	v->size = v->unit_size * size;
-	v->p = wt_realloc(v->p, oldsize, v->size);
+	v->p = realloc(v->p, v->size);
 }
 
 void vector_free(Vector *v) {
@@ -49,7 +52,7 @@ int init_vector()
 	UNIT_TEST_START;
 	Vector v;
 	const int test_size = 65536;
-	int ans[65536], pans = 0, num;
+	int ans[test_size], pans = 0, num;
 	vector_init(&v, sizeof(int));
 	for(int i = 0; i < test_size; i++) {
 		num = rand();

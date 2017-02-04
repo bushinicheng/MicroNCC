@@ -35,11 +35,11 @@ enum {
 	CAssign = 1,//a=b
 	CAddSub = 2,//a+b,a-b,a++,a--,++a,--a,a+=b,a-=b
 	CMultDiv = 4,//a*b,a/b,a*=b,a/=b
-	CAndOr = 8,//a&b,a|b,a^b,~a,a&=b,a|=b,a^=b
+	CBitop = 8,//a&b,a|b,a^b,~a,a&=b,a|=b,a^=b,a<<b,a>>b,a<<=b,a>>=b
 	CRelop = 16,//a<b,a>b,a<=b,a>=b,a==b,a!=b
 	CLogic = 32,//a && b, a || b, !a
-	CMoreAccurate = 64,//both 1 means eq, both 0 means unable to compare
-	CLessAccurate = 128,
+	CMoreAccurate = 64,//both 1 means eq
+	CLessAccurate = 128,//both 0 means unable to compare
 };
 
 enum {
@@ -57,12 +57,13 @@ enum {
 enum {
 	CombineTypeSigned = 1,
 	CombineTypeUnsigned = 2,
-	CombineTypeChar = 4,
-	CombineTypeInt = 8,
-	CombineTypeLong = 16,
-	CombineTypeLongLong = 32,
-	CombineTypeFloat = 64,
-	CombineTypeDouble = 128,
+	CombineTypeShort = 4,
+	CombineTypeChar = 8,
+	CombineTypeInt = 16,
+	CombineTypeLong = 32,
+	CombineTypeLongLong = 64,
+	CombineTypeFloat = 128,
+	CombineTypeDouble = 256,
 };
 
 enum {
@@ -182,8 +183,9 @@ Spec *new_spec();
 Spec *copy_spec(Spec *s);
 char *type_format(Spec *type);
 bool compare_type(Spec *s, Spec *t);
+int get_type_relation(int btA, int btB);
 size_t get_size_of_btype(int btype);
-Spec *get_spec_by_btype(int btype, int lr);
+Spec *get_spec_by_btype(uint32_t btype, int lr);
 Spec *get_spec_of_const(Spec *const_spec);
 bool type_is_compatible(Spec *typeA, Spec *typeB);
 Spec *find_type_of_spec(struct tagNode *root);

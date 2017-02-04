@@ -9,12 +9,75 @@ static MemPool specpool;
 void print_spec(Spec *type);
 Spec *register_type_declnspec(Node *root);
 
-Spec *get_spec_by_btype(int bt, int lv) {
-	return NULL;
+#define BTYPE_CNT (SpecTypeString + 1)
+
+Spec *get_spec_by_btype(uint32_t bt, int lr) {
+	if(bt >= BTYPE_CNT) {
+		return NULL;
+	}
+	Spec *specptr = specpool.p[0];
+	return &specptr[2 * bt + !!lr];
 }
 
 Spec *find_type_of_struct_member(Spec *type, char *vn, off_t *off){
 	return NULL;
+}
+
+static int node2ctype[] = {
+	[VOID] = MAKE_DWORD2(false, VOID),
+	[BOOL] = MAKE_DWORD2(false, BOOL),
+	[CHAR] = MAKE_DWORD2(true, CombineTypeChar),
+	[SHORT] = MAKE_DWORD2(true, CombineTypeShort),
+	[INT] = MAKE_DWORD2(true, CombineTypeInt),
+	[LONG] = MAKE_DWORD2(true, CombineTypeLong),
+	[SIGNED] = MAKE_DWORD2(true, CombineTypeSigned),
+	[UNSIGNED] = MAKE_DWORD2(true, CombineTypeUnsigned),
+	[FLOAT] = MAKE_DWORD2(false, FLOAT),
+	[DOUBLE] = MAKE_DWORD2(true, CombineTypeDouble),
+	[INT8T] = MAKE_DWORD2(false, INT8T),
+	[UINT8T] = MAKE_DWORD2(false, UINT8T),
+	[INT16T] = MAKE_DWORD2(false, INT16T),
+	[UINT16T] = MAKE_DWORD2(false, UINT16T),
+	[INT32T] = MAKE_DWORD2(false, INT32T),
+	[UINT32T] = MAKE_DWORD2(false, UINT32T),
+	[INT64T] = MAKE_DWORD2(false, INT64T),
+	[UINT64T] = MAKE_DWORD2(false, UINT64T),
+	[FLOAT32T] = MAKE_DWORD2(false, FLOAT32T),
+	[FLOAT64T] = MAKE_DWORD2(false, FLOAT64T),
+	[SIZET] = MAKE_DWORD2(false, SIZET),
+	[UINTPTRT] = MAKE_DWORD2(false, UINTPTRT),
+	[OFFT] = MAKE_DWORD2(false, OFFT),
+};
+
+int convert_ctype2type(int ct) {
+	switch(ct) {
+		case CombineTypeSigned|CombineTypeLong:
+			return SpecTypeInt32;
+		case CombineTypeUnsigned|CombineTypeLong:
+			return SpecTypeUint32;
+		case CombineTypeSigned|CombineTypeLongLong:
+			return SpecTypeInt64;
+		case CombineTypeUnsigned|CombineTypeLongLong:
+			return SpecTypeUint64;
+		case CombineTypeSigned|CombineTypeShort:
+			return SpecTypeInt16;
+		case CombineTypeUnsigned|CombineTypeShort:
+			return SpecTypeUint16;
+		case CombineTypeSigned|CombineTypeChar:
+			return SpecTypeInt8;
+		case CombineTypeUnsigned|CombineTypeChar:
+			return SpecTypeUint8;
+		case CombineTypeSigned|CombineTypeInt:
+			return SpecTypeInt32;
+		case CombineTypeUnsigned|CombineTypeInt:
+			return SpecTypeUint32;
+		case CombineTypeLongLong:
+			return SpecTypeInt64;
+		case CombineTypeLongLong|CombineTypeInt:
+			return SpecTypeInt64;
+		case CombineTypeLong|CombineTypeDouble:
+			return SpecTypeFloat64;
+	}
 }
 
 static const char *btype_format_string[] = {
@@ -37,17 +100,17 @@ static int type_relations[TYPE_CNT][TYPE_CNT];
 void construct_type_relations() {
 	for(int i = SpecTypeInt8; i < SpecTypeFloat64; i++) {
 		for(int j = SpecTypeInt8; j < SpecTypeFloat64; j++) {
-			type_relations[i][j] = CAssign | CAddSub | CMultDiv | CAndOr | CRelop | CLogic;
+			type_relations[i][j] = CAssign | CAddSub | CMultDiv | CBitop | CRelop | CLogic;
 			if(i <= j) type_relations[i][j] |=CLessAccurate;
 			if(i >= j) type_relations[i][j] |=CMoreAccurate;
 		}
 	}
 	for(int i = SpecTypeInt8; i < SpecTypeFloat64; i++) {
 		//float and/or bit
-		type_relations[i][SpecTypeFloat32] &= ~CAndOr;
-		type_relations[SpecTypeFloat32][i] &= ~CAndOr;
-		type_relations[i][SpecTypeFloat64] &= ~CAndOr;
-		type_relations[SpecTypeFloat64][i] &= ~CAndOr;
+		type_relations[i][SpecTypeFloat32] &= ~CBitop;
+		type_relations[SpecTypeFloat32][i] &= ~CBitop;
+		type_relations[i][SpecTypeFloat64] &= ~CBitop;
+		type_relations[SpecTypeFloat64][i] &= ~CBitop;
 	}
 	for(int i = SpecTypeInt8; i < SpecTypeUint64; i++) {
 		//ptr op bit
@@ -58,6 +121,13 @@ void construct_type_relations() {
 		type_relations[i][SpecTypeString] |= CAssign | CAddSub | CRelop | CLogic;
 		type_relations[SpecTypeString][i] |= CAssign | CAddSub | CRelop | CLogic;
 	}
+}
+
+int get_type_relation(int btA, int btB) {
+	if(btA < TYPE_CNT && btB < TYPE_CNT) {
+		return type_relations[btA][btB];
+	}
+	return 0;
 }
 
 /*
