@@ -55,7 +55,7 @@ void parse_arguments(int argc, char *argv[]) {
 			if(fp != NULL) {
 				is_file=true;
 			}else{
-				fp = stdin;
+				loge("FAIL to open file '%s'\n", argv[i]);
 			}
 		}
 	}

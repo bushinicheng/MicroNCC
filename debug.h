@@ -30,7 +30,7 @@ char *sformat(const char *format, ...);
 
 #define loge(...) do {\
 	yylog(stderr, "\033[" YYLOG_STYLE_BOLD ";" YYLOG_COLOR_RED "m", __VA_ARGS__); \
-	wt_assert(0); \
+	exit(-1); \
 } while(0)
 
 #define logw(...) do { \

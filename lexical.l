@@ -53,7 +53,6 @@ oct              0[1-7][0-7]*
 invalidnum       \.*[0-9][_a-zA-Z0-9\.]*
 string           (\"([^\"]*(\\\")?)*\"[ \t\r\n]*)+
 literal          (\'([^\']*(\\\')?)*\'[ \t\r\n]*)+
-char             (\'([^\']*(\\\')?)*\'[ \t\r\n]*)+
 blank            [ \t\r]+
 newline          \n+
 id               [_a-zA-Z][_a-zA-Z0-9]*
@@ -113,29 +112,28 @@ invalidcomment   \/\*([^\*]|\*[^\/])*$
 ":"                 {tokout("COLON");	return symbol(COLON);}
 ";"                 {tokout("SEMI");	return symbol(SEMI);}
 "..."               {tokout("ELLIPSIS");return symbol(ELLIPSIS);}
-{char}              {tokout("CHAR");	return symbol(CHAR);}
 
-void                {tokout("VOID");	return type(SpecTypeVoid, VOID);}
-bool                {tokout("BOOL");	return type(SpecTypeUint8, BOOL);}
-char                {tokout("CHAR");	return type(SpecTypeInt8, CHAR);}
-short               {tokout("SHORT");	return type(SpecTypeInt16, SHORT);}
-int                 {tokout("INT");		return type(SpecTypeInt32, INT);}
-long                {tokout("LONG");	return type(SpecTypeInt32, LONG);}
-signed              {tokout("SIGNED");	return type(SpecTypeInt32, SIGNED);}
-unsigned            {tokout("UNSIGNED");return type(SpecTypeUint32, UNSIGNED);}
-float               {tokout("FLOAT");	return type(SpecTypeFloat32, FLOAT);}
-double              {tokout("DOUBLE");	return type(SpecTypeFloat64, DOUBLE);}
-int8_t              {tokout("INT8T");	return type(SpecTypeInt8, INT8T);}
-int16_t             {tokout("INT16T");	return type(SpecTypeInt16, INT16T);}
-int32_t             {tokout("INT32T");	return type(SpecTypeInt32, INT32T);}
-int64_t             {tokout("INT64T");	return type(SpecTypeInt64, INT64T);}
-uint8_t             {tokout("UINT8T");	return type(SpecTypeUint8, UINT8T);}
-uint16_t            {tokout("UINT16T");	return type(SpecTypeUint16, UINT16T);}
-uint32_t            {tokout("UINT32T");	return type(SpecTypeUint32, UINT32T);}
-uint64_t            {tokout("UINT64T");	return type(SpecTypeUint64, UINT64T);}
-size_t              {tokout("SIZET");	return type(SpecTypeUint32, SIZET);}
-uintptr_t           {tokout("UINTPTRT");return type(SpecTypeUint32, UINTPTRT);}
-off_t               {tokout("OFFT");	return type(SpecTypeUint32, OFFT);}
+void                {tokout("VOID");	return type(SpecTypeVoid, MAKE_DWORD2(VOID, false));}
+bool                {tokout("BOOL");	return type(SpecTypeUint8, MAKE_DWORD2(BOOL, false));}
+char                {tokout("CHAR");	return type(SpecTypeInt8, MAKE_DWORD2(CombineTypeChar, true));}
+short               {tokout("SHORT");	return type(SpecTypeInt16, MAKE_DWORD2(CombineTypeShort, true));}
+int                 {tokout("INT");		return type(SpecTypeInt32, MAKE_DWORD2(CombineTypeInt, true));}
+long                {tokout("LONG");	return type(SpecTypeInt32, MAKE_DWORD2(CombineTypeLong, true));}
+signed              {tokout("SIGNED");	return type(SpecTypeInt32, MAKE_DWORD2(CombineTypeSigned, true));}
+unsigned            {tokout("UNSIGNED");return type(SpecTypeUint32, MAKE_DWORD2(CombineTypeUnsigned, true));}
+float               {tokout("FLOAT");	return type(SpecTypeFloat32, MAKE_DWORD2(FLOAT, false));}
+double              {tokout("DOUBLE");	return type(SpecTypeFloat64, MAKE_DWORD2(CombineTypeDouble, true));}
+int8_t              {tokout("INT8T");	return type(SpecTypeInt8, MAKE_DWORD2(INT8T, false));}
+int16_t             {tokout("INT16T");	return type(SpecTypeInt16, MAKE_DWORD2(INT16T, false));}
+int32_t             {tokout("INT32T");	return type(SpecTypeInt32, MAKE_DWORD2(INT32T, false));}
+int64_t             {tokout("INT64T");	return type(SpecTypeInt64, MAKE_DWORD2(INT64T, false));}
+uint8_t             {tokout("UINT8T");	return type(SpecTypeUint8, MAKE_DWORD2(UINT8T, false));}
+uint16_t            {tokout("UINT16T");	return type(SpecTypeUint16, MAKE_DWORD2(UINT16T, false));}
+uint32_t            {tokout("UINT32T");	return type(SpecTypeUint32, MAKE_DWORD2(UINT32T, false));}
+uint64_t            {tokout("UINT64T");	return type(SpecTypeUint64, MAKE_DWORD2(UINT64T, false));}
+size_t              {tokout("SIZET");	return type(SpecTypeUint32, MAKE_DWORD2(SIZET, false));}
+uintptr_t           {tokout("UINTPTRT");return type(SpecTypeUint32, MAKE_DWORD2(UINTPTRT, false));}
+off_t               {tokout("OFFT");	return type(SpecTypeUint32, MAKE_DWORD2(OFFT, false));}
 
 enum                {tokout("ENUM");	return symbol(ENUM);}
 union               {tokout("UNION");	return symbol(UNION);}
@@ -156,14 +154,14 @@ break               {tokout("BREAK");	return symbol(BREAK);}
 default             {tokout("DEFAULT");	return symbol(DEFAULT);}
 goto                {tokout("GOTO");	return symbol(GOTO);}
 
-typedef             {tokout("TYPEDEF");	return qulfr(TYPEDEF);}
-extern              {tokout("EXTERN");	return qulfr(EXTERN);}
-static              {tokout("STATIC");	return qulfr(STATIC);}
-auto                {tokout("AUTO");	return qulfr(AUTO);}
-register            {tokout("REGISTER");return qulfr(REGISTER);}
+typedef             {tokout("TYPEDEF");	return qulfr(QulfrTypedef);}
+extern              {tokout("EXTERN");	return qulfr(QulfrExtern);}
+static              {tokout("STATIC");	return qulfr(QulfrStatic);}
+auto                {tokout("AUTO");	return qulfr(QulfrAuto);}
+register            {tokout("REGISTER");return qulfr(QulfrRegister);}
 
-const               {tokout("CONST");	return symbol(CONST);}
-volatile            {tokout("VOLATILE");return symbol(VOLATILE);}
+const               {tokout("CONST");	return qulfr(QulfrConst);}
+volatile            {tokout("VOLATILE");return qulfr(QulfrVolatile);}
 
 {int}               {tokout("NUM:i");	return num('i');}
 {hex}               {tokout("NUM:x");	return num('x');}
@@ -235,11 +233,11 @@ static int symbol(int syntaxval)
 	return syntaxval;
 }
 
-static int type(int spectype, int rawtoken)
+static int type(int spectype, int tokeninfo)
 {
 	Node *pnd = new_node();
 	pnd->token = TYPE;
-	pnd->reduce_rule = rawtoken;
+	pnd->cv.st = tokeninfo;
 	pnd->dt = get_spec_by_btype(spectype, SpecLvalue);
 	pnd->lineno = yylineno;
 	pnd->column = yycolumn;
@@ -263,21 +261,21 @@ static int num(int numtype)
 	{
 	case 'i':
 		pnd->cv.st = SpecTypeInt32;
-		pnd->cv.sv.i = next_number(&pstr, 10);
+		pnd->cv.i = next_number(&pstr, 10);
 		break;
 	case 'o':
 		pnd->cv.st = SpecTypeInt32;
 		pstr++;
-		pnd->cv.sv.i = next_number(&pstr, 8);
+		pnd->cv.i = next_number(&pstr, 8);
 		break;
 	case 'x':
 		pnd->cv.st = SpecTypeInt32;
 		pstr+=2;
-		pnd->cv.sv.i = next_number(&pstr, 16);
+		pnd->cv.i = next_number(&pstr, 16);
 		break;
 	case 'f':
 		pnd->cv.st = SpecTypeFloat32;
-		pnd->cv.sv.f = atof(pstr);
+		pnd->cv.f = atof(pstr);
 		break;
 	}
 
@@ -297,17 +295,17 @@ static int reg(int syntaxval)
 	switch(syntaxval)
 	{
 	case ID:
-		pnd->cv.sv.st = register_id(yytext);
+		pnd->cv.str = register_id(yytext);
 		break;
 	case STRING:
 		pnd->dt->leftvalue = SpecLvalue;
 		pnd->cv.st = 's';
-		pnd->cv.sv.st = register_string(yytext);
+		pnd->cv.str = register_string(yytext);
 		break;
 	case LITERAL:
 		pnd->dt->leftvalue = SpecRvalue;
 		pnd->cv.st = SpecTypeInt8;
-		pnd->cv.sv._8 = register_literal(yytext);
+		pnd->cv._8 = register_literal(yytext);
 		break;
 	}
 

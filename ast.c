@@ -180,20 +180,20 @@ void print_ast(Node *root)
 
 	/* print semanval or lexval */
 	if(root->token == ID)
-		printf("%s:%s", str_lexval[root->token], root->cv.sv.st);
+		printf("%s:%s", str_lexval[root->token], root->cv.str);
 	else if(root->token == NUM) {
 		switch(root->cv.st) {
 		case 'i':
-			printf("NUM:%d", root->cv.sv.i);
+			printf("NUM:%d", root->cv.i);
 			break;
 		case 'o':
-			printf("NUM:0%o", root->cv.sv.i);
+			printf("NUM:0%o", root->cv.i);
 			break;
 		case 'x':
-			printf("NUM:0x%x", root->cv.sv.i);
+			printf("NUM:0x%x", root->cv.i);
 			break;
 		case 'f':
-			printf("NUM:%f", root->cv.sv.f);
+			printf("NUM:%f", root->cv.f);
 			break;
 		default:
 			printf("NUM:0");

@@ -22,44 +22,44 @@ CMM=test/more.c
 all:$(COMPILER)
 
 $(LCFILE):$(LFILE)
-	$(LEX) -o $(LCFILE) $(LFILE)
+	@$(LEX) -o $(LCFILE) $(LFILE)
 
 $(YHFILE) $(YCFILE):$(YFILE)
-	$(YACC) -v $(YFILE) --defines=$(YHFILE) -o $(YCFILE)
+	@$(YACC) -v $(YFILE) --defines=$(YHFILE) -o $(YCFILE)
 
 $(COMPILER):$(YFILE) $(LFILE) $(CFILES) $(HFILES)
-	mkdir -p $(OBJ_DIR)
-	$(CC) $(CFLAGS) $(CFILES) -o $(COMPILER) -lfl
+	@mkdir -p $(OBJ_DIR)
+	@$(CC) $(CFLAGS) $(CFILES) -o $(COMPILER) -lfl
 
 ast.h:syntax.y ast.c
-	python genast.py > ast.h
+	@python genast.py > ast.h
 
 .PHONY:run run-ast run-src run-rdu test test-lex clean count
 
 run:$(COMPILER)
-	./$(COMPILER) $(CMM)
+	@./$(COMPILER) $(CMM)
 
 run-ast:$(COMPILER)
-	./$(COMPILER) --print-ast $(CMM)
+	@./$(COMPILER) --print-ast $(CMM)
 
 run-src:$(COMPILER)
-	./$(COMPILER) --print-src $(CMM)
+	@./$(COMPILER) --print-src $(CMM)
 
 run-rdu:$(COMPILER)
-	./$(COMPILER) --print-reduce $(CMM)
+	@./$(COMPILER) --print-reduce $(CMM)
 
 test:$(COMPILER)
-	bash test.sh $(COMPILER)
+	@bash test.sh $(COMPILER)
 
 test-lex:
-	mkdir -p $(OBJ_DIR)
-	$(LEX) -o $(LFILE:.l=.c) $(LFILE)
-	$(CC) $(LFILE:.l=.c) component.c -o $(COMPILER) -lfl
-	bash test.sh $(COMPILER)
+	@mkdir -p $(OBJ_DIR)
+	@$(LEX) -o $(LFILE:.l=.c) $(LFILE)
+	@$(CC) $(LFILE:.l=.c) component.c -o $(COMPILER) -lfl
+	@bash test.sh $(COMPILER)
 
 clean:
-	rm -rf $(COMPILER)
-	rm -rf $(OBJ_DIR)
+	@rm -rf $(COMPILER)
+	@rm -rf $(OBJ_DIR)
 
 count:
 	@printf "total lines: "

@@ -62,8 +62,8 @@ enum {
 	CombineTypeInt = 16,
 	CombineTypeLong = 32,
 	CombineTypeLongLong = 64,
-	CombineTypeFloat = 128,
-	CombineTypeDouble = 256,
+	CombineTypeDouble = 128,
+	CombineInvalid = 256,
 };
 
 enum {
@@ -102,8 +102,9 @@ typedef struct tagSpecConstValue{
 		uint8_t _u8;uint16_t _u16;uint32_t _u32;uint64_t _u64;
 		float _f32; double _f64;
 		int i;float f;double llf;void *p;
-		char* st;// the address of string or id
-	} sv;//supval
+		char* str;// the address of string or id
+		int ex;
+	};//supval
 } SpecConstValue;
 
 typedef struct tagSpec {

@@ -23,33 +23,9 @@ Spec *find_type_of_struct_member(Spec *type, char *vn, off_t *off){
 	return NULL;
 }
 
-static int node2ctype[] = {
-	[VOID] = MAKE_DWORD2(false, VOID),
-	[BOOL] = MAKE_DWORD2(false, BOOL),
-	[CHAR] = MAKE_DWORD2(true, CombineTypeChar),
-	[SHORT] = MAKE_DWORD2(true, CombineTypeShort),
-	[INT] = MAKE_DWORD2(true, CombineTypeInt),
-	[LONG] = MAKE_DWORD2(true, CombineTypeLong),
-	[SIGNED] = MAKE_DWORD2(true, CombineTypeSigned),
-	[UNSIGNED] = MAKE_DWORD2(true, CombineTypeUnsigned),
-	[FLOAT] = MAKE_DWORD2(false, FLOAT),
-	[DOUBLE] = MAKE_DWORD2(true, CombineTypeDouble),
-	[INT8T] = MAKE_DWORD2(false, INT8T),
-	[UINT8T] = MAKE_DWORD2(false, UINT8T),
-	[INT16T] = MAKE_DWORD2(false, INT16T),
-	[UINT16T] = MAKE_DWORD2(false, UINT16T),
-	[INT32T] = MAKE_DWORD2(false, INT32T),
-	[UINT32T] = MAKE_DWORD2(false, UINT32T),
-	[INT64T] = MAKE_DWORD2(false, INT64T),
-	[UINT64T] = MAKE_DWORD2(false, UINT64T),
-	[FLOAT32T] = MAKE_DWORD2(false, FLOAT32T),
-	[FLOAT64T] = MAKE_DWORD2(false, FLOAT64T),
-	[SIZET] = MAKE_DWORD2(false, SIZET),
-	[UINTPTRT] = MAKE_DWORD2(false, UINTPTRT),
-	[OFFT] = MAKE_DWORD2(false, OFFT),
-};
-
 int convert_ctype2type(int ct) {
+	if(ct & CombineTypeLongLong)
+		ct &= ~CombineTypeLong;
 	switch(ct) {
 		case CombineTypeSigned|CombineTypeLong:
 			return SpecTypeInt32;
@@ -79,6 +55,7 @@ int convert_ctype2type(int ct) {
 			return SpecTypeFloat64;
 	}
 }
+
 
 static const char *btype_format_string[] = {
 	[SpecTypeInt8] = "char",

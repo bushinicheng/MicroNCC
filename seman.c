@@ -51,14 +51,41 @@ void analyse_decln_is_declnspec(Node *root) {
 }
 
 void analyse_typesepc_is_type(Node *root) {
-	//FIXME
 	Node *typenode = get_child_node_w(root, TYPE);
 	root->dt = typenode->dt;
-	root->cv.st |= 1;
+	root->cv.st = typenode->cv.st;
+}
+
+void analyse_declnspec_is_typespec(Node *root) {
+	Node *typespec = get_child_node_w(root, TypeSpec);
+	root->cv.st = typespec->cv.st;
+}
+
+void analyse_declnspec_is_typespec_declnspec(Node *root) {
+	Node *typespec = get_child_node_w(root, TypeSpec);
+	Node *declnspec = get_child_node_w(root, DeclnSpec);
+	if((typespec->cv.st & 1) && (declnspec->cv.st & 1)) {
+		root->cv.st = typespec->cv.st | declnspec->cv.st;
+	}else{
+		root->cv.st |= CombineInvalid;
+	}
+}
+
+void analyse_declnspec_is_typequlfr(Node *root) {
+	Node *typequlfr = get_child_node_w(root, TypeQulfr);
+	root->cv.ex = typequlfr->cv.ex;
+	root->cv.st = 1;
+}
+
+void analyse_declnspec_is_typequlfr_declnspec(Node *root) {
+	Node *typequlfr = get_child_node_w(root, TypeQulfr);
+	Node *declnspec = get_child_node_w(root, DeclnSpec);
+	root->cv.ex = typequlfr->cv.ex | declnspec->cv.ex;
+	root->cv.st = declnspec->cv.st;
 }
 
 void analyse_exp_is_id(Node *root) {
-	char *vn = get_child_node_w(root, ID)->cv.sv.st;
+	char *vn = get_child_node_w(root, ID)->cv.str;
 	VarElement *ve = find_variable(vn);
 	if(!ve) {
 		yyerrtype(ErrorUndeclaredIdentifier, root->lineno, vn);
@@ -73,39 +100,39 @@ void analyse_exp_is_num(Node *root) {
 	Node *numnode = get_child_node_w(root, NUM);
 	root->dt = get_spec_by_btype(SpecTypeConst, SpecRvalue);
 	root->cv.st = SpecTypeInt32;
-	root->cv.sv._32 = numnode->cv.sv.i;
+	root->cv._32 = numnode->cv.i;
 }
 
 void analyse_exp_is_nil(Node *root) {
 	root->dt = get_spec_by_btype(SpecTypeConst, SpecRvalue);
 	root->cv.st = SpecTypeInt32;
-	root->cv.sv._32 = 0;
+	root->cv._32 = 0;
 }
 
 void analyse_exp_is_false(Node *root) {
 	root->dt = get_spec_by_btype(SpecTypeConst, SpecRvalue);
 	root->cv.st = SpecTypeInt32;
-	root->cv.sv._32 = 0;
+	root->cv._32 = 0;
 }
 
 void analyse_exp_is_true(Node *root) {
 	root->dt = get_spec_by_btype(SpecTypeConst, SpecRvalue);
 	root->cv.st = SpecTypeInt32;
-	root->cv.sv._32 = 1;
+	root->cv._32 = 1;
 }
 
 void analyse_exp_is_string(Node *root) {
 	//FIXME:
 	Node *strnode = get_child_node_w(root, STRING);
 	root->dt = get_spec_by_btype(SpecTypeString, SpecLvalue);
-	root->cv.sv.st = strnode->cv.sv.st;
+	root->cv.str = strnode->cv.str;
 }
 
 void analyse_exp_is_literal(Node *root) {
 	Node *charnode = get_child_node_w(root, LITERAL);
 	root->dt = get_spec_by_btype(SpecTypeConst, SpecRvalue);
 	root->cv.st = SpecTypeInt8;
-	root->cv.sv._8 = charnode->cv.sv._8;
+	root->cv._8 = charnode->cv._8;
 }
 
 void analyse_exp_is_lp_exp_rp(Node *root) {
