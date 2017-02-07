@@ -69,6 +69,7 @@ enum {
 	PrVariableId,
 	PrConstValue,
 	PrRunTimeConst,
+	PrHalfConst,
 };
 
 enum {
@@ -104,7 +105,7 @@ typedef struct ExpConstPart{
 	//        string == char *[no const]
 	int t; //sometimes store extra information of tree node
 			//for example, `Const` or `Extern` or ... in `Qulfr` node 
-			//if node->dt != NULL, t donate the const attribute
+			//if node->dt != NULL, t donates the const attribute
 	union {
 		int8_t _8;int16_t _16;int32_t _32;int64_t _64;
 		uint8_t _u8;uint16_t _u16;uint32_t _u32;uint64_t _u64;
@@ -170,13 +171,11 @@ typedef struct Node {
 	int token;//syntax value like `Program` `TYPE` `INT`
 	int reduce_rule;//semantic reduce rule like `AST_Exp_is_ID`
 
-	//ID型常量，非ID型常量，ID型变量，ID型半常量
-	//const申明的非常变量
 	//dt + vi for id
 	//dt + vi + cv for exp
 	//for ID node, dt donates id's type, if id is constant, cv.t will indicate this
 	//for Exp node, the same as above
-	int lrv;//left or right value
+	int lrv;//temporary strategy, left or right value
 	Spec *dt;//data type, dt->bt reveal which value will be use in cv
 	VarInfo *vi;//for register allocation
 	ExpConstPart cv;//constant value

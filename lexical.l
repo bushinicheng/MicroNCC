@@ -104,7 +104,7 @@ invalidcomment   \/\*([^\*]|\*[^\/])*$
 "["                 {tokout("LB");		return symbol(LB);}
 "]"                 {tokout("RB");		return symbol(RB);}
 "{"                 {tokout("LC");increase_actionlevel();return symbol(LC);}
-"}"                 {tokout("RC");decrease_actionlevel();return symbol(RC);}
+"}"                 {tokout("RC");return symbol(RC);}
 "."                 {tokout("DOT");		return symbol(DOT);}
 "->"                {tokout("PT");		return symbol(PTR);}
 ","                 {tokout("COMMA");	return symbol(COMMA);}

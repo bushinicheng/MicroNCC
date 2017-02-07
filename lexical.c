@@ -1251,7 +1251,7 @@ YY_RULE_SETUP
 case 40:
 YY_RULE_SETUP
 #line 107 "lexical.l"
-{tokout("RC");decrease_actionlevel();return symbol(RC);}
+{tokout("RC");return symbol(RC);}
 	YY_BREAK
 case 41:
 YY_RULE_SETUP

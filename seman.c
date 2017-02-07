@@ -13,9 +13,8 @@ int last_syntax_error;
 typedef struct IdentInfo {
 	char *id;
 	Spec *type;//type system
-	Node *node;//position
 	VarInfo *vi;//vi->qulfr & QulfrConst == true for constant
-	ExpConstPart cv;
+	ExpConstPart *cv;
 } IdentInfo;
 
 static int actionlevel = 0;
@@ -30,16 +29,16 @@ void push_variable(char *vn, Spec *type, Node *node) {
 	HashTable *ht = asv.p;
 	ve->id = vn;
 	ve->type = type;
-	ve->node = node;
 	ve->vi = vi;
+	ve->cv = &(node->cv);
 	node->vi = vi;
-	hash_push(&ht[actionlevel], vn, strlen(vn), ve);
+	hash_push(&ht[actionlevel - 1], vn, strlen(vn), ve);
 }
 
 void increase_actionlevel() {
 	actionlevel ++;
 	HashTable *ht = vector_new(&asv);
-	memset(ht, 0 ,sizeof(HashTable));
+	memset(ht, 0, sizeof(HashTable));
 }
 
 void decrease_actionlevel() {
@@ -50,7 +49,7 @@ void decrease_actionlevel() {
 IdentInfo *find_variable(char *vn) {
 	HashTable *ht = asv.p;
 	for(int i = actionlevel - 1; i >= 0; i--) {
-		IdentInfo *ve = hash_get(&ht[actionlevel], vn, strlen(vn));
+		IdentInfo *ve = hash_get(&ht[i], vn, strlen(vn));
 		if(ve) return ve;
 	}
 	return NULL;
@@ -68,12 +67,40 @@ void analyse_typesepc_is_type(Node *root) {
 	root->cv.t = typenode->cv.t;
 }
 
+int assign_value_of_enumorlist(Node *enumorlist, int st) {
+	//first child: enumorlist
+	if(enumorlist->reduce_rule == AST_EnumorList_is_EnumorList_COMMA_Enumor){
+		Node *subenumorlist = get_child_node_w(enumorlist, EnumorList);
+		st = assign_value_of_enumorlist(subenumorlist, st);
+	}
+	//next child: enumor
+	Node *enumor = get_child_node_w(enumorlist, Enumor);
+	if(enumor->reduce_rule == AST_Enumor_is_ID) {
+		enumor->cv._32 = st;
+		return st + 1;
+	}else{
+		Node *exp = get_child_node_w(enumor, Exp);
+		st = exp->cv._32;
+		enumor->cv._32 = st;
+		return st + 1;
+	}
+}
+
+void analyse_enumspec(Node *root) {
+	root->dt = get_spec_by_btype(SpecTypeInt32);
+	if(root->reduce_rule == AST_EnumSpec_is_ENUM_ID) {
+		return;
+	}
+	int enumor_start = 0;
+	Node *enumorlist = get_child_node_w(root, EnumorList);
+	assign_value_of_enumorlist(enumorlist, 0);
+}
+
 void analyse_enumor_is_id(Node *root) {
 	Node *idnode = get_child_node_w(root, ID);
 	char *vn = idnode->cv.str;
-	root->cv.t = false;
-	push_variable(vn, NULL, root);
-	root->vi->qulfr = QulfrConst;
+	Spec *type = get_spec_by_btype(SpecTypeInt32);
+	push_variable(vn, type, root);
 }
 
 void analyse_enumor_is_id_assign_exp(Node *root) {
@@ -81,19 +108,18 @@ void analyse_enumor_is_id_assign_exp(Node *root) {
 	Node *idnode = get_child_node_w(root, ID);
 	char *vn = idnode->cv.str;
 	int rel = get_type_relation(exp->dt->bt, exp->dt->bt);
+	Spec *type = get_spec_by_btype(SpecTypeInt32);
 	//FIXME
-	if(exp->dt->bt == SpecTypeInt8) {
+	if(exp->cv.t == PrConstValue) {
 		if(rel & CBitop) {
 			//valid case, register constant
-			root->cv.t = true;
-			root->cv._32 = exp->cv._32;
-			push_variable(vn, exp->dt, root);
-			root->vi->qulfr = QulfrConst;
+			root->cv = exp->cv;
+			push_variable(vn, type, root);
 		}else{
-			//TODO:error
+			//TODO:not a integer constant
 		}
 	}else{
-		//TODO:error
+		//TODO:not a constant
 	}
 }
 
@@ -236,7 +262,14 @@ void analyse_exp_is_relop(Node *root) {
 }
 
 static SemanFunc analyse_function[] = {
+	[AST_EnumSpec_is_ENUM_LC_EnumorList_RC] = analyse_enumspec,
+	[AST_EnumSpec_is_ENUM_LC_EnumorList_COMMA_RC] = analyse_enumspec,
+	[AST_EnumSpec_is_ENUM_ID_LC_EnumorList_RC] = analyse_enumspec,
+	[AST_EnumSpec_is_ENUM_ID_LC_EnumorList_COMMA_RC] = analyse_enumspec,
+	[AST_Enumor_is_ID] = analyse_enumor_is_id,
+	[AST_Enumor_is_ID_ASSIGNOP_Exp] = analyse_enumor_is_id_assign_exp,
 	[AST_Exp_is_ID] = analyse_exp_is_id,
+	[AST_Exp_is_NUM] = analyse_exp_is_num,
 	//[AST_Exp_is_Exp_RELOP_Exp] = analyse_exp_is_relop,
 };
 
@@ -265,4 +298,5 @@ int init_seman() {
 	mempool_init(&vipool, sizeof(VarInfo));
 	mempool_init(&idinfopool, sizeof(IdentInfo));
 	vector_init(&asv, sizeof(HashTable));
+	increase_actionlevel();
 }

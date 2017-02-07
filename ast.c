@@ -10,6 +10,8 @@ Node *astroot = NULL;
 
 extern bool is_print_reduce_step;
 
+void decrease_actionlevel();
+
 void __attribute__((noinline)) make_node(Node *root, int reduce_rule, int token, ...)
 {
 	va_list vlist;
@@ -93,6 +95,8 @@ Node* __attribute__((noinline)) build_subast(int nodetype, YYLTYPE *yyinfo, ...)
 	parent_node->child = first_child;
 	va_end(vlist);
 	syntax_analysis(parent_node);
+	if(get_child_node(parent_node, RC))
+		decrease_actionlevel();
 	return parent_node;
 }
 
