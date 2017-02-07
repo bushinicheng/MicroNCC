@@ -36,5 +36,7 @@ void *require_memory(size_t size);
 char *strmul(char *str, int dup);
 char *strjoin(char **strlist, int size, char *delim);
 int strcnt(const char *strin, char ch);
+void push_bpool_state(off_t op);
+void pop_bpool_state();
 
 #endif

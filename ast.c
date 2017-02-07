@@ -18,7 +18,7 @@ void __attribute__((noinline)) make_node(Node *root, int reduce_rule, int token,
 	root->reduce_rule = reduce_rule;
 	root->token = token;
 
-	Node *first_child = va_arg(vlist, PNode);
+	Node *first_child = va_arg(vlist, Node*);
 	Node *prev_child = first_child;
 
 	if(token == AST_NONTERMINALBEGIN) {
@@ -30,7 +30,7 @@ void __attribute__((noinline)) make_node(Node *root, int reduce_rule, int token,
 	/*debug info*/
 	for(int i = 1; i < syntax_rules[reduce_rule].nr_child; i++)
 	{
-		Node *post_child = va_arg(vlist, PNode);
+		Node *post_child = va_arg(vlist, Node*);
 		prev_child->sibling = post_child;
 		prev_child->parent = root;
 		prev_child = post_child;
@@ -68,7 +68,7 @@ Node* __attribute__((noinline)) build_subast(int nodetype, YYLTYPE *yyinfo, ...)
 	va_list vlist;
 	va_start(vlist, yyinfo);
 	Node *parent_node = new_node();
-	Node *first_child = va_arg(vlist, PNode);
+	Node *first_child = va_arg(vlist, Node*);
 	Node *prev_child = first_child;
 
 	/*debug info*/
@@ -78,7 +78,7 @@ Node* __attribute__((noinline)) build_subast(int nodetype, YYLTYPE *yyinfo, ...)
 	parent_node->column = yyinfo->first_column;
 
 	for(int i = 1; i < syntax_rules[nodetype].nr_child; i++) {
-		Node *post_child = va_arg(vlist, PNode);
+		Node *post_child = va_arg(vlist, Node*);
 		prev_child->sibling = post_child;
 		prev_child->parent = parent_node;
 		prev_child = post_child;
@@ -182,26 +182,28 @@ void print_ast(Node *root)
 	if(root->token == ID)
 		printf("%s:%s", str_lexval[root->token], root->cv.str);
 	else if(root->token == NUM) {
-		switch(root->cv.st) {
-		case 'i':
-			printf("NUM:%d", root->cv.i);
-			break;
-		case 'o':
-			printf("NUM:0%o", root->cv.i);
-			break;
-		case 'x':
-			printf("NUM:0x%x", root->cv.i);
-			break;
-		case 'f':
-			printf("NUM:%f", root->cv.f);
-			break;
-		default:
-			printf("NUM:0");
-			break;
+		switch(root->cv.t) {
+			case 'i':
+				printf("NUM:%d", root->cv.i);
+				break;
+			case 'o':
+				printf("NUM:0%o", root->cv.i);
+				break;
+			case 'x':
+				printf("NUM:0x%x", root->cv.i);
+				break;
+			case 'f':
+				printf("NUM:%f", root->cv.f);
+				break;
+			default:
+				printf("NUM:0");
+				break;
 		}
 	}
 	else if(root->token == TYPE)
 		printf("TYPE:%s", str_lexval[root->reduce_rule]);
+	else if(root->token == TypeQulfr)
+		printf("Qulfr:%s", str_lexval[root->reduce_rule]);
 	else
 		printf("%s", str_lexval[root->token]);
 #if 0

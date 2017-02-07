@@ -16,7 +16,6 @@ enum {
 	SpecTypeFloat64 = 9,
 	SpecTypeString = 10, //char *s="hello";equivalent to `char *`
 	//
-	SpecTypeConst,//not data type
 	SpecTypeVoid,//special data type
 	/*number*/
 	SpecTypePointer,//pointer type
@@ -26,8 +25,7 @@ enum {
 	SpecTypeFunc,
 	SpecTypeStruct,
 	SpecTypeUnion,
-	SpecTypeQulfr,
-	SpecTypeRen,
+	SpecTypeEnd,
 };
 
 //unary op:! ~ & ++ -- +a -a
@@ -67,36 +65,46 @@ enum {
 };
 
 enum {
+	PrConstId,
+	PrVariableId,
+	PrConstValue,
+	PrRunTimeConst,
+};
+
+enum {
 	SpecLvalue = 0,
 	SpecRvalue = 1,
 };
 
-struct tagSpec;
-
-typedef struct tagSinArg {
-	struct tagSpec *t;//type pointer
-	char *vn;//var name
-} SinArg;
-
-typedef struct tagVarAddr {
+typedef struct VarInfo {
 	//for variable
 	int bt;//0 for code area
 				  //1 for global data
 				  //2 for local stack
 				  //3 for register
+				  //4 for const
 	uintptr_t ba;//base addr
 	size_t vs;//variable size, structure need size
 	uint32_t ref;
 	off_t off;
-} VarAddr;
+	int qulfr;
+} VarInfo;
 
-typedef struct tagSpecConstValue{
+typedef struct ConstStructMemoryMap {
+	//FIXME
+	void *buf;
+	size_t bufsize;
+	off_t *offarr;
+	size_t *sizearr;
+	size_t nr_var;
+} ConstStructMemoryMap;
+
+typedef struct ExpConstPart{
 	//warning:string is not constant
 	//        string == char *[no const]
-	int st; //suptype
-			//SpecTypeInt32, ...
-			//SpecTypeUint32, ...
-			//SpecTypeFloat32, ...
+	int t; //sometimes store extra information of tree node
+			//for example, `Const` or `Extern` or ... in `Qulfr` node 
+			//if node->dt != NULL, t donate the const attribute
 	union {
 		int8_t _8;int16_t _16;int32_t _32;int64_t _64;
 		uint8_t _u8;uint16_t _u16;uint32_t _u32;uint64_t _u64;
@@ -104,39 +112,31 @@ typedef struct tagSpecConstValue{
 		int i;float f;double llf;void *p;
 		char* str;// the address of string or id
 		int ex;
-	};//supval
-} SpecConstValue;
+		ConstStructMemoryMap *mm;
+	};
+} ExpConstPart;
 
-typedef struct tagSpec {
+typedef struct Spec {
 	int bt;
 	int w;
-	int qulfr;
 	char *format_string;//format_string
-	bool leftvalue;//default to be zero
-			//0 for lval, 1 for rval
-	bool actionlevel;//default to be zero
-			//0 for global declaration, 1 for local declaration
 	union {
-		struct {
-			struct tagSpec *dt;
-		} aut;//wait for fill, auto a = 456;
-
 		//ex. int a[10][20];
 		struct {
-			struct tagSpec *dt;//dst type, such as `struct A`
+			struct Spec *dt;//dst type, such as `struct A`
 			size_t *dim;//dimension array:a[2][3][4]=>[2,3,4]
 			size_t size;//length of(dim)
 		} arr;//complex variable, array or pointer or both
 
 		//ex. int ***p = NULL; high level pointer is meaningless
 		struct {
-			struct tagSpec *dt;//actual spec,such as `struct A`
+			struct Spec *dt;//actual spec,such as `struct A`
 			int pl;//pointer level
 		} ptr;//complex variable, array or pointer or both
 
 		struct {
-			struct tagSpec *ret;
-			SinArg *argv;
+			struct Spec *ret;
+			struct Spec **argv;
 			size_t argc;
 		} func;//func type
 
@@ -145,14 +145,14 @@ typedef struct tagSpec {
 			struct {
 				char *vn;//var name
 				off_t off;//offset of current var in struct
-				struct tagSpec *dt;
+				struct Spec *dt;
 			} *argv;
 			size_t size;
 		} struc;//for structure
 
 		//ex. int **a[10][20]; type(a) is complex
 		struct {
-			struct tagSpec *spec;//actual spec,such as `struct A`
+			struct Spec *spec;//actual spec,such as `struct A`
 			size_t *dim;//dimension array:a[2][3][4]=>[2,3,4]
 			size_t size;//length of(dim)
 			int pl;//pointer level
@@ -161,45 +161,35 @@ typedef struct tagSpec {
 	};
 } Spec;
 
-typedef struct tagNode {
-	struct tagNode *sibling;
-	struct tagNode *child;
-	struct tagNode *parent;//for reverse-travel
+typedef struct Node {
+	struct Node *sibling;
+	struct Node *child;
+	struct Node *parent;//for reverse-travel
 
 	/* semantic structure */
 	int token;//syntax value like `Program` `TYPE` `INT`
-	int reduce_rule;//semantic value like `AST_Exp_is_ID`
+	int reduce_rule;//semantic reduce rule like `AST_Exp_is_ID`
 
-	/*id type*/
-	Spec *dt;//data type
-	VarAddr *va;
-	SpecConstValue cv;//constant value
+	//ID型常量，非ID型常量，ID型变量，ID型半常量
+	//const申明的非常变量
+	//dt + vi for id
+	//dt + vi + cv for exp
+	//for ID node, dt donates id's type, if id is constant, cv.t will indicate this
+	//for Exp node, the same as above
+	int lrv;//left or right value
+	Spec *dt;//data type, dt->bt reveal which value will be use in cv
+	VarInfo *vi;//for register allocation
+	ExpConstPart cv;//constant value
 
 	/* for debugging */
 	int error;
 	int lineno, column;
-} Node, *PNode;
+} Node;
 
 Spec *new_spec();
-Spec *copy_spec(Spec *s);
 char *type_format(Spec *type);
-bool compare_type(Spec *s, Spec *t);
 int get_type_relation(int btA, int btB);
-size_t get_size_of_btype(int btype);
-Spec *get_spec_by_btype(uint32_t btype, int lr);
-Spec *get_spec_of_const(Spec *const_spec);
-bool type_is_compatible(Spec *typeA, Spec *typeB);
-Spec *find_type_of_spec(struct tagNode *root);
-Spec *find_type_of_struct_member(Spec *type, char *member, off_t *off);
-Spec *register_type_function(struct tagNode *root);
-Spec *register_type_struct(struct tagNode *root);
-Spec *register_type_complex_var(Node *root, char **varname);
-Spec *register_complex_var_with_type(Spec *type, Node *root, char **varname);
-
-bool type_is_bit(Spec *type);
-bool type_is_float(Spec *type);
-bool type_is_num(Spec *type);
-Spec *type_more_accurate(Spec *typeA, Spec *typeB);
+Spec *get_spec_by_btype(uint32_t btype);
 
 typedef void (*SemanFunc)(Node *);
 void syntax_analysis(Node *root);

@@ -4,41 +4,53 @@ bool is_syntax_error = false;
 bool is_print_inter_code = false;
 int last_syntax_error;
 
-typedef struct tagVarElement {
-	char *varname;
+//如何将类型池与变量池统一
+//表现行为：
+//	通过ID，查找得到入口，进一步判断是变量还是自定义类型
+//	问题：未通过typedef的comptype如何处理
+//		struct A {};
+//		进行hash时，使用struct@A, union@A
+typedef struct IdentInfo {
+	char *id;
 	Spec *type;//type system
 	Node *node;//position
-	VarAddr *va;//variale address, maybe :(
-} VarElement;
+	VarInfo *vi;//vi->qulfr & QulfrConst == true for constant
+	ExpConstPart cv;
+} IdentInfo;
 
 static int actionlevel = 0;
-static MemPool varpool;//action scope of variable
+static MemPool vipool;
+static MemPool idinfopool;
 Vector asv;//hash table vector
 
 
-void push_variale(char *vn, Spec *type, Node *node) {
-	VarElement *ve = mempool_new(&varpool);
+void push_variable(char *vn, Spec *type, Node *node) {
+	IdentInfo *ve = mempool_new(&idinfopool);
+	VarInfo *vi = mempool_new(&vipool);
 	HashTable *ht = asv.p;
-	ve->varname = vn;
+	ve->id = vn;
 	ve->type = type;
 	ve->node = node;
+	ve->vi = vi;
+	node->vi = vi;
 	hash_push(&ht[actionlevel], vn, strlen(vn), ve);
 }
 
-void update_actionlevel() {
+void increase_actionlevel() {
 	actionlevel ++;
 	HashTable *ht = vector_new(&asv);
 	memset(ht, 0 ,sizeof(HashTable));
 }
 
 void decrease_actionlevel() {
+	actionlevel --;
 	vector_pop(&asv);
 }
 
-VarElement *find_variable(char *vn) {
+IdentInfo *find_variable(char *vn) {
 	HashTable *ht = asv.p;
 	for(int i = actionlevel - 1; i >= 0; i--) {
-		VarElement *ve = hash_get(&ht[actionlevel], vn, strlen(vn));
+		IdentInfo *ve = hash_get(&ht[actionlevel], vn, strlen(vn));
 		if(ve) return ve;
 	}
 	return NULL;
@@ -53,85 +65,122 @@ void analyse_decln_is_declnspec(Node *root) {
 void analyse_typesepc_is_type(Node *root) {
 	Node *typenode = get_child_node_w(root, TYPE);
 	root->dt = typenode->dt;
-	root->cv.st = typenode->cv.st;
+	root->cv.t = typenode->cv.t;
+}
+
+void analyse_enumor_is_id(Node *root) {
+	Node *idnode = get_child_node_w(root, ID);
+	char *vn = idnode->cv.str;
+	root->cv.t = false;
+	push_variable(vn, NULL, root);
+	root->vi->qulfr = QulfrConst;
+}
+
+void analyse_enumor_is_id_assign_exp(Node *root) {
+	Node *exp = get_child_node_w(root, Exp);
+	Node *idnode = get_child_node_w(root, ID);
+	char *vn = idnode->cv.str;
+	int rel = get_type_relation(exp->dt->bt, exp->dt->bt);
+	//FIXME
+	if(exp->dt->bt == SpecTypeInt8) {
+		if(rel & CBitop) {
+			//valid case, register constant
+			root->cv.t = true;
+			root->cv._32 = exp->cv._32;
+			push_variable(vn, exp->dt, root);
+			root->vi->qulfr = QulfrConst;
+		}else{
+			//TODO:error
+		}
+	}else{
+		//TODO:error
+	}
 }
 
 void analyse_declnspec_is_typespec(Node *root) {
 	Node *typespec = get_child_node_w(root, TypeSpec);
-	root->cv.st = typespec->cv.st;
+	root->cv.t = typespec->cv.t;
 }
 
 void analyse_declnspec_is_typespec_declnspec(Node *root) {
 	Node *typespec = get_child_node_w(root, TypeSpec);
 	Node *declnspec = get_child_node_w(root, DeclnSpec);
-	if((typespec->cv.st & 1) && (declnspec->cv.st & 1)) {
-		root->cv.st = typespec->cv.st | declnspec->cv.st;
+	if((typespec->cv.t & 1) && (declnspec->cv.t & 1)) {
+		root->cv.t = typespec->cv.t | declnspec->cv.t;
 	}else{
-		root->cv.st |= CombineInvalid;
+		root->cv.t |= CombineInvalid;
 	}
 }
 
 void analyse_declnspec_is_typequlfr(Node *root) {
 	Node *typequlfr = get_child_node_w(root, TypeQulfr);
 	root->cv.ex = typequlfr->cv.ex;
-	root->cv.st = 1;
+	root->cv.t = 1;
 }
 
 void analyse_declnspec_is_typequlfr_declnspec(Node *root) {
 	Node *typequlfr = get_child_node_w(root, TypeQulfr);
 	Node *declnspec = get_child_node_w(root, DeclnSpec);
 	root->cv.ex = typequlfr->cv.ex | declnspec->cv.ex;
-	root->cv.st = declnspec->cv.st;
+	root->cv.t = declnspec->cv.t;
 }
 
 void analyse_exp_is_id(Node *root) {
+	//FIXME
 	char *vn = get_child_node_w(root, ID)->cv.str;
-	VarElement *ve = find_variable(vn);
+	IdentInfo *ve = find_variable(vn);
 	if(!ve) {
 		yyerrtype(ErrorUndeclaredIdentifier, root->lineno, vn);
-		root->dt = get_spec_by_btype(SpecTypeInt32, SpecLvalue);
+		root->dt = get_spec_by_btype(SpecTypeInt32);
 	}else{
 		root->dt = ve->type;
-		root->va = ve->va;
+		if(ve->vi->qulfr & QulfrConst) {
+		}
 	}
 }
 
 void analyse_exp_is_num(Node *root) {
 	Node *numnode = get_child_node_w(root, NUM);
-	root->dt = get_spec_by_btype(SpecTypeConst, SpecRvalue);
-	root->cv.st = SpecTypeInt32;
+	root->lrv = SpecRvalue;
+	root->dt = get_spec_by_btype(SpecTypeInt32);
+	root->cv.t = PrConstValue;
 	root->cv._32 = numnode->cv.i;
 }
 
 void analyse_exp_is_nil(Node *root) {
-	root->dt = get_spec_by_btype(SpecTypeConst, SpecRvalue);
-	root->cv.st = SpecTypeInt32;
+	root->lrv = SpecRvalue;
+	root->dt = get_spec_by_btype(SpecTypeInt32);
+	root->cv.t = PrConstValue;
 	root->cv._32 = 0;
 }
 
 void analyse_exp_is_false(Node *root) {
-	root->dt = get_spec_by_btype(SpecTypeConst, SpecRvalue);
-	root->cv.st = SpecTypeInt32;
+	root->lrv = SpecRvalue;
+	root->dt = get_spec_by_btype(SpecTypeInt32);
+	root->cv.t = PrConstValue;
 	root->cv._32 = 0;
 }
 
 void analyse_exp_is_true(Node *root) {
-	root->dt = get_spec_by_btype(SpecTypeConst, SpecRvalue);
-	root->cv.st = SpecTypeInt32;
+	root->lrv = SpecRvalue;
+	root->dt = get_spec_by_btype(SpecTypeInt32);
+	root->cv.t = PrConstValue;
 	root->cv._32 = 1;
 }
 
 void analyse_exp_is_string(Node *root) {
 	//FIXME:
 	Node *strnode = get_child_node_w(root, STRING);
-	root->dt = get_spec_by_btype(SpecTypeString, SpecLvalue);
+	root->lrv = SpecLvalue;
+	root->dt = get_spec_by_btype(SpecTypeString);
 	root->cv.str = strnode->cv.str;
 }
 
 void analyse_exp_is_literal(Node *root) {
 	Node *charnode = get_child_node_w(root, LITERAL);
-	root->dt = get_spec_by_btype(SpecTypeConst, SpecRvalue);
-	root->cv.st = SpecTypeInt8;
+	root->lrv = SpecRvalue;
+	root->dt = get_spec_by_btype(SpecTypeInt8);
+	root->cv.t = PrConstValue;
 	root->cv._8 = charnode->cv._8;
 }
 
@@ -175,10 +224,12 @@ void analyse_exp_is_arithmetic_not(Node *root) {
 }
 
 void analyse_exp_is_relop(Node *root) {
+	//FIXME
 	Node *exp1 = get_child_node_w(root, Exp);
 	Node *exp2 = get_child_node_with_skip_w(root, Exp, 1);
 	int rel = get_type_relation(exp1->dt->bt, exp2->dt->bt);
-	root->dt = get_spec_by_btype(SpecTypeInt32, SpecRvalue);
+	root->lrv = SpecRvalue;
+	root->dt = get_spec_by_btype(SpecTypeInt32);
 	if(!(rel & CRelop)) {
 		yyerrtype(ErrorInvalidOperand, root->lineno, type_format(exp1->dt), type_format(exp2->dt));
 	}
@@ -186,7 +237,7 @@ void analyse_exp_is_relop(Node *root) {
 
 static SemanFunc analyse_function[] = {
 	[AST_Exp_is_ID] = analyse_exp_is_id,
-	[AST_Exp_is_Exp_RELOP_Exp] = analyse_exp_is_relop,
+	//[AST_Exp_is_Exp_RELOP_Exp] = analyse_exp_is_relop,
 };
 
 SemanFunc get_safe_seman_func(int reduce_rule) {
@@ -205,7 +256,13 @@ void syntax_analysis(Node *root) {
 	}
 }
 
+void free_seman() {
+	mempool_free(&vipool);
+	mempool_free(&idinfopool);
+}
+
 int init_seman() {
-	mempool_init(&varpool, sizeof(VarElement));
+	mempool_init(&vipool, sizeof(VarInfo));
+	mempool_init(&idinfopool, sizeof(IdentInfo));
 	vector_init(&asv, sizeof(HashTable));
 }

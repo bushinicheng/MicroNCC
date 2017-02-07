@@ -2,13 +2,13 @@
 #include "common.h"
 
 /*function declaration*/
-int strcnt(const char *strin, char ch);
 int next_number(char **str, int base);
 char register_literal(const char *str);
 char* register_string(const char *str);
 char* register_id(const char *text);
-int init_component();
 int fileno(FILE *stream);
+void increase_actionlevel();
+void decrease_actionlevel();
 
 /*lexerr*/
 #define MAX_SIZE 1024
@@ -35,7 +35,7 @@ extern YYLTYPE yylloc;
 
 static int symbol(int syntaxval);
 static int qulfr(int token);
-static int type(int, int);
+static int type(int rawtoken, int typeinfo);
 static int num(int specval);
 static int reg(int syntaxval);
 static int relop(int token);
@@ -103,8 +103,8 @@ invalidcomment   \/\*([^\*]|\*[^\/])*$
 ")"                 {tokout("RP");		return symbol(RP);}
 "["                 {tokout("LB");		return symbol(LB);}
 "]"                 {tokout("RB");		return symbol(RB);}
-"{"                 {tokout("LC");		return symbol(LC);}
-"}"                 {tokout("RC");		return symbol(RC);}
+"{"                 {tokout("LC");increase_actionlevel();return symbol(LC);}
+"}"                 {tokout("RC");decrease_actionlevel();return symbol(RC);}
 "."                 {tokout("DOT");		return symbol(DOT);}
 "->"                {tokout("PT");		return symbol(PTR);}
 ","                 {tokout("COMMA");	return symbol(COMMA);}
@@ -113,27 +113,27 @@ invalidcomment   \/\*([^\*]|\*[^\/])*$
 ";"                 {tokout("SEMI");	return symbol(SEMI);}
 "..."               {tokout("ELLIPSIS");return symbol(ELLIPSIS);}
 
-void                {tokout("VOID");	return type(SpecTypeVoid, MAKE_DWORD2(VOID, false));}
-bool                {tokout("BOOL");	return type(SpecTypeUint8, MAKE_DWORD2(BOOL, false));}
-char                {tokout("CHAR");	return type(SpecTypeInt8, MAKE_DWORD2(CombineTypeChar, true));}
-short               {tokout("SHORT");	return type(SpecTypeInt16, MAKE_DWORD2(CombineTypeShort, true));}
-int                 {tokout("INT");		return type(SpecTypeInt32, MAKE_DWORD2(CombineTypeInt, true));}
-long                {tokout("LONG");	return type(SpecTypeInt32, MAKE_DWORD2(CombineTypeLong, true));}
-signed              {tokout("SIGNED");	return type(SpecTypeInt32, MAKE_DWORD2(CombineTypeSigned, true));}
-unsigned            {tokout("UNSIGNED");return type(SpecTypeUint32, MAKE_DWORD2(CombineTypeUnsigned, true));}
-float               {tokout("FLOAT");	return type(SpecTypeFloat32, MAKE_DWORD2(FLOAT, false));}
-double              {tokout("DOUBLE");	return type(SpecTypeFloat64, MAKE_DWORD2(CombineTypeDouble, true));}
-int8_t              {tokout("INT8T");	return type(SpecTypeInt8, MAKE_DWORD2(INT8T, false));}
-int16_t             {tokout("INT16T");	return type(SpecTypeInt16, MAKE_DWORD2(INT16T, false));}
-int32_t             {tokout("INT32T");	return type(SpecTypeInt32, MAKE_DWORD2(INT32T, false));}
-int64_t             {tokout("INT64T");	return type(SpecTypeInt64, MAKE_DWORD2(INT64T, false));}
-uint8_t             {tokout("UINT8T");	return type(SpecTypeUint8, MAKE_DWORD2(UINT8T, false));}
-uint16_t            {tokout("UINT16T");	return type(SpecTypeUint16, MAKE_DWORD2(UINT16T, false));}
-uint32_t            {tokout("UINT32T");	return type(SpecTypeUint32, MAKE_DWORD2(UINT32T, false));}
-uint64_t            {tokout("UINT64T");	return type(SpecTypeUint64, MAKE_DWORD2(UINT64T, false));}
-size_t              {tokout("SIZET");	return type(SpecTypeUint32, MAKE_DWORD2(SIZET, false));}
-uintptr_t           {tokout("UINTPTRT");return type(SpecTypeUint32, MAKE_DWORD2(UINTPTRT, false));}
-off_t               {tokout("OFFT");	return type(SpecTypeUint32, MAKE_DWORD2(OFFT, false));}
+void                {tokout("VOID");	return type(VOID, MAKE_DWORD2(SpecTypeVoid, false));}
+bool                {tokout("BOOL");	return type(BOOL, MAKE_DWORD2(SpecTypeUint8, false));}
+char                {tokout("CHAR");	return type(CHAR, MAKE_DWORD2(CombineTypeChar, true));}
+short               {tokout("SHORT");	return type(SHORT, MAKE_DWORD2(CombineTypeShort, true));}
+int                 {tokout("INT");		return type(INT, MAKE_DWORD2(CombineTypeInt, true));}
+long                {tokout("LONG");	return type(LONG, MAKE_DWORD2(CombineTypeLong, true));}
+signed              {tokout("SIGNED");	return type(SIGNED, MAKE_DWORD2(CombineTypeSigned, true));}
+unsigned            {tokout("UNSIGNED");return type(UNSIGNED, MAKE_DWORD2(CombineTypeUnsigned, true));}
+float               {tokout("FLOAT");	return type(FLOAT, MAKE_DWORD2(SpecTypeFloat32, false));}
+double              {tokout("DOUBLE");	return type(DOUBLE, MAKE_DWORD2(CombineTypeDouble, true));}
+int8_t              {tokout("INT8T");	return type(INT8T, MAKE_DWORD2(SpecTypeInt8, false));}
+int16_t             {tokout("INT16T");	return type(INT16T, MAKE_DWORD2(SpecTypeInt16, false));}
+int32_t             {tokout("INT32T");	return type(INT32T, MAKE_DWORD2(SpecTypeInt32, false));}
+int64_t             {tokout("INT64T");	return type(INT64T, MAKE_DWORD2(SpecTypeInt64, false));}
+uint8_t             {tokout("UINT8T");	return type(UINT8T, MAKE_DWORD2(SpecTypeUint8, false));}
+uint16_t            {tokout("UINT16T");	return type(UINT16T, MAKE_DWORD2(SpecTypeUint16, false));}
+uint32_t            {tokout("UINT32T");	return type(UINT32T, MAKE_DWORD2(SpecTypeUint32, false));}
+uint64_t            {tokout("UINT64T");	return type(UINT64T, MAKE_DWORD2(SpecTypeUint64, false));}
+size_t              {tokout("SIZET");	return type(SIZET, MAKE_DWORD2(SpecTypeUint32, false));}
+uintptr_t           {tokout("UINTPTRT");return type(UINTPTRT, MAKE_DWORD2(SpecTypeUint32, false));}
+off_t               {tokout("OFFT");	return type(OFFT, MAKE_DWORD2(SpecTypeUint32, false));}
 
 enum                {tokout("ENUM");	return symbol(ENUM);}
 union               {tokout("UNION");	return symbol(UNION);}
@@ -200,7 +200,7 @@ static int qulfr(int token) {
 	pnd->token = TypeQulfr;
 	pnd->lineno = yylineno;
 	pnd->column = yycolumn;
-	pnd->cv.st = token;
+	pnd->reduce_rule = token;
 	yylval.pnd = pnd;
 	return TypeQulfr;
 }
@@ -223,8 +223,7 @@ static int relop(int token) {
 	return RELOP;
 }
 
-static int symbol(int syntaxval)
-{
+static int symbol(int syntaxval) {
 	Node *pnd = new_node();
 	pnd->token = syntaxval;
 	pnd->lineno = yylineno;
@@ -233,64 +232,56 @@ static int symbol(int syntaxval)
 	return syntaxval;
 }
 
-static int type(int spectype, int tokeninfo)
-{
+static int type(int token, int typeinfo) {
 	Node *pnd = new_node();
 	pnd->token = TYPE;
-	pnd->cv.st = tokeninfo;
-	pnd->dt = get_spec_by_btype(spectype, SpecLvalue);
+	pnd->reduce_rule = token;
+	pnd->cv.t = typeinfo;
+	//pnd->dt = ?;//no dt
 	pnd->lineno = yylineno;
 	pnd->column = yycolumn;
 	yylval.pnd = pnd;
 	return TYPE;
 }
 
-static int num(int numtype)
-{
+static int num(int numtype) {
 	char *pstr = yytext;
 	Node *pnd = new_node();
 	pnd->token = NUM;
-	pnd->dt = new_spec();
-	pnd->dt->leftvalue = 1;
-	pnd->dt->bt = SpecTypeConst;
+	pnd->dt = new_spec();//FIXME:overflow of int
 	pnd->lineno = yylineno;
 	pnd->column = yycolumn;
 	yylval.pnd = pnd;
 
-	switch(numtype)
-	{
-	case 'i':
-		pnd->cv.st = SpecTypeInt32;
-		pnd->cv.i = next_number(&pstr, 10);
-		break;
-	case 'o':
-		pnd->cv.st = SpecTypeInt32;
-		pstr++;
-		pnd->cv.i = next_number(&pstr, 8);
-		break;
-	case 'x':
-		pnd->cv.st = SpecTypeInt32;
-		pstr+=2;
-		pnd->cv.i = next_number(&pstr, 16);
-		break;
-	case 'f':
-		pnd->cv.st = SpecTypeFloat32;
-		pnd->cv.f = atof(pstr);
-		break;
+	switch(numtype) {
+		case 'i':
+			pnd->cv.t = 'i';
+			pnd->cv.i = next_number(&pstr, 10);
+			break;
+		case 'o':
+			pstr++;
+			pnd->cv.t = 'o';
+			pnd->cv.i = next_number(&pstr, 8);
+			break;
+		case 'x':
+			pstr+=2;
+			pnd->cv.t = 'x';
+			pnd->cv.i = next_number(&pstr, 16);
+			break;
+		case 'f':
+			pnd->cv.t = SpecTypeFloat32;
+			pnd->cv.f = atof(pstr);
+			break;
 	}
-
 	return NUM;
 }
 
-static int reg(int syntaxval)
-{
+static int reg(int syntaxval) {
 	Node *pnd = new_node();
 	pnd->token = syntaxval;
 	pnd->lineno = yylineno;
 	pnd->column = yycolumn;
 	yylval.pnd = pnd;
-	pnd->dt = new_spec();
-	pnd->dt->bt = SpecTypeConst;
 
 	switch(syntaxval)
 	{
@@ -298,13 +289,13 @@ static int reg(int syntaxval)
 		pnd->cv.str = register_id(yytext);
 		break;
 	case STRING:
-		pnd->dt->leftvalue = SpecLvalue;
-		pnd->cv.st = 's';
+		pnd->lrv = SpecLvalue;
+		pnd->dt = get_spec_by_btype(SpecTypeString);
 		pnd->cv.str = register_string(yytext);
 		break;
 	case LITERAL:
-		pnd->dt->leftvalue = SpecRvalue;
-		pnd->cv.st = SpecTypeInt8;
+		pnd->lrv = SpecRvalue;
+		pnd->dt = get_spec_by_btype(SpecTypeInt8);
 		pnd->cv._8 = register_literal(yytext);
 		break;
 	}
@@ -312,8 +303,7 @@ static int reg(int syntaxval)
 	return syntaxval;
 }
 
-int next_number(char **str, int base)
-{
+int next_number(char **str, int base) {
 	int retval = 0;
 	/* 0xff,088,255 at most 4 nums */
 	for(int i = 0; *str[0]; i++)
@@ -371,8 +361,7 @@ char register_literal(const char *str) {
 }
 
 /* return value is the start position of registered string */
-char* register_string(const char *str)
-{
+char* register_string(const char *str) {
 	int strbuf_ptr = 0;
 	char *strbuf = get_memory_pointer();
 	char *p = (char *)str;
@@ -401,8 +390,7 @@ char* register_string(const char *str)
 	return (char*)require_memory(strbuf_ptr);
 }
 
-char* register_id(const char *text)
-{
+char* register_id(const char *text) {
 	int len = strlen(text) + 1;
 	char *strbuf = get_memory_pointer();
 	strcpy(strbuf, text);
@@ -410,8 +398,7 @@ char* register_id(const char *text)
 }
 
 
-int init_component()
-{
+int init_component() {
 #ifdef __DEBUG__
 	/* unit test of register_string */
 	UNIT_TEST_START;

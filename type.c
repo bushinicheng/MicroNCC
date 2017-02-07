@@ -11,12 +11,12 @@ Spec *register_type_declnspec(Node *root);
 
 #define BTYPE_CNT (SpecTypeString + 1)
 
-Spec *get_spec_by_btype(uint32_t bt, int lr) {
+Spec *get_spec_by_btype(uint32_t bt) {
 	if(bt >= BTYPE_CNT) {
 		return NULL;
 	}
 	Spec *specptr = specpool.p[0];
-	return &specptr[2 * bt + !!lr];
+	return &specptr[bt];
 }
 
 Spec *find_type_of_struct_member(Spec *type, char *vn, off_t *off){
@@ -47,6 +47,10 @@ int convert_ctype2type(int ct) {
 			return SpecTypeInt32;
 		case CombineTypeUnsigned|CombineTypeInt:
 			return SpecTypeUint32;
+		case CombineTypeSigned|CombineTypeLongLong|CombineTypeInt:
+			return SpecTypeInt64;
+		case CombineTypeUnsigned|CombineTypeLongLong|CombineTypeInt:
+			return SpecTypeUint64;
 		case CombineTypeLongLong:
 			return SpecTypeInt64;
 		case CombineTypeLongLong|CombineTypeInt:
@@ -70,7 +74,7 @@ static const char *btype_format_string[] = {
 	[SpecTypeFloat64] = "double",
 };
 
-#define TYPE_CNT SpecTypeRen
+#define TYPE_CNT SpecTypeEnd
 
 static int type_relations[TYPE_CNT][TYPE_CNT];
 
@@ -78,8 +82,8 @@ void construct_type_relations() {
 	for(int i = SpecTypeInt8; i < SpecTypeFloat64; i++) {
 		for(int j = SpecTypeInt8; j < SpecTypeFloat64; j++) {
 			type_relations[i][j] = CAssign | CAddSub | CMultDiv | CBitop | CRelop | CLogic;
-			if(i <= j) type_relations[i][j] |=CLessAccurate;
-			if(i >= j) type_relations[i][j] |=CMoreAccurate;
+			if(i <= j) type_relations[i][j] |= CLessAccurate;
+			if(i >= j) type_relations[i][j] |= CMoreAccurate;
 		}
 	}
 	for(int i = SpecTypeInt8; i < SpecTypeFloat64; i++) {
@@ -143,7 +147,7 @@ char *type_format(Spec *type) {
 		require_memory(type->func.argc * sizeof(char *));
 		char *ret_str = type_format(type->func.ret);
 		for(int i = 0; i < type->func.argc; i++) {
-			args_str[i] = type_format(type->func.argv[i].t);
+			args_str[i] = type_format(type->func.argv[i]);
 		}
 		type->format_string = sformat("%s (%s)", ret_str, strjoin(args_str, type->func.argc, ", "));
 	} else if(type->bt == SpecTypeComplex) {
@@ -168,51 +172,28 @@ char *type_format(Spec *type) {
  */
 
 void reset_spec_state() {
-#define btype_register(_b, _w, _l) do {\
+#define btype_register(_b, _w) do {\
 		spec = (Spec *)mempool_new(&specpool);\
 		spec->bt = _b;\
 		spec->w = _w;\
-		spec->leftvalue  = _l;\
 	} while(0)
 
 	Spec *spec = NULL;
 	Spec *specptr = (Spec *)specpool.p;
-	btype_register(SpecTypeConst,    0, SpecLvalue);
-	btype_register(SpecTypeConst,    0, SpecRvalue);
-	btype_register(SpecTypeVoid,     4, SpecLvalue);
-	btype_register(SpecTypeVoid,     4, SpecRvalue);
-	btype_register(SpecTypeInt8,     1, SpecLvalue);
-	btype_register(SpecTypeInt8,     1, SpecRvalue);
-	btype_register(SpecTypeUint8,    1, SpecLvalue);
-	btype_register(SpecTypeUint8,    1, SpecRvalue);
-	btype_register(SpecTypeInt16,    2, SpecLvalue);
-	btype_register(SpecTypeInt16,    2, SpecRvalue);
-	btype_register(SpecTypeUint16,   2, SpecLvalue);
-	btype_register(SpecTypeUint16,   2, SpecRvalue);
-	btype_register(SpecTypeInt32,    4, SpecLvalue);
-	btype_register(SpecTypeInt32,    4, SpecRvalue);
-	btype_register(SpecTypeUint32,   4, SpecLvalue);
-	btype_register(SpecTypeUint32,   4, SpecRvalue);
-	btype_register(SpecTypeInt64,    8, SpecLvalue);
-	btype_register(SpecTypeInt64,    8, SpecRvalue);
-	btype_register(SpecTypeUint64,   8, SpecLvalue);
-	btype_register(SpecTypeUint64,   8, SpecRvalue);
-	btype_register(SpecTypeFloat32,  4, SpecLvalue);
-	btype_register(SpecTypeFloat32,  4, SpecRvalue);
-	btype_register(SpecTypeFloat64,  8, SpecLvalue);
-	btype_register(SpecTypeFloat64,  8, SpecRvalue);
+	btype_register(SpecTypeVoid,     4);
+	btype_register(SpecTypeInt8,     1);
+	btype_register(SpecTypeUint8,    1);
+	btype_register(SpecTypeInt16,    2);
+	btype_register(SpecTypeUint16,   2);
+	btype_register(SpecTypeInt32,    4);
+	btype_register(SpecTypeUint32,   4);
+	btype_register(SpecTypeInt64,    8);
+	btype_register(SpecTypeUint64,   8);
+	btype_register(SpecTypeFloat32,  4);
+	btype_register(SpecTypeFloat64,  8);
 	//char*/string left value
 	spec = (Spec *)mempool_new(&specpool);
-	spec->leftvalue = SpecLvalue;
-	spec->actionlevel = 1;
-	spec->bt = SpecTypeComplex;
-	spec->comp.spec = &specptr[2 * SpecTypeInt8];
-	spec->comp.pl = 1;
-	//char*/string right value
-	spec = (Spec *)mempool_new(&specpool);
-	spec->leftvalue = SpecRvalue;
-	spec->actionlevel = 1;
-	spec->bt = SpecTypeComplex;
+	spec->bt = SpecTypePointer;
 	spec->comp.spec = &specptr[2 * SpecTypeInt8];
 	spec->comp.pl = 1;
 }

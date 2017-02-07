@@ -277,6 +277,7 @@ DirectAbstDeclr
 
 Initor
 	:Exp %prec ASSIGNOP {$$=build_subast(AST_Initor_is_Exp, &@$, $1);}
+	|DOT ID ASSIGNOP Exp %prec ASSIGNOP {$$=build_subast(AST_Initor_is_DOT_ID_ASSIGNOP_Exp, &@$, $1, $2, $3, $4);}
 	|LB Exp RB ASSIGNOP Exp %prec ASSIGNOP {$$=build_subast(AST_Initor_is_LB_Exp_RB_ASSIGNOP_Exp, &@$, $1, $2, $3, $4, $5);}
 	|LC InitorList RC {$$=build_subast(AST_Initor_is_LC_InitorList_RC, &@$, $1, $2, $3);}
 	|LC InitorList COMMA RC {$$=build_subast(AST_Initor_is_LC_InitorList_COMMA_RC, &@$, $1, $2, $3, $4);}

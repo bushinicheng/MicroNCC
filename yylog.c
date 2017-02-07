@@ -45,6 +45,21 @@ char *sformat(const char *format, ...) {
 	return (char *)require_memory(len + 1);
 }
 
+/* function:
+ *		return a format string which stored in temporary buffer
+ * It dont't guarantee the timeliness of return string.
+ * What can be ensure is that the memory will not be change
+ * until the next call of get_memory_pointer
+ * */
+char *stformat(const char *format, ...) {
+	char *ret_str = (char *)get_memory_pointer();
+	va_list ap;
+	va_start(ap, format);
+	int len = vsprintf(ret_str, format, ap);
+	push_bpool_state(len + 1);
+	return ret_str;
+}
+
 int yydbg(int lineno, int column, int tokenlen, enum ErrorType errortype)
 {
 	extern char yylinetext[1024];
