@@ -36,6 +36,10 @@ typedef unsigned char bool;
 #include "bpool.h"
 #include "hash.h"
 
+#define MAKE_WORD(a, b) ((a) << 8 | b)
+#define WORD_PART1(a) (((a) >> 8) & 0xff)
+#define WORD_PART2(a) ((a) & 0xff)
+
 #define MAKE_DWORD2(a, b) ((a) << 16 | (b))
 #define MAKE_DWORD4(a, b, c, d) ((a) << 24 | (b) << 16 | (c) << 8 | (d))
 #define DWORD2_PART1(a) (((a)>>16) & 0xffff)

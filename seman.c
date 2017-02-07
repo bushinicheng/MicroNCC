@@ -86,12 +86,15 @@ int assign_value_of_enumorlist(Node *enumorlist, int st) {
 	}
 }
 
+void analyse_typespec(Node *root) {
+	root->dt = root->child->dt;
+}
+
 void analyse_enumspec(Node *root) {
 	root->dt = get_spec_by_btype(SpecTypeInt32);
 	if(root->reduce_rule == AST_EnumSpec_is_ENUM_ID) {
 		return;
 	}
-	int enumor_start = 0;
 	Node *enumorlist = get_child_node_w(root, EnumorList);
 	assign_value_of_enumorlist(enumorlist, 0);
 }

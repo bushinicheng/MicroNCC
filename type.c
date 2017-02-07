@@ -191,11 +191,11 @@ void reset_spec_state() {
 	btype_register(SpecTypeUint64,   8);
 	btype_register(SpecTypeFloat32,  4);
 	btype_register(SpecTypeFloat64,  8);
-	//char*/string left value
+	//char*/string
 	spec = (Spec *)mempool_new(&specpool);
 	spec->bt = SpecTypePointer;
-	spec->comp.spec = &specptr[2 * SpecTypeInt8];
-	spec->comp.pl = 1;
+	spec->ptr.dt = &specptr[SpecTypeInt8];
+	spec->ptr.pl = 1;
 }
 
 void init_spec() {
