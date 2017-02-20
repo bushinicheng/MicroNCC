@@ -218,12 +218,20 @@ void analyse_starlist_is_mult_typequlfrlist_starlist(Node *root) {
 	root->cv.ex = typequlfrlist->cv.ex;//transmit qulfr
 }
 
+//TypeQulfrList
 void analyse_typequlfrlist_is_typequlfr(Node *root) {
+	//cv.ex record qulfr
+	Node *typequlfr = get_child_node_w(root, TypeQulfr);
+	root->cv.ex = typequlfr->cv.ex;
 }
 
 void analyse_typequlfrlist_is_typequlfrlist_typequlfr(Node *root) {
+	Node *typequlfr = get_child_node_w(root, TypeQulfr);
+	Node *typequlfrlist = get_child_node_w(root, TypeQulfrList);
+	root->cv.ex = typequlfr->cv.ex | typequlfrlist->cv.ex;
 }
 
+//Declr
 void analyse_declr_is_starlist_directdeclr(Node *root) {
 }
 
