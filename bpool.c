@@ -104,7 +104,7 @@ void *require_memory(size_t size) {
 	toggle_caller_state = 0;
 	void *ret = malloc(size);
 	memcpy(ret, &bpool[ptr], size);
-	wt_assert(ptr + size <= POOL_SIZE);
+	assert(ptr + size <= POOL_SIZE);
 	return ret;
 }
 

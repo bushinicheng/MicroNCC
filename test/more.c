@@ -165,7 +165,7 @@ bool find_duplication(char *varname) {
  * assume each query is meaningful :)
  */
 struct VarElement find_variable(struct Node *node, char *varname) {
-	wt_assert(node && varname);
+	assert(node && varname);
 	if(asptr <= 0) return NULL;
 	for(int i = asptr - 1; i>=0; i--) {
 		if(actionscope[i].varname) {
@@ -200,7 +200,7 @@ void push_barrier() {
  *   TODO: alloc register for active variable
  */
 void push_variable(struct Node *node, char *varname, struct Spec *type) {
-	wt_assert(node && varname && type);
+	assert(node && varname && type);
 	find_duplication(varname);
 
 	//calculate base
@@ -255,7 +255,7 @@ void pop_scope() {
 
 void check_function_call(struct Node *root, struct VarElement *func) {
 	if(!root || !func) return;
-	wt_assert(root->reduce_rule == AST_Exp_is_ID_LP_RP
+	assert(root->reduce_rule == AST_Exp_is_ID_LP_RP
 		|| root->reduce_rule == AST_Exp_is_ID_LP_FuncCallArgList_RP);
 	//need  <==> func->type->func.argv
 	//given <==> root->reduce_rule
@@ -307,7 +307,7 @@ void check_function_call(struct Node *root, struct VarElement *func) {
 
 void register_idlist(struct Node *root, struct Spec *type) {
 	if(!root) return;
-	wt_assert(root->token == IdList);
+	assert(root->token == IdList);
 	
 	struct Node *idlist = root;
 	while(idlist) {
@@ -323,7 +323,7 @@ void register_idlist(struct Node *root, struct Spec *type) {
 
 int analyse_expression(struct Node *root) {
 	if(root == NULL) return 0;
-	wt_assert(root->token == Exp);
+	assert(root->token == Exp);
 
 	struct Spec *type;
 	struct VarElement *var;
@@ -717,14 +717,14 @@ int analyse_expression(struct Node *root) {
 			}
 			break;
 		default:
-			wt_assert(0);
+			assert(0);
 	}
 }
 
 
 int analyse_statement(struct Node *root) {
 	if(root == NULL) return 0;
-	wt_assert(root->token == Stmt);
+	assert(root->token == Stmt);
 
 	struct Node *exp = NULL, *exp2 = NULL, *exp3 = NULL;
 	struct Node *vardef = NULL, *stmt = NULL;
@@ -797,7 +797,7 @@ int analyse_statement(struct Node *root) {
 			pop_scope();
 			break;
 		default:
-			wt_assert(0);
+			assert(0);
 	}
 }
 
@@ -830,7 +830,7 @@ int analyse_function(struct Node *root, struct Spec *functype) {
 
 int analyse_vardef(struct Node *root) {
 	if(root == NULL) return 0;
-	wt_assert(root->token == VarDef);
+	assert(root->token == VarDef);
 	struct Spec *type = find_type_of_spec(get_child_node_w(root,  Specifier));
 	struct Node *declist = get_child_node_w(root, DecList);
 	while(declist) {
@@ -850,7 +850,7 @@ int semantic_analysis(struct Node *root)
 	if(root == NULL)
 		return 0;
 
-	wt_assert(root->token == Program);
+	assert(root->token == Program);
 	struct Node *blocklist = get_child_node_w(root, BlockList);
 
 	//block reduce
@@ -871,7 +871,7 @@ int semantic_analysis(struct Node *root)
 				analyse_vardef(get_child_node_w(block, VarDef));
 				break;
 			default:
-				wt_assert(0);
+				assert(0);
 		}
 
 		blocklist = get_child_node(blocklist, BlockList);

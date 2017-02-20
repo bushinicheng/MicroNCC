@@ -16,7 +16,17 @@ static MemPool vipool;
 static MemPool idinfopool;
 Vector asv;//hash table vector
 
-
+/* push variable into current hash table
+ * IN[0]: char *
+ *    variabe name
+ * IN[1]: Spec*
+ *    type pointer
+ * IN[2]: Node *
+ *    AST node where variable bound to
+ *
+ * other influence:
+ *    node->vi will be bound to a new vi.
+ */
 void push_variable(char *vn, Spec *type, Node *node) {
 	IdentInfo *ve = mempool_new(&idinfopool);
 	VarInfo *vi = mempool_new(&vipool);
@@ -56,12 +66,6 @@ void analyse_decln_is_declnspec(Node *root) {
 	Node *declnspec = get_child_node_w(root, DeclnSpec);
 }
 
-void analyse_typesepc_is_type(Node *root) {
-	Node *typenode = get_child_node_w(root, TYPE);
-	root->dt = typenode->dt;
-	root->cv.t = typenode->cv.t;
-}
-
 int assign_value_of_enumorlist(Node *enumorlist, int st) {
 	//first child: enumorlist
 	if(enumorlist->reduce_rule == AST_EnumorList_is_EnumorList_COMMA_Enumor){
@@ -83,6 +87,7 @@ int assign_value_of_enumorlist(Node *enumorlist, int st) {
 
 void analyse_typespec(Node *root) {
 	root->dt = root->child->dt;
+	root->cv.t = root->child->cv.t;//t records combine type
 }
 
 void analyse_enumspec(Node *root) {
@@ -124,7 +129,7 @@ void analyse_enumor_is_id_assign_exp(Node *root) {
 void analyse_declnspec_is_typespec(Node *root) {
 	Node *typespec = get_child_node_w(root, TypeSpec);
 	root->dt = typespec->dt;
-	root->cv.t = typespec->cv.t;//t record combine type
+	root->cv.t = typespec->cv.t;//t records combine type
 }
 
 void analyse_declnspec_is_typespec_declnspec(Node *root) {
@@ -142,7 +147,7 @@ void analyse_declnspec_is_typespec_declnspec(Node *root) {
 	 * +-----------------+---------------+
 	 */
 	if((typespec->cv.t & 1) && (declnspec->cv.t & 1)) {
-		root->cv.t = typespec->cv.t | declnspec->cv.t;//t record combine type
+		root->cv.t = typespec->cv.t | declnspec->cv.t;//t records combine type
 		int btype = convert_ctype2type(root->cv.t);
 		if(btype == -1) {//invalid combination
 			root->cv.t &= ~1;
@@ -163,7 +168,7 @@ void analyse_declnspec_is_typespec_declnspec(Node *root) {
 void analyse_declnspec_is_typequlfr(Node *root) {
 	//default dt and ct, transmit ex
 	Node *typequlfr = get_child_node_w(root, TypeQulfr);
-	root->cv.ex = typequlfr->cv.ex;//ex record combine qulfr
+	root->cv.ex = typequlfr->cv.ex;//ex records combine qulfr
 	root->cv.t = 1;//1 means combinable
 	root->dt = get_spec_by_btype(SpecTypeInt32);//default to be int32 if no typespec found
 }
@@ -172,55 +177,43 @@ void analyse_declnspec_is_typequlfr_declnspec(Node *root) {
 	//transmit dt and ct and combine qulfr
 	Node *typequlfr = get_child_node_w(root, TypeQulfr);
 	Node *declnspec = get_child_node_w(root, DeclnSpec);
-	root->cv.ex = typequlfr->cv.ex | declnspec->cv.ex;//ex record combine qulfr
+	root->cv.ex = typequlfr->cv.ex | declnspec->cv.ex;//ex records combine qulfr
 	root->cv.t = declnspec->cv.t;//deliver combine type to upper node
 	root->dt = declnspec->dt;
 }
 
-void analyse_typespec_is_type(Node *root) {
-	/* eg.
-	 *  common type
-	 *   void: reduce_rule = VOID, cv.t = WORD(SpecTypeVoid, false)
-	 *   bool: reduce_rule = BOOL, cv.t = WORD(SpecTypeUint8, false)
-	 *  combinable type
-	 *   char: reduce_rule = CHAR, cv.t = DWORD(CombineTypeChar,
-	 *         WORD(SpecTypeInt8, true))
-	 */
-	Node *typenode = get_child_node_w(root, TYPE);
-	root->dt = typenode->dt;//dt record true data type
-	if(typenode->cv.t & 1)
-		root->cv.t = WORD_PART1(typenode->cv.t);
-	else
-		root->cv.t = CombineInvalid;
-}
-
+//StarList
 void analyse_starlist_is_mult(Node *root) {
-	//cv.t record pointer level
-	//ex record qulfr
+	//cv.t records pointer level
+	//ex records qulfr
 	root->cv.t = 1;
 }
 
 void analyse_starlist_is_mult_typequlfrlist(Node *root) {
+	//init pl, transmit qulfr
 	Node *typequlfrlist = get_child_node_w(root, TypeQulfrList);
 	root->cv.t = 1;//initial to be 1
 	root->cv.ex = typequlfrlist->cv.ex;//transmit qulfr
 }
 
 void analyse_starlist_is_mult_starlist(Node *root) {
+	//inc pl, transmit qulfr
 	Node *starlist = get_child_node_w(root, StarList);
-	root->cv.t = starlist->cv.ex + 1;//initial to be 1
+	root->cv.t = starlist->cv.t + 1;//initial to be 1
+	root->cv.ex = starlist->cv.ex;
 }
 
 void analyse_starlist_is_mult_typequlfrlist_starlist(Node *root) {
+	//inc pl, combine qulfr
 	Node *starlist = get_child_node_w(root, StarList);
 	Node *typequlfrlist = get_child_node_w(root, TypeQulfrList);
-	root->cv.t = starlist->cv.ex + 1;//initial to be 1
-	root->cv.ex = typequlfrlist->cv.ex;//transmit qulfr
+	root->cv.t = starlist->cv.t + 1;//initial to be 1
+	root->cv.ex = starlist->cv.ex | typequlfrlist->cv.ex;//transmit qulfr
 }
 
 //TypeQulfrList
 void analyse_typequlfrlist_is_typequlfr(Node *root) {
-	//cv.ex record qulfr
+	//cv.ex records qulfr
 	Node *typequlfr = get_child_node_w(root, TypeQulfr);
 	root->cv.ex = typequlfr->cv.ex;
 }
@@ -233,6 +226,92 @@ void analyse_typequlfrlist_is_typequlfrlist_typequlfr(Node *root) {
 
 //Declr
 void analyse_declr_is_starlist_directdeclr(Node *root) {
+	//for `StarList` node, cv.t records pointer level,
+	//  cv.ex records qulfr
+	//assume directdeclr return comp type
+	Node *starlist = get_child_node_w(root, StarList);
+	root->cv.t = starlist->cv.t + 1;//initial to be 1
+	root->cv.ex = starlist->cv.ex;
+}
+
+void analyse_declr_is_directdeclr(Node *root) {
+	//
+}
+
+//DirectDeclr
+void analyse_directdeclr_is_id(Node *root) {
+	//transmit id's name
+	Node *idnode = get_child_node_w(root, ID);
+	root->cv.str = idnode->cv.str;
+}
+
+void analyse_directdeclr_is_lp_declr_rp(Node *root) {
+	Node *declr = get_child_node_w(root, Declr);
+	root->dt = declr->dt;
+}
+
+void analyse_directdeclr_is_self_index(Node *root) {
+	//array
+}
+
+void analyse_directdeclr_is_self_nullindex(Node *root) {
+	//array
+}
+
+Spec *combine_datatype_of_directdeclr(Spec *ddt, Spec *exdt) {
+	/*eg.
+	 * DirectDeclr -> DirectDeclr LP IdList RP
+	 *                     ^      \----------/
+	 *                    ddt         exdt
+	 */
+	if(ddt) {
+		if(ddt->bt == SpecTypeComplex) {
+			//eg. int (*func[])(int, int)
+			ddt->comp.dt = exdt;
+		}else if(directdeclr->dt->bt == SpecTypePointer){
+			//eg. int (*func)(int, int)
+			ddt->ptr.dt = exdt;
+		}else{
+			//invalid
+			//TODO: call yyerrtype to format error information and
+			//      set global variable is_syntax_error
+			assert(0);
+			//default behavior: use dt of DirectDeclr and discard
+			//    other part in this production
+		}
+		return ddt;
+	}else{
+		//paralist->dt->btype = SpecTypeFunc
+		//  the ret_spec of dt need to be backfilled in upper call
+		return exdt;
+	}
+}
+
+void analyse_directdeclr_is_func_paralist(Node *root) {
+	//func
+	//assume directdeclr's dt and paralist's dt have been filled
+	Node *directdeclr = get_child_node_w(root, DirectDeclr);
+	Node *paralist = get_child_node_w(root, ParaTypeList);
+	root->cv.str = directdeclr->cv.str;//transmit id
+	root->dt = combine_datatype_of_directdeclr(directdeclr->dt, paralist->dt);
+}
+
+void analyse_directdeclr_is_func_idlist(Node *root) {
+	//func
+	Node *directdeclr = get_child_node_w(root, DirectDeclr);
+	Node *idlist = get_child_node_w(root, IdList);
+	root->cv.str = directdeclr->cv.str;//transmit id
+	root->dt = combine_datatype_of_directdeclr(directdeclr->dt, idlist->dt);
+}
+
+void analyse_directdeclr_is_func_lp_rp(Node *root) {
+	//func
+	Spec *funcdt = new_spec();
+	Node *directdeclr = get_child_node_w(root, DirectDeclr);
+	root->cv.str = directdeclr->cv.str;//transmit id
+	funcdt->btype = SpecTypeFunc;
+	funcdt->func.argc = 0;
+	root->dt = combine_datatype_of_directdeclr(directdeclr->dt, funcdt);
 }
 
 void analyse_typespec_is_compspec(Node *root) {
@@ -389,12 +468,27 @@ void analyse_exp_is_relop(Node *root) {
 }
 
 static SemanFunc analyse_function[] = {
+	[AST_Decln_is_DeclnSpec_SEMI] = analyse_decln_is_declnspec,
+	[AST_TypeSpec_is_TYPE] = analyse_typespec,
+	[AST_TypeSpec_is_CompSpec] = analyse_typespec,
+	[AST_TypeSpec_is_EnumSpec] = analyse_typespec,
+	[AST_TypeSpec_is_TYPE_NAME] = analyse_typespec,
 	[AST_EnumSpec_is_ENUM_LC_EnumorList_RC] = analyse_enumspec,
 	[AST_EnumSpec_is_ENUM_LC_EnumorList_COMMA_RC] = analyse_enumspec,
 	[AST_EnumSpec_is_ENUM_ID_LC_EnumorList_RC] = analyse_enumspec,
 	[AST_EnumSpec_is_ENUM_ID_LC_EnumorList_COMMA_RC] = analyse_enumspec,
 	[AST_Enumor_is_ID] = analyse_enumor_is_id,
 	[AST_Enumor_is_ID_ASSIGNOP_Exp] = analyse_enumor_is_id_assign_exp,
+	[AST_DeclnSpec_is_TypeSpec] = analyse_declnspec_is_typespec,
+	[AST_DeclnSpec_is_TypeSpec_DeclnSpec] = analyse_declnspec_is_typespec_declnspec,
+	[AST_DeclnSpec_is_TypeQulfr] = analyse_declnspec_is_typequlfr,
+	[AST_DeclnSpec_is_TypeQulfr_DeclnSpec] = analyse_declnspec_is_typequlfr_declnspec,
+	[AST_StarList_is_MULT] = analyse_starlist_is_mult,
+	[AST_StarList_is_MULT_TypeQulfrList] = analyse_starlist_is_mult_typequlfrlist,
+	[AST_StarList_is_MULT_StarList] = analyse_starlist_is_mult_starlist,
+	[AST_StarList_is_MULT_TypeQulfrList_StarList] = analyse_starlist_is_mult_typequlfrlist_starlist,
+	[AST_TypeQulfrList_is_TypeQulfr] = analyse_typequlfrlist_is_typequlfr,
+	[AST_TypeQulfrList_is_TypeQulfrList_TypeQulfr] = analyse_typequlfrlist_is_typequlfrlist_typequlfr,
 	[AST_Exp_is_ID] = analyse_exp_is_id,
 	[AST_Exp_is_NUM] = analyse_exp_is_num,
 	//[AST_Exp_is_Exp_RELOP_Exp] = analyse_exp_is_relop,

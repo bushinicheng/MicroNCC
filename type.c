@@ -149,7 +149,7 @@ char *type_format(Spec *type) {
 		}
 		type->format_string = sformat("%s (%s)", ret_str, strjoin(args_str, type->func.argc, ", "));
 	} else if(type->bt == SpecTypeComplex) {
-		char *rawtype_str = type_format(type->comp.spec);
+		char *rawtype_str = type_format(type->comp.dt);
 		char *star_str = strmul("*", type->comp.pl);
 
 		int arr_size = 0;
@@ -198,7 +198,7 @@ void reset_spec_state() {
 
 void init_spec() {
 	mempool_init(&specpool, sizeof(Spec));
-	wt_assert(specpool.bs[0] > 32);
+	assert(specpool.bs[0] > 32);
 	construct_type_relations();
 	reset_spec_state();
 }

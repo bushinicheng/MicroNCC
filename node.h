@@ -153,7 +153,7 @@ typedef struct Spec {
 
 		//ex. int **a[10][20]; type(a) is complex
 		struct {
-			struct Spec *spec;//actual spec,such as `struct A`
+			struct Spec *dt;//actual spec,such as `struct A`
 			size_t *dim;//dimension array:a[2][3][4]=>[2,3,4]
 			size_t size;//length of(dim)
 			int pl;//pointer level

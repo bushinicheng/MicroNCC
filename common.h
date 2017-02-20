@@ -49,11 +49,4 @@ typedef unsigned char bool;
 #define DWORD4_PART3(a) (((a)>> 8) & 0xff)
 #define DWORD4_PART4(a) ((a) & 0xff)
 
-#define wt_assert(cond) do { \
-	if(!(cond)) set_break(); \
-	assert(cond); \
-} while(0)
-
-int yylex_destroy();
-
 #endif

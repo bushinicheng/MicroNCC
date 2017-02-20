@@ -70,7 +70,7 @@ bool find_duplication(char *varname) {
  * assume each query is meaningful :)
  */
 VarElement *find_variable(Node *node, char *varname) {
-	wt_assert(node && varname);
+	assert(node && varname);
 	if(asptr <= 0) return NULL;
 	for(int i = asptr - 1; i>=0; i--) {
 		if(actionscope[i].varname) {
@@ -105,7 +105,7 @@ void push_barrier() {
  *   TODO: alloc register for active variable
  */
 void push_variable(Node *node, char *varname, Spec *type) {
-	wt_assert(node && varname && type);
+	assert(node && varname && type);
 	find_duplication(varname);
 
 	//calculate base
@@ -163,7 +163,7 @@ int analyse_expression(Node *root);
 
 void check_function_call(Node *root, VarElement *func) {
 	if(!root || !func) return;
-	wt_assert(root->reduce_rule == AST_Exp_is_ID_LP_RP
+	assert(root->reduce_rule == AST_Exp_is_ID_LP_RP
 		|| root->reduce_rule == AST_Exp_is_ID_LP_FuncCallArgList_RP);
 	//need  <==> func->type->func.argv
 	//given <==> root->reduce_rule
@@ -215,7 +215,7 @@ void check_function_call(Node *root, VarElement *func) {
 
 void register_idlist(Node *root, Spec *type) {
 	if(!root) return;
-	wt_assert(root->token == IdList);
+	assert(root->token == IdList);
 	
 	Node *idlist = root;
 	while(idlist) {
@@ -231,7 +231,7 @@ void register_idlist(Node *root, Spec *type) {
 
 int analyse_expression(Node *root) {
 	if(root == NULL) return 0;
-	wt_assert(root->token == Exp);
+	assert(root->token == Exp);
 
 	Spec *type;
 	VarElement *var;
@@ -625,14 +625,14 @@ int analyse_expression(Node *root) {
 			}
 			break;
 		default:
-			wt_assert(0);
+			assert(0);
 	}
 }
 
 
 int analyse_statement(Node *root) {
 	if(root == NULL) return 0;
-	wt_assert(root->token == Stmt);
+	assert(root->token == Stmt);
 
 	Node *exp = NULL, *exp2 = NULL, *exp3 = NULL;
 	Node *vardef = NULL, *stmt = NULL;
@@ -705,13 +705,13 @@ int analyse_statement(Node *root) {
 			pop_scope();
 			break;
 		default:
-			wt_assert(0);
+			assert(0);
 	}
 }
 
 int analyse_function(Node *root, Spec *functype) {
 	if(root == NULL) return 0;
-	wt_assert(root->reduce_rule == AST_Block_is_TypeSpec_FuncDec_CompSt);
+	assert(root->reduce_rule == AST_Block_is_TypeSpec_FuncDec_CompSt);
 
 	push_barrier();
 	/*register function arguments*/
@@ -739,7 +739,7 @@ int analyse_function(Node *root, Spec *functype) {
 
 int analyse_vardef(Node *root) {
 	if(root == NULL) return 0;
-	wt_assert(root->token == VarDef);
+	assert(root->token == VarDef);
 	Spec *type = find_type_of_spec(get_child_node_w(root, TypeSpec));
 	Node *declist = get_child_node_w(root, DecList);
 	while(declist) {
@@ -759,7 +759,7 @@ int semantic_analysis(Node *root)
 	if(root == NULL)
 		return 0;
 
-	wt_assert(root->token == Program);
+	assert(root->token == Program);
 	Node *blocklist = get_child_node_w(root, BlockList);
 
 	//block reduce
@@ -780,7 +780,7 @@ int semantic_analysis(Node *root)
 				analyse_vardef(get_child_node_w(block, VarDef));
 				break;
 			default:
-				wt_assert(0);
+				assert(0);
 		}
 
 		blocklist = get_child_node(blocklist, BlockList);

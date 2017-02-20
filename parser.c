@@ -20,14 +20,14 @@ void match(int token) {
 
 int store_token(int token) {
 	token_buffer[bufptr++].token = token;
-	wt_assert(bufptr < 102400);
+	assert(bufptr < 102400);
 	return token;
 }
 
 int store_next_token() {
 	int token = yylex();
 	token_buffer[bufptr++].token = token;
-	wt_assert(bufptr < 102400);
+	assert(bufptr < 102400);
 	return token;
 }
 
@@ -122,7 +122,7 @@ Node *wtparser() {
 				match_declr(subptr);
 				break;
 			default:
-				wt_assert(0);
+				assert(0);
 		}
 	}
 }

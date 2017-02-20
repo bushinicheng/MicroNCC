@@ -38,7 +38,7 @@ size_t get_size_of_btype(int btype) {
  *   return a new spec pointer point to a clean spec element
  */
 Spec *new_spec() {
-	wt_assert(specptr < MAX_SIZE);
+	assert(specptr < MAX_SIZE);
 	Spec *spec = &specpool[specptr ++];
 	memset(spec, 0, sizeof(Spec));
 	return spec;
@@ -57,7 +57,7 @@ Spec *get_spec_of_const(Spec *const_spec) {
 		case 'f':return get_spec_by_btype(SpecTypeFloat32, SpecRvalue);
 		case 's':return get_spec_by_btype(SpecTypeString, SpecLvalue);
 		case 'c':return get_spec_by_btype(SpecTypeInt8, SpecRvalue);
-		default:wt_assert(0);
+		default:assert(0);
 	}
 	return NULL;
 }
@@ -158,7 +158,7 @@ Spec *find_type_of_struct_member(Spec *type, char *member) {
  */
 Spec *find_type_of_spec(Node *root) {
 	if(!root) return NULL;
-	wt_assert(root->token == TypeSpec);
+	assert(root->token == TypeSpec);
 	char *struct_id = NULL;
 	
 	if(root->reduce_rule == AST_TypeSpec_is_CommonSpec) {
@@ -296,7 +296,7 @@ bool compare_type(Spec *s, Spec *t) {
 	switch(s->btype) {
 		case SpecTypeFunc:
 			//TODO:compare type function, IMPLEMENT ME
-			wt_assert(0);
+			assert(0);
 			break;
 		case SpecTypeComplex:
 			if(s->comp.plevel != t->comp.plevel)
@@ -343,7 +343,7 @@ bool compare_type(Spec *s, Spec *t) {
  * */
 Spec *register_type_function(Node *root) {
 	if(!root) return NULL;
-	wt_assert(root->token == FuncDec);
+	assert(root->token == FuncDec);
 	Spec *newspec = new_spec();
 	char *funcname = get_child_node_w(root, ID)->idtype->cons.supval.st;
 	newspec->btype = SpecTypeFunc;
@@ -384,7 +384,7 @@ Spec *register_type_function(Node *root) {
 	newspec->func.arglist = args;
 
 	//final check
-	wt_assert(argv == parg);
+	assert(argv == parg);
 
 	//check duplication
 	check_dupset(sformat("line %d: error: redefinition of parameter '%%s' of '%s'.\n", root->lineno, funcname), 
@@ -423,7 +423,7 @@ Spec *register_type_function(Node *root) {
  */
 Spec *register_complex_var_with_type(Spec *type, Node *root, char **varname) {
 	if(!root || !type) return NULL;
-	wt_assert(root->token == Decln);
+	assert(root->token == Decln);
 	Spec *newspec = new_spec();
 	newspec->comp.plevel = 0;
 	newspec->btype = SpecTypeComplex;
@@ -493,7 +493,7 @@ Spec *register_complex_var_with_type(Spec *type, Node *root, char **varname) {
  */
 Spec *register_type_complex_var(Node *root, char **varname) {
 	if(!root) return NULL;
-	wt_assert(root->token == Decln);
+	assert(root->token == Decln);
 	Spec *newspec = new_spec();
 	newspec->btype = SpecTypeArray;
 	newspec->width = 1;
@@ -541,7 +541,7 @@ Spec *register_type_complex_var(Node *root, char **varname) {
  */
 Spec *register_type_struct(Node *root) {
 	if(!root) return NULL;
-	wt_assert(root->token == StructDecln);
+	assert(root->token == StructDecln);
 	int nr_var = 0, struct_width = 0;
 	char *struct_id = get_child_node_w(root, ID)->idtype->cons.supval.st;
 	Spec *newspec = new_spec();
@@ -601,7 +601,7 @@ Spec *register_type_struct(Node *root) {
 		);
 
 	/*final check*/
-	wt_assert(newspec->struc.size == nr_var);
+	assert(newspec->struc.size == nr_var);
 	return newspec;
 }
 

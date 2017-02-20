@@ -2636,7 +2636,7 @@ static int qulfr(int token) {
 	pnd->token = TypeQulfr;
 	pnd->lineno = yylineno;
 	pnd->column = yycolumn;
-	pnd->reduce_rule = token;
+	pnd->cv.ex = token;
 	yylval.pnd = pnd;
 	return TypeQulfr;
 }
