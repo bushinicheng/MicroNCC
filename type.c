@@ -54,6 +54,7 @@ int convert_ctype2type(int ct) {
 		case CombineTypeLong|CombineTypeDouble:
 			return SpecTypeFloat64;
 	}
+	return -1;
 }
 
 

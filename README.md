@@ -414,7 +414,7 @@ c.a;//1
 c.b;//2
 c["a"];//1
 c["b"];//2
-//unlike python, the key of dict can only be string not hashable object
+//unlike python, the key of dict can only be string instead of hashable object
 
 //extend feature of dict, similar to array in php
 any d = {"a":1, 2, "C":3};

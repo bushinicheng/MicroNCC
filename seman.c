@@ -128,29 +128,48 @@ void analyse_declnspec_is_typespec(Node *root) {
 }
 
 void analyse_declnspec_is_typespec_declnspec(Node *root) {
+	//combine ct, transmit ex
 	Node *typespec = get_child_node_w(root, TypeSpec);
 	Node *declnspec = get_child_node_w(root, DeclnSpec);
 	root->cv.ex = declnspec->cv.ex;//transmit type qulfr
+	/* structure of cv.t
+	 * +-----------------+---------------+
+	 * |  SpecTypeVoid   |       0       |
+	 * +-----------------+---------------+
+	 * or
+	 * +-----------------+---------------+
+	 * | CombineTypeChar |       1       |
+	 * +-----------------+---------------+
+	 */
 	if((typespec->cv.t & 1) && (declnspec->cv.t & 1)) {
 		root->cv.t = typespec->cv.t | declnspec->cv.t;//t record combine type
-		root->dt = get_spec_by_btype(convert_ctype2type(root->cv.t));
+		int btype = convert_ctype2type(root->cv.t);
+		if(btype == -1) {//invalid combination
+			root->cv.t &= ~1;
+			root->dt = get_spec_by_btype(SpecTypeInt32);
+		}else{
+			root->dt = get_spec_by_btype(btype);
+		}
 	}else{
 		//TODO:invalid combination
 		//may need some strategies to report error to upper node so to
-		//  omit invalid id's register
-		root->cv.t |= CombineInvalid;
+		//  omit further type combination
+		root->cv.t &= ~1;
+		//once fail to combine, transmit null spec to upper node
 		root->dt = get_spec_by_btype(SpecTypeInt32);
 	}
 }
 
 void analyse_declnspec_is_typequlfr(Node *root) {
+	//default dt and ct and transmit ex
 	Node *typequlfr = get_child_node_w(root, TypeQulfr);
 	root->cv.ex = typequlfr->cv.ex;//ex record combine qulfr
-	root->cv.t = 0;//0 means combinable
+	root->cv.t = 1;//1 means combinable
 	root->dt = get_spec_by_btype(SpecTypeInt32);//default to be int32 if no typespec found
 }
 
 void analyse_declnspec_is_typequlfr_declnspec(Node *root) {
+	//transmit dt and ct and combine qulfr
 	Node *typequlfr = get_child_node_w(root, TypeQulfr);
 	Node *declnspec = get_child_node_w(root, DeclnSpec);
 	root->cv.ex = typequlfr->cv.ex | declnspec->cv.ex;//ex record combine qulfr
@@ -183,7 +202,8 @@ void analyse_type_spec_is_compspec(Node *root) {
 	 *   struct A {
 	 *       struct B {int a, b;};
 	 *       struct B x;
-	 *           // ^ inner struct decl
+	 *           // ^ inner struct decl and can be used in
+	 *                  this struct scope
 	 *       int y;
 	 *   };
 	 **/
