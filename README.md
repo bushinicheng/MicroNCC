@@ -390,34 +390,50 @@ Exp
 
 ```
 
-##example
+##expected features
+
+* compile-language, target platform: x86, ubuntu 16.04
+* compatibility with C
+* see follow
 ```
-/*
- * // c style comment
- */
+/************
+ * examples *
+ ************/
 
-struct typeA {
-	int a, b, *c, d[10][20][30][40];//arbitrary dimension of array
-	struct typeB {
-		int z;
-		struct typeC {//arbitrary depth of nested struct
-			int *p;
-		} a, b, c;
-	} **t[15];
-};
+any a = u"string";//utf8/ascii/unicode string, not just byte string
 
-int myfunc(struct typeA *a[2], int p, int z) {//arbitrary number of arguments
-	int ret = p * z;
-	if(p > z) {
-		a[0]->a = 1;
-		a[0][0].b = p & z;
-	}
+any b = ["A", 123, "B", [1, 2, "C"]];//list like python
+//some operations of b
+b[0];//"a"
+b[1];//123
+b[0:2];//["A", 123]
+//some other operation: __add__, __MULT__, ...
 
-	return ret;
-}
+any c = {"a":1, "b":2};//object like javascript
+c.a;//1
+c.b;//2
+c["a"];//1
+c["b"];//2
+//unlike python, the key of dict can only be string not hashable object
 
-int main(int argc, char **argv) {
-	return 0;
-}
+//extend feature of dict, similar to array in php
+any d = {"a":1, 2, "C":3};
+d.a == d["a"] && d.a == 1;//true
+d[0] == 2;//true
+
+//command, copy from bash
+any e = `ls -l`;
+e = e.run();
+e.output;//output of command `ls -l`
+e.status;//return code of command
+
+//generator in json
+any f = [2 * i for i in range(4)];
+any g = {i:j for i, j in [["a", 1], ["b", 2]]}
+
+//function closure, very expected but maybe hard to reach
+//   same as javascript
+
+//document, um, twice the time needed in this project
 
 ```

@@ -19,10 +19,6 @@ Spec *get_spec_by_btype(uint32_t bt) {
 	return &specptr[bt];
 }
 
-Spec *find_type_of_struct_member(Spec *type, char *vn, off_t *off){
-	return NULL;
-}
-
 int convert_ctype2type(int ct) {
 	if(ct & CombineTypeLongLong)
 		ct &= ~CombineTypeLong;
@@ -143,6 +139,7 @@ char *type_format(Spec *type) {
 	}
 
 	if(type->bt == SpecTypeFunc)	{
+		//FIXME
 		char **args_str = (char **)get_memory_pointer();
 		require_memory(type->func.argc * sizeof(char *));
 		char *ret_str = type_format(type->func.ret);

@@ -4,12 +4,6 @@ bool is_syntax_error = false;
 bool is_print_inter_code = false;
 int last_syntax_error;
 
-//如何将类型池与变量池统一
-//表现行为：
-//	通过ID，查找得到入口，进一步判断是变量还是自定义类型
-//	问题：未通过typedef的comptype如何处理
-//		struct A {};
-//		进行hash时，使用struct@A, union@A
 typedef struct IdentInfo {
 	char *id;
 	Spec *type;//type system
@@ -58,6 +52,7 @@ IdentInfo *find_variable(char *vn) {
 /* syntax analysis related function*/
 
 void analyse_decln_is_declnspec(Node *root) {
+	//FIXME
 	Node *declnspec = get_child_node_w(root, DeclnSpec);
 }
 
@@ -128,30 +123,77 @@ void analyse_enumor_is_id_assign_exp(Node *root) {
 
 void analyse_declnspec_is_typespec(Node *root) {
 	Node *typespec = get_child_node_w(root, TypeSpec);
-	root->cv.t = typespec->cv.t;
+	root->dt = typespec->dt;
+	root->cv.t = typespec->cv.t;//t record combine type
 }
 
 void analyse_declnspec_is_typespec_declnspec(Node *root) {
 	Node *typespec = get_child_node_w(root, TypeSpec);
 	Node *declnspec = get_child_node_w(root, DeclnSpec);
+	root->cv.ex = declnspec->cv.ex;//transmit type qulfr
 	if((typespec->cv.t & 1) && (declnspec->cv.t & 1)) {
-		root->cv.t = typespec->cv.t | declnspec->cv.t;
+		root->cv.t = typespec->cv.t | declnspec->cv.t;//t record combine type
+		root->dt = get_spec_by_btype(convert_ctype2type(root->cv.t));
 	}else{
+		//TODO:invalid combination
+		//may need some strategies to report error to upper node so to
+		//  omit invalid id's register
 		root->cv.t |= CombineInvalid;
+		root->dt = get_spec_by_btype(SpecTypeInt32);
 	}
 }
 
 void analyse_declnspec_is_typequlfr(Node *root) {
 	Node *typequlfr = get_child_node_w(root, TypeQulfr);
-	root->cv.ex = typequlfr->cv.ex;
-	root->cv.t = 1;
+	root->cv.ex = typequlfr->cv.ex;//ex record combine qulfr
+	root->cv.t = 0;//0 means combinable
+	root->dt = get_spec_by_btype(SpecTypeInt32);//default to be int32 if no typespec found
 }
 
 void analyse_declnspec_is_typequlfr_declnspec(Node *root) {
 	Node *typequlfr = get_child_node_w(root, TypeQulfr);
 	Node *declnspec = get_child_node_w(root, DeclnSpec);
-	root->cv.ex = typequlfr->cv.ex | declnspec->cv.ex;
-	root->cv.t = declnspec->cv.t;
+	root->cv.ex = typequlfr->cv.ex | declnspec->cv.ex;//ex record combine qulfr
+	root->cv.t = declnspec->cv.t;//deliver combine type to upper node
+	root->dt = declnspec->dt;
+}
+
+void analyse_typespec_is_type(Node *root) {
+	/* eg.
+	 *  common type
+	 *   void: reduce_rule = VOID, cv.t = WORD(SpecTypeVoid, false)
+	 *   bool: reduce_rule = BOOL, cv.t = WORD(SpecTypeUint8, false)
+	 *  combinable type
+	 *   char: reduce_rule = CHAR, cv.t = DWORD(CombineTypeChar,
+	 *         WORD(SpecTypeInt8, true))
+	 */
+	Node *typenode = get_child_node_w(root, TYPE);
+	root->dt = typenode->dt;//dt record true data type
+	if(typenode->cv.t & 1)
+		root->cv.t = WORD_PART1(typenode->cv.t);
+	else
+		root->cv.t = CombineInvalid;
+}
+
+void analyse_type_spec_is_compspec(Node *root) {
+	/*backfill offset and size of each member id by comptype's
+	 *  information(struct or union)
+	 *
+	 * inner struct decl
+	 *   struct A {
+	 *       struct B {int a, b;};
+	 *       struct B x;
+	 *           // ^ inner struct decl
+	 *       int y;
+	 *   };
+	 **/
+}
+
+void analyse_typespec_is_typename(Node *root) {
+	//need information from context
+	Node *typename = get_child_node_w(root, TYPE_NAME);
+	root->dt = typename->dt;
+	//TODO: and qulfr?
 }
 
 void analyse_exp_is_id(Node *root) {
@@ -295,6 +337,7 @@ void syntax_analysis(Node *root) {
 void free_seman() {
 	mempool_free(&vipool);
 	mempool_free(&idinfopool);
+	vector_free(&asv);
 }
 
 int init_seman() {

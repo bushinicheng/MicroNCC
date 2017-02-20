@@ -113,27 +113,27 @@ invalidcomment   \/\*([^\*]|\*[^\/])*$
 ";"                 {tokout("SEMI");	return symbol(SEMI);}
 "..."               {tokout("ELLIPSIS");return symbol(ELLIPSIS);}
 
-void                {tokout("VOID");	return type(VOID, MAKE_DWORD2(SpecTypeVoid, false));}
-bool                {tokout("BOOL");	return type(BOOL, MAKE_DWORD2(SpecTypeUint8, false));}
-char                {tokout("CHAR");	return type(CHAR, MAKE_DWORD2(CombineTypeChar, true));}
-short               {tokout("SHORT");	return type(SHORT, MAKE_DWORD2(CombineTypeShort, true));}
-int                 {tokout("INT");		return type(INT, MAKE_DWORD2(CombineTypeInt, true));}
-long                {tokout("LONG");	return type(LONG, MAKE_DWORD2(CombineTypeLong, true));}
-signed              {tokout("SIGNED");	return type(SIGNED, MAKE_DWORD2(CombineTypeSigned, true));}
-unsigned            {tokout("UNSIGNED");return type(UNSIGNED, MAKE_DWORD2(CombineTypeUnsigned, true));}
-float               {tokout("FLOAT");	return type(FLOAT, MAKE_DWORD2(SpecTypeFloat32, false));}
-double              {tokout("DOUBLE");	return type(DOUBLE, MAKE_DWORD2(CombineTypeDouble, true));}
-int8_t              {tokout("INT8T");	return type(INT8T, MAKE_DWORD2(SpecTypeInt8, false));}
-int16_t             {tokout("INT16T");	return type(INT16T, MAKE_DWORD2(SpecTypeInt16, false));}
-int32_t             {tokout("INT32T");	return type(INT32T, MAKE_DWORD2(SpecTypeInt32, false));}
-int64_t             {tokout("INT64T");	return type(INT64T, MAKE_DWORD2(SpecTypeInt64, false));}
-uint8_t             {tokout("UINT8T");	return type(UINT8T, MAKE_DWORD2(SpecTypeUint8, false));}
-uint16_t            {tokout("UINT16T");	return type(UINT16T, MAKE_DWORD2(SpecTypeUint16, false));}
-uint32_t            {tokout("UINT32T");	return type(UINT32T, MAKE_DWORD2(SpecTypeUint32, false));}
-uint64_t            {tokout("UINT64T");	return type(UINT64T, MAKE_DWORD2(SpecTypeUint64, false));}
-size_t              {tokout("SIZET");	return type(SIZET, MAKE_DWORD2(SpecTypeUint32, false));}
-uintptr_t           {tokout("UINTPTRT");return type(UINTPTRT, MAKE_DWORD2(SpecTypeUint32, false));}
-off_t               {tokout("OFFT");	return type(OFFT, MAKE_DWORD2(SpecTypeUint32, false));}
+void                {tokout("VOID");	return type(VOID, MAKE_WORD(SpecTypeVoid, false));}
+bool                {tokout("BOOL");	return type(BOOL, MAKE_WORD(SpecTypeUint8, false));}
+char                {tokout("CHAR");	return type(CHAR, MAKE_DWORD2(CombineTypeChar, MAKE_WORD(SpecTypeInt8, true)));}
+short               {tokout("SHORT");	return type(SHORT, MAKE_DWORD2(CombineTypeShort, MAKE_WORD(SpecTypeInt16, true)));}
+int                 {tokout("INT");		return type(INT, MAKE_DWORD2(CombineTypeInt, MAKE_WORD(SpecTypeInt32, true)));}
+long                {tokout("LONG");	return type(LONG, MAKE_DWORD2(CombineTypeLong, MAKE_WORD(SpecTypeInt32, true)));}
+signed              {tokout("SIGNED");	return type(SIGNED, MAKE_DWORD2(CombineTypeSigned, MAKE_WORD(SpecTypeInt32, true)));}
+unsigned            {tokout("UNSIGNED");return type(UNSIGNED, MAKE_DWORD2(CombineTypeUnsigned, MAKE_WORD(SpecTypeUint32, true)));}
+float               {tokout("FLOAT");	return type(FLOAT, MAKE_WORD(SpecTypeFloat32, false));}
+double              {tokout("DOUBLE");	return type(DOUBLE, MAKE_DWORD2(CombineTypeDouble, MAKE_WORD(SpecTypeFloat64, true)));}
+int8_t              {tokout("INT8T");	return type(INT8T, MAKE_WORD(SpecTypeInt8, false));}
+int16_t             {tokout("INT16T");	return type(INT16T, MAKE_WORD(SpecTypeInt16, false));}
+int32_t             {tokout("INT32T");	return type(INT32T, MAKE_WORD(SpecTypeInt32, false));}
+int64_t             {tokout("INT64T");	return type(INT64T, MAKE_WORD(SpecTypeInt64, false));}
+uint8_t             {tokout("UINT8T");	return type(UINT8T, MAKE_WORD(SpecTypeUint8, false));}
+uint16_t            {tokout("UINT16T");	return type(UINT16T, MAKE_WORD(SpecTypeUint16, false));}
+uint32_t            {tokout("UINT32T");	return type(UINT32T, MAKE_WORD(SpecTypeUint32, false));}
+uint64_t            {tokout("UINT64T");	return type(UINT64T, MAKE_WORD(SpecTypeUint64, false));}
+size_t              {tokout("SIZET");	return type(SIZET, MAKE_WORD(SpecTypeUint32, false));}
+uintptr_t           {tokout("UINTPTRT");return type(UINTPTRT, MAKE_WORD(SpecTypeUint32, false));}
+off_t               {tokout("OFFT");	return type(OFFT, MAKE_WORD(SpecTypeInt32, false));}
 
 enum                {tokout("ENUM");	return symbol(ENUM);}
 union               {tokout("UNION");	return symbol(UNION);}
@@ -237,7 +237,7 @@ static int type(int token, int typeinfo) {
 	pnd->token = TYPE;
 	pnd->reduce_rule = token;
 	pnd->cv.t = typeinfo;
-	//pnd->dt = ?;//no dt
+	pnd->dt = get_spec_by_btype(WORD_PART1(typeinfo));
 	pnd->lineno = yylineno;
 	pnd->column = yycolumn;
 	yylval.pnd = pnd;

@@ -8,7 +8,7 @@ LCFILE=$(LFILE:.l=.c)
 YCFILE=$(YFILE:.y=.c)
 YHFILE=$(YFILE:.y=.h)
 CFILES=$(shell echo "ls *.c" | bash)
-HFILES=$(shell find . -name "*.h")
+HFILES=$(shell echo "ls *.h" | bash)
 CFLAGS=-O2 -std=c11
 
 OBJ_DIR=output/
@@ -63,4 +63,4 @@ clean:
 
 count:
 	@printf "total lines: "
-	@find . -name "*.[chl]" | sed "s/.\/\(lexical.c\|syntax.c\)//g" | xargs cat | wc -l
+	@echo $(LFILE) $(YFILE) $(CFILES) $(HFILES) | sed "s/\(lexical.c\|syntax.[ch]\)//g" | xargs cat | wc -l

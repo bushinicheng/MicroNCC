@@ -14,14 +14,13 @@ enum {
 	SpecTypeUint64 = 7,
 	SpecTypeFloat32 = 8,
 	SpecTypeFloat64 = 9,
-	SpecTypeString = 10, //char *s="hello";equivalent to `char *`
-	//
-	SpecTypeVoid,//special data type
 	/*number*/
+	SpecTypeString = 10, //char *s="hello";equivalent to `char *`
+	//the above must be registered firstly
+	SpecTypeVoid,
 	SpecTypePointer,//pointer type
 	SpecTypeArray,
 	SpecTypeComplex,//pointer array
-	//the above must be registered firstly
 	SpecTypeFunc,
 	SpecTypeStruct,
 	SpecTypeUnion,
@@ -91,14 +90,14 @@ typedef struct VarInfo {
 	int qulfr;
 } VarInfo;
 
-typedef struct ConstStructMemoryMap {
+typedef struct InitorMemoryMap {
 	//FIXME
 	void *buf;
 	size_t bufsize;
 	off_t *offarr;
 	size_t *sizearr;
 	size_t nr_var;
-} ConstStructMemoryMap;
+} InitorMemoryMap;
 
 typedef struct ExpConstPart{
 	//warning:string is not constant
@@ -113,7 +112,7 @@ typedef struct ExpConstPart{
 		int i;float f;double llf;void *p;
 		char* str;// the address of string or id
 		int ex;
-		ConstStructMemoryMap *mm;
+		InitorMemoryMap *mm;
 	};
 } ExpConstPart;
 
@@ -145,7 +144,8 @@ typedef struct Spec {
 			char *sn;//struct name
 			struct {
 				char *vn;//var name
-				off_t off;//offset of current var in struct
+				off_t off;//offset in bits
+				size_t size;//bits
 				struct Spec *dt;
 			} *argv;
 			size_t size;
@@ -189,6 +189,7 @@ Spec *new_spec();
 char *type_format(Spec *type);
 int get_type_relation(int btA, int btB);
 Spec *get_spec_by_btype(uint32_t btype);
+int convert_ctype2type(int ct);
 
 typedef void (*SemanFunc)(Node *);
 void syntax_analysis(Node *root);

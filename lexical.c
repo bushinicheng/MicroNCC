@@ -1291,107 +1291,107 @@ YY_RULE_SETUP
 case 48:
 YY_RULE_SETUP
 #line 116 "lexical.l"
-{tokout("VOID");	return type(VOID, MAKE_DWORD2(SpecTypeVoid, false));}
+{tokout("VOID");	return type(VOID, MAKE_WORD(SpecTypeVoid, false));}
 	YY_BREAK
 case 49:
 YY_RULE_SETUP
 #line 117 "lexical.l"
-{tokout("BOOL");	return type(BOOL, MAKE_DWORD2(SpecTypeUint8, false));}
+{tokout("BOOL");	return type(BOOL, MAKE_WORD(SpecTypeUint8, false));}
 	YY_BREAK
 case 50:
 YY_RULE_SETUP
 #line 118 "lexical.l"
-{tokout("CHAR");	return type(CHAR, MAKE_DWORD2(CombineTypeChar, true));}
+{tokout("CHAR");	return type(CHAR, MAKE_DWORD2(CombineTypeChar, MAKE_WORD(SpecTypeInt8, true)));}
 	YY_BREAK
 case 51:
 YY_RULE_SETUP
 #line 119 "lexical.l"
-{tokout("SHORT");	return type(SHORT, MAKE_DWORD2(CombineTypeShort, true));}
+{tokout("SHORT");	return type(SHORT, MAKE_DWORD2(CombineTypeShort, MAKE_WORD(SpecTypeInt16, true)));}
 	YY_BREAK
 case 52:
 YY_RULE_SETUP
 #line 120 "lexical.l"
-{tokout("INT");		return type(INT, MAKE_DWORD2(CombineTypeInt, true));}
+{tokout("INT");		return type(INT, MAKE_DWORD2(CombineTypeInt, MAKE_WORD(SpecTypeInt32, true)));}
 	YY_BREAK
 case 53:
 YY_RULE_SETUP
 #line 121 "lexical.l"
-{tokout("LONG");	return type(LONG, MAKE_DWORD2(CombineTypeLong, true));}
+{tokout("LONG");	return type(LONG, MAKE_DWORD2(CombineTypeLong, MAKE_WORD(SpecTypeInt32, true)));}
 	YY_BREAK
 case 54:
 YY_RULE_SETUP
 #line 122 "lexical.l"
-{tokout("SIGNED");	return type(SIGNED, MAKE_DWORD2(CombineTypeSigned, true));}
+{tokout("SIGNED");	return type(SIGNED, MAKE_DWORD2(CombineTypeSigned, MAKE_WORD(SpecTypeInt32, true)));}
 	YY_BREAK
 case 55:
 YY_RULE_SETUP
 #line 123 "lexical.l"
-{tokout("UNSIGNED");return type(UNSIGNED, MAKE_DWORD2(CombineTypeUnsigned, true));}
+{tokout("UNSIGNED");return type(UNSIGNED, MAKE_DWORD2(CombineTypeUnsigned, MAKE_WORD(SpecTypeUint32, true)));}
 	YY_BREAK
 case 56:
 YY_RULE_SETUP
 #line 124 "lexical.l"
-{tokout("FLOAT");	return type(FLOAT, MAKE_DWORD2(SpecTypeFloat32, false));}
+{tokout("FLOAT");	return type(FLOAT, MAKE_WORD(SpecTypeFloat32, false));}
 	YY_BREAK
 case 57:
 YY_RULE_SETUP
 #line 125 "lexical.l"
-{tokout("DOUBLE");	return type(DOUBLE, MAKE_DWORD2(CombineTypeDouble, true));}
+{tokout("DOUBLE");	return type(DOUBLE, MAKE_DWORD2(CombineTypeDouble, MAKE_WORD(SpecTypeFloat64, true)));}
 	YY_BREAK
 case 58:
 YY_RULE_SETUP
 #line 126 "lexical.l"
-{tokout("INT8T");	return type(INT8T, MAKE_DWORD2(SpecTypeInt8, false));}
+{tokout("INT8T");	return type(INT8T, MAKE_WORD(SpecTypeInt8, false));}
 	YY_BREAK
 case 59:
 YY_RULE_SETUP
 #line 127 "lexical.l"
-{tokout("INT16T");	return type(INT16T, MAKE_DWORD2(SpecTypeInt16, false));}
+{tokout("INT16T");	return type(INT16T, MAKE_WORD(SpecTypeInt16, false));}
 	YY_BREAK
 case 60:
 YY_RULE_SETUP
 #line 128 "lexical.l"
-{tokout("INT32T");	return type(INT32T, MAKE_DWORD2(SpecTypeInt32, false));}
+{tokout("INT32T");	return type(INT32T, MAKE_WORD(SpecTypeInt32, false));}
 	YY_BREAK
 case 61:
 YY_RULE_SETUP
 #line 129 "lexical.l"
-{tokout("INT64T");	return type(INT64T, MAKE_DWORD2(SpecTypeInt64, false));}
+{tokout("INT64T");	return type(INT64T, MAKE_WORD(SpecTypeInt64, false));}
 	YY_BREAK
 case 62:
 YY_RULE_SETUP
 #line 130 "lexical.l"
-{tokout("UINT8T");	return type(UINT8T, MAKE_DWORD2(SpecTypeUint8, false));}
+{tokout("UINT8T");	return type(UINT8T, MAKE_WORD(SpecTypeUint8, false));}
 	YY_BREAK
 case 63:
 YY_RULE_SETUP
 #line 131 "lexical.l"
-{tokout("UINT16T");	return type(UINT16T, MAKE_DWORD2(SpecTypeUint16, false));}
+{tokout("UINT16T");	return type(UINT16T, MAKE_WORD(SpecTypeUint16, false));}
 	YY_BREAK
 case 64:
 YY_RULE_SETUP
 #line 132 "lexical.l"
-{tokout("UINT32T");	return type(UINT32T, MAKE_DWORD2(SpecTypeUint32, false));}
+{tokout("UINT32T");	return type(UINT32T, MAKE_WORD(SpecTypeUint32, false));}
 	YY_BREAK
 case 65:
 YY_RULE_SETUP
 #line 133 "lexical.l"
-{tokout("UINT64T");	return type(UINT64T, MAKE_DWORD2(SpecTypeUint64, false));}
+{tokout("UINT64T");	return type(UINT64T, MAKE_WORD(SpecTypeUint64, false));}
 	YY_BREAK
 case 66:
 YY_RULE_SETUP
 #line 134 "lexical.l"
-{tokout("SIZET");	return type(SIZET, MAKE_DWORD2(SpecTypeUint32, false));}
+{tokout("SIZET");	return type(SIZET, MAKE_WORD(SpecTypeUint32, false));}
 	YY_BREAK
 case 67:
 YY_RULE_SETUP
 #line 135 "lexical.l"
-{tokout("UINTPTRT");return type(UINTPTRT, MAKE_DWORD2(SpecTypeUint32, false));}
+{tokout("UINTPTRT");return type(UINTPTRT, MAKE_WORD(SpecTypeUint32, false));}
 	YY_BREAK
 case 68:
 YY_RULE_SETUP
 #line 136 "lexical.l"
-{tokout("OFFT");	return type(OFFT, MAKE_DWORD2(SpecTypeUint32, false));}
+{tokout("OFFT");	return type(OFFT, MAKE_WORD(SpecTypeInt32, false));}
 	YY_BREAK
 case 69:
 YY_RULE_SETUP
@@ -2673,7 +2673,7 @@ static int type(int token, int typeinfo) {
 	pnd->token = TYPE;
 	pnd->reduce_rule = token;
 	pnd->cv.t = typeinfo;
-	//pnd->dt = ?;//no dt
+	pnd->dt = get_spec_by_btype(WORD_PART1(typeinfo));
 	pnd->lineno = yylineno;
 	pnd->column = yycolumn;
 	yylval.pnd = pnd;
