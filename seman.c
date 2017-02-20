@@ -161,7 +161,7 @@ void analyse_declnspec_is_typespec_declnspec(Node *root) {
 }
 
 void analyse_declnspec_is_typequlfr(Node *root) {
-	//default dt and ct and transmit ex
+	//default dt and ct, transmit ex
 	Node *typequlfr = get_child_node_w(root, TypeQulfr);
 	root->cv.ex = typequlfr->cv.ex;//ex record combine qulfr
 	root->cv.t = 1;//1 means combinable
@@ -194,7 +194,40 @@ void analyse_typespec_is_type(Node *root) {
 		root->cv.t = CombineInvalid;
 }
 
-void analyse_type_spec_is_compspec(Node *root) {
+void analyse_starlist_is_mult(Node *root) {
+	//cv.t record pointer level
+	//ex record qulfr
+	root->cv.t = 1;
+}
+
+void analyse_starlist_is_mult_typequlfrlist(Node *root) {
+	Node *typequlfrlist = get_child_node_w(root, TypeQulfrList);
+	root->cv.t = 1;//initial to be 1
+	root->cv.ex = typequlfrlist->cv.ex;//transmit qulfr
+}
+
+void analyse_starlist_is_mult_starlist(Node *root) {
+	Node *starlist = get_child_node_w(root, StarList);
+	root->cv.t = starlist->cv.ex + 1;//initial to be 1
+}
+
+void analyse_starlist_is_mult_typequlfrlist_starlist(Node *root) {
+	Node *starlist = get_child_node_w(root, StarList);
+	Node *typequlfrlist = get_child_node_w(root, TypeQulfrList);
+	root->cv.t = starlist->cv.ex + 1;//initial to be 1
+	root->cv.ex = typequlfrlist->cv.ex;//transmit qulfr
+}
+
+void analyse_typequlfrlist_is_typequlfr(Node *root) {
+}
+
+void analyse_typequlfrlist_is_typequlfrlist_typequlfr(Node *root) {
+}
+
+void analyse_declr_is_starlist_directdeclr(Node *root) {
+}
+
+void analyse_typespec_is_compspec(Node *root) {
 	/*backfill offset and size of each member id by comptype's
 	 *  information(struct or union)
 	 *
@@ -203,10 +236,31 @@ void analyse_type_spec_is_compspec(Node *root) {
 	 *       struct B {int a, b;};
 	 *       struct B x;
 	 *           // ^ inner struct decl and can be used in
-	 *                  this struct scope
+	 *           //     this struct scope
 	 *       int y;
 	 *   };
 	 **/
+}
+
+void analyse_compdecln_is_declnspec(Node *root) {
+	Node *declnspec = get_child_node_w(root, DeclnSpec);
+	root->dt = declnspec->dt;//transmit dt
+}
+
+void analyse_compdecln_is_declnspec_compdeclrlist(Node *root) {
+	//TODO:
+}
+
+void analyse_compdeclrlist_is_compdeclr(Node *root) {
+}
+
+void analyse_compdeclr_is_declr() {
+}
+
+void analyse_compdeclr_is_colon_exp() {
+}
+
+void analyse_compdeclr_is_declr_colon_exp() {
 }
 
 void analyse_typespec_is_typename(Node *root) {
