@@ -251,7 +251,7 @@ char *type_format(Spec *type) {
 			break;
 	}
 
-	if(type->btype == SpecTypeFunc)	{
+	if(type->btype == SpecTypeFunction)	{
 		char **args_str = (char **)get_memory_pointer();
 		require_memory(type->func.argv * sizeof(char *));
 		char *ret_str = type_format(type->func.ret);
@@ -294,7 +294,7 @@ bool compare_type(Spec *s, Spec *t) {
 	if(s->width != t->width) return false;
 
 	switch(s->btype) {
-		case SpecTypeFunc:
+		case SpecTypeFunction:
 			//TODO:compare type function, IMPLEMENT ME
 			assert(0);
 			break;
@@ -346,7 +346,7 @@ Spec *register_type_function(Node *root) {
 	assert(root->token == FuncDec);
 	Spec *newspec = new_spec();
 	char *funcname = get_child_node_w(root, ID)->idtype->cons.supval.st;
-	newspec->btype = SpecTypeFunc;
+	newspec->btype = SpecTypeFunction;
 	newspec->width = 0;
 	newspec->func.ret = find_type_of_spec(get_sibling_node_w(root, TypeSpec));
 
@@ -658,7 +658,7 @@ void print_spec(Spec *type) {
 			printf("};\n");
 		else
 			printf("} ");
-	}else if(type->btype == SpecTypeFunc) {
+	}else if(type->btype == SpecTypeFunction) {
 		print_spec(type->func.ret);
 		printf("function(");
 		for(int i = 0; i < (int)(type->func.argv); i++) {

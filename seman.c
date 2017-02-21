@@ -286,7 +286,7 @@ Spec *combine_datatype_of_directdeclr(Spec *ddt, Spec *exdt) {
 		}
 		return ddt;
 	}else{
-		//paralist->dt->btype = SpecTypeFunc
+		//paralist->dt->btype = SpecTypeFunction
 		//  the ret_spec of dt need to be backfilled in upper call
 		return exdt;
 	}
@@ -314,7 +314,7 @@ void analyse_directdeclr_is_func_lp_rp(Node *root) {
 	Spec *funcdt = new_spec();
 	Node *directdeclr = get_child_node_w(root, DirectDeclr);
 	root->cv.str = directdeclr->cv.str;//transmit id
-	funcdt->bt = SpecTypeFunc;
+	funcdt->bt = SpecTypeFunction;
 	funcdt->func.argc = 0;
 	root->dt = combine_datatype_of_directdeclr(directdeclr->dt, funcdt);
 }
@@ -331,11 +331,57 @@ void analyse_paratypelist(Node *root) {
 void analyse_paralist(Node *root) {
 }
 
-void analyse_paradecln(Node *root) {
-	/* ParaDecln -> DeclnSpec Declr
-	 *              DeclnSpec AbstDeclr
-	 *              DeclnSpec
+/* ParaDecln -> DeclnSpec Declr --> id
+ *                          ^---------+
+ *              DeclnSpec AbstDeclr   |-> dt
+ *                            ^-------+
+ *                            +--> eg. *[3], *, [], no id
+ *              DeclnSpec
+ *                  ^---- for some specicial type,
+ *                          eg. function pointer
+ */
+void combine_datatype_of_paradecln(Spec *dsdt, Spec *drdt) {
+	/*                dsdt    drdt
+	 * ParaDecln -> DeclnSpec Declr
+	 *                  ^       ^
+	 *                  \-------/
+	 *                      +----- new dt
+	 *         eg.     int    *[4]
+	 *                 int  func(void)
+	 *
+	 *  influenced type of declr: Comp, Pointer, Array, Func
 	 */
+	if(drdt->bt == SpecTypeComplex) {
+		drdt->comp.dt = dsdt;
+	}else if(drdt->bt == SpecTypePointer) {
+		drdt->ptr.dt = dsdt;
+	}else if(drdt->bt == SpecTypeArray) {
+		drdt->arr.dt = dsdt;
+	}else if(drdt->bt == SpecTypeFunction) {
+		drdt->func.ret = dsdt;
+	}else{
+		//invalid case
+		assert(0);
+	}
+	return drdt;
+}
+
+void analyse_paradecln_is_declnspec_declr(Node *root) {
+	Node *declnspec = get_child_node_w(root, DeclnSpec);
+	Node *declr = get_child_node_w(root, Declr);
+	root->cv.str = declr->cv.str;
+	root->dt = combine_datatype_of_paradecln(declnspec->dt, declr->dt);
+}
+
+void analyse_paradecln_is_declnspec_abstdeclr(Node *root) {
+	Node *declnspec = get_child_node_w(root, DeclnSpec);
+	Node *abstdeclr = get_child_node_w(root, AbstDeclr);
+	root->dt = combine_datatype_of_paradecln(declnspec->dt, abstdeclr->dt);
+}
+
+void analyse_paradecln_is_declnspec(Node *root) {
+	Node *declnspec = get_child_node_w(root, DeclnSpec);
+	root->dt = declnspec->dt;
 }
 
 void analyse_idlist(Node *root) {
@@ -358,7 +404,7 @@ void analyse_idlist(Node *root) {
 	for(int i = 0; i < cnt; i++)
 		func_argv[i] = default_argtype;
 	root->dt = new_spec();
-	root->dt->bt = SpecTypeFunc;
+	root->dt->bt = SpecTypeFunction;
 	root->dt->func.argc = cnt;
 	root->dt->func.argv = func_argv;
 }

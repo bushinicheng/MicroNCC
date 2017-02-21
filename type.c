@@ -94,8 +94,8 @@ void construct_type_relations() {
 		//ptr op bit
 		type_relations[i][SpecTypePointer] |= CAssign | CAddSub | CRelop | CLogic;
 		type_relations[SpecTypePointer][i] |= CAssign | CAddSub | CRelop | CLogic;
-		type_relations[i][SpecTypeFunc] |= CAssign | CAddSub | CRelop | CLogic;
-		type_relations[SpecTypeFunc][i] |= CAssign | CAddSub | CRelop | CLogic;
+		type_relations[i][SpecTypeFunction] |= CAssign | CAddSub | CRelop | CLogic;
+		type_relations[SpecTypeFunction][i] |= CAssign | CAddSub | CRelop | CLogic;
 		type_relations[i][SpecTypeString] |= CAssign | CAddSub | CRelop | CLogic;
 		type_relations[SpecTypeString][i] |= CAssign | CAddSub | CRelop | CLogic;
 	}
@@ -139,7 +139,7 @@ char *type_format(Spec *type) {
 		type->format_string = (char*)btype_format_string[type->bt];
 	}
 
-	if(type->bt == SpecTypeFunc)	{
+	if(type->bt == SpecTypeFunction)	{
 		//FIXME
 		char **args_str = (char **)get_memory_pointer();
 		require_memory(type->func.argc * sizeof(char *));

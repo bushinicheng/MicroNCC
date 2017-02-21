@@ -21,7 +21,7 @@ enum {
 	SpecTypePointer,//pointer type
 	SpecTypeArray,
 	SpecTypeComplex,//pointer array
-	SpecTypeFunc,
+	SpecTypeFunction,
 	SpecTypeStruct,
 	SpecTypeUnion,
 	SpecTypeEnd,
@@ -117,7 +117,7 @@ typedef struct ExpConstPart{
 		uint8_t _u8;uint16_t _u16;uint32_t _u32;uint64_t _u64;
 		float _f32; double _f64;
 		int i;float f;double llf;void *p;
-		char* str;// the address of string or id
+		char *str;// the address of string or id
 		char **pstr;
 		int ex;
 	};

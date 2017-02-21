@@ -167,7 +167,7 @@ void check_function_call(Node *root, VarElement *func) {
 		|| root->reduce_rule == AST_Exp_is_ID_LP_FuncCallArgList_RP);
 	//need  <==> func->type->func.argv
 	//given <==> root->reduce_rule
-	if(func->type->btype != SpecTypeFunc) {
+	if(func->type->btype != SpecTypeFunction) {
 		//function not callable
 		yyerrtype(ErrorNotCallable, root->lineno, get_child_node_w(root, ID)->idtype->cons.supval.st);
 	}else if(func->type->func.argv == 0) {
