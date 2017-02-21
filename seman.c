@@ -51,6 +51,10 @@ void decrease_actionlevel() {
 }
 
 IdentInfo *find_variable(char *vn) {
+	/* for struct and union: struct.id, union.id
+	 * for actionlevel info, line@id
+	 * combine: line@struct.id
+	 */
 	HashTable *ht = asv.p;
 	for(int i = actionlevel - 1; i >= 0; i--) {
 		IdentInfo *ve = hash_get(&ht[i], vn, strlen(vn));
@@ -329,6 +333,42 @@ void analyse_paratypelist(Node *root) {
 }
 
 void analyse_paralist(Node *root) {
+	if(root->reduce_rule == AST_ParaList_is_ParaDecln) {
+		root->cv.cnt = 1;
+	}else{
+		Node *child_paralist = get_child_node_w(root, ParaList);
+		root->cv.cnt = child_paralist->cv.cnt + 1;
+	}
+}
+
+void backtrack_analyse_paralist(Node *root) {
+	//for each ParaDecln
+	//    id and dt 
+	//FIXME: root node has not yet set parent node while reducing
+	//       algorithm using this production
+	int cnt = 0;
+	//temporary strategy: traverse child AST twice
+	//  since id and dt can't be put together
+	Node *paralist = root;
+	char **varname = (char **)malloc(root->cv.cnt * sizeof(char *));
+	Spec **funcarg = (Spec **)malloc(root->cv.cnt * sizeof(Spec *));
+	while(paralist) {
+		Node *paradecln = get_child_node_w(paralist, ParaDecln);
+		varname[cnt] = paradecln->cv.str;
+		funcarg[cnt] = paradecln->dt;
+		//prepare for next iteration
+		paralist = get_child_node(paralist, ParaList);
+		cnt ++;
+	}
+	//check cnt
+	assert(cnt == root->cv.cnt);
+	//set root->cv.pstr
+	root->cv.pstr = varname;
+	//set root->dt
+	root->dt = new_spec();
+	root->dt->bt = SpecTypeFunction;
+	root->dt->func.argc = root->cv.cnt;
+	root->dt->func.argv = funcarg;
 }
 
 /* ParaDecln -> DeclnSpec Declr --> id
@@ -340,7 +380,7 @@ void analyse_paralist(Node *root) {
  *                  ^---- for some specicial type,
  *                          eg. function pointer
  */
-void combine_datatype_of_paradecln(Spec *dsdt, Spec *drdt) {
+Spec* combine_datatype_of_paradecln(Spec *dsdt, Spec *drdt) {
 	/*                dsdt    drdt
 	 * ParaDecln -> DeclnSpec Declr
 	 *                  ^       ^
@@ -385,28 +425,43 @@ void analyse_paradecln_is_declnspec(Node *root) {
 }
 
 void analyse_idlist(Node *root) {
+	if(root->reduce_rule == AST_IdList_is_ID)
+		root->cv.cnt = 1;
+	else {
+		Node *child_idlist = get_child_node_w(root, IdList);
+		root->cv.cnt = child_idlist->cv.cnt + 1;
+	}
+}
+
+void backtrack_analyse_idlist(Node *root) {
 	//backfill, give up bottom-up fill
-	if(root->parent->token == IdList) return;
+	//FIXME: root node has not yet set parent node while reducing
+	//       algorithm using this production
+	//need to be called by other analyse function who has
+	//  nonterminal symbol IdList in its production
 	int cnt = 0;
-	char **varname = get_memory_pointer();
-	Node *idlist = get_child_node(root, IdList);
+	Spec *default_argtype = get_spec_by_btype(SpecTypeInt32);
+	char **varname = (char **)malloc(root->cv.cnt * sizeof(char *));
+	Spec **funcarg = (Spec **)malloc(root->cv.cnt * sizeof(Spec *));
+	Node *idlist = root;
+	//traverse child AST
 	while(idlist) {
 		Node *idnode = get_child_node_w(idlist, ID);
-		varname[cnt ++] = idnode->cv.str;
+		varname[cnt] = idnode->cv.str;
+		funcarg[cnt] = default_argtype;
+		//prepare for next iteration
 		idlist = get_child_node(root, IdList);
+		cnt ++;
 	}
-	Node *idnode = get_child_node_w(root, ID);
-	varname[cnt ++] = idnode->cv.str;
-	root->cv.pstr = (char **)require_memory(sizeof(char *) * cnt);
+	//check cnt
+	assert(root->cv.cnt == cnt);
+	//set pstr
+	root->cv.pstr = varname;
 	//set spec
-	Spec *default_argtype = get_spec_by_btype(SpecTypeInt32);
-	Spec **func_argv = (Spec **)malloc(sizeof(Spec *) * cnt);
-	for(int i = 0; i < cnt; i++)
-		func_argv[i] = default_argtype;
 	root->dt = new_spec();
 	root->dt->bt = SpecTypeFunction;
 	root->dt->func.argc = cnt;
-	root->dt->func.argv = func_argv;
+	root->dt->func.argv = funcarg;
 }
 
 void analyse_typespec_is_compspec(Node *root) {

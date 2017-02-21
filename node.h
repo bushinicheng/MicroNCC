@@ -108,6 +108,7 @@ typedef struct ExpConstPart{
 		int t; //sometimes store extra information of tree node
 				//for example, `Const` or `Extern` or ... in `Qulfr` node 
 				//if node->dt != NULL, t donates the const attribute
+		int cnt;
 		struct Spec *type;
 		InitorMemoryMap *mm;
 	};
