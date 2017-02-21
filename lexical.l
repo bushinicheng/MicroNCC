@@ -286,7 +286,7 @@ static int reg(int syntaxval) {
 	switch(syntaxval)
 	{
 	case ID:
-		pnd->cv.str = register_id(yytext);
+		pnd->cv.id = register_id(yytext);
 		break;
 	case STRING:
 		pnd->lrv = SpecLvalue;

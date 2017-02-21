@@ -192,8 +192,8 @@ void reset_spec_state() {
 	//char*/string
 	spec = (Spec *)mempool_new(&specpool);
 	spec->bt = SpecTypePointer;
-	spec->ptr.dt = &specptr[SpecTypeInt8];
-	spec->ptr.pl = 1;
+	spec->comp.dt = &specptr[SpecTypeInt8];
+	spec->comp.pl = 1;
 }
 
 void init_spec() {

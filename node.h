@@ -109,6 +109,9 @@ typedef struct ExpConstPart{
 				//for example, `Const` or `Extern` or ... in `Qulfr` node 
 				//if node->dt != NULL, t donates the const attribute
 		int cnt;
+		char *id;
+		char **pid;
+		char *str;
 		struct Spec *type;
 		InitorMemoryMap *mm;
 	};
@@ -118,8 +121,6 @@ typedef struct ExpConstPart{
 		uint8_t _u8;uint16_t _u16;uint32_t _u32;uint64_t _u64;
 		float _f32; double _f64;
 		int i;float f;double llf;void *p;
-		char *str;// the address of string or id
-		char **pstr;
 		int ex;
 	};
 } ExpConstPart;
@@ -129,18 +130,17 @@ typedef struct Spec {
 	int w;
 	char *format_string;//format_string
 	union {
-		//ex. int a[10][20];
-		struct {
-			struct Spec *dt;//dst type, such as `struct A`
-			size_t *dim;//dimension array:a[2][3][4]=>[2,3,4]
-			size_t size;//length of(dim)
-		} arr;//complex variable, array or pointer or both
-
-		//ex. int ***p = NULL; high level pointer is meaningless
+		//ex. int **a[10][20]; type(a) is complex
 		struct {
 			struct Spec *dt;//actual spec,such as `struct A`
-			int pl;//pointer level
-		} ptr;//complex variable, array or pointer or both
+			size_t *dim;//dimension array:a[2][3][4]=>[2,3,4]
+			size_t size;//length of(dim)
+			           //works if bt == SpecTypeArray
+					   //  or bt == SpecTypeComp
+			int pl;//pointer level, works if bt == SpecTypePointer
+			           //or bt == SpecTypeComplex
+					   //must not be zero(not pointer)
+		} comp;//complex variable, array or pointer or both
 
 		struct {
 			struct Spec *ret;
@@ -159,15 +159,6 @@ typedef struct Spec {
 			} *argv;
 			size_t size;
 		} struc;//for structure
-
-		//ex. int **a[10][20]; type(a) is complex
-		struct {
-			struct Spec *dt;//actual spec,such as `struct A`
-			size_t *dim;//dimension array:a[2][3][4]=>[2,3,4]
-			size_t size;//length of(dim)
-			int pl;//pointer level
-					   //must not be zero(not pointer)
-		} comp;//complex variable, array or pointer or both
 	};
 } Spec;
 

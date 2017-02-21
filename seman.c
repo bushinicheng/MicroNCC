@@ -105,7 +105,7 @@ void analyse_enumspec(Node *root) {
 
 void analyse_enumor_is_id(Node *root) {
 	Node *idnode = get_child_node_w(root, ID);
-	char *vn = idnode->cv.str;
+	char *vn = idnode->cv.id;
 	Spec *type = get_spec_by_btype(SpecTypeInt32);
 	push_variable(vn, type, root);
 }
@@ -113,7 +113,7 @@ void analyse_enumor_is_id(Node *root) {
 void analyse_enumor_is_id_assign_exp(Node *root) {
 	Node *exp = get_child_node_w(root, Exp);
 	Node *idnode = get_child_node_w(root, ID);
-	char *vn = idnode->cv.str;
+	char *vn = idnode->cv.id;
 	int rel = get_type_relation(exp->dt->bt, exp->dt->bt);
 	Spec *type = get_spec_by_btype(SpecTypeInt32);
 	//FIXME
@@ -190,29 +190,38 @@ void analyse_declnspec_is_typequlfr_declnspec(Node *root) {
 void analyse_starlist_is_mult(Node *root) {
 	//cv.t records pointer level
 	//ex records qulfr
-	root->cv.t = 1;
+	root->dt = new_spec();
+	root->dt->bt = SpecTypePointer;
+	root->dt->comp.pl = 1;
 }
 
 void analyse_starlist_is_mult_typequlfrlist(Node *root) {
+	//StarList -> MULT TypeQulfrList
 	//init pl, transmit qulfr
 	Node *typequlfrlist = get_child_node_w(root, TypeQulfrList);
-	root->cv.t = 1;//initial to be 1
+	root->dt = new_spec();
+	root->dt->bt = SpecTypePointer;
+	root->dt->comp.pl = 1;
 	root->cv.ex = typequlfrlist->cv.ex;//transmit qulfr
 }
 
 void analyse_starlist_is_mult_starlist(Node *root) {
+	//StarList -> MULT StarList
 	//inc pl, transmit qulfr
 	Node *starlist = get_child_node_w(root, StarList);
-	root->cv.t = starlist->cv.t + 1;//initial to be 1
-	root->cv.ex = starlist->cv.ex;
+	root->dt = starlist->dt;
+	root->dt->comp.pl ++;
+	root->cv.ex = starlist->cv.ex;//transmit qualifier
 }
 
 void analyse_starlist_is_mult_typequlfrlist_starlist(Node *root) {
+	//StarList -> MULT TypeQulfrList StarList
 	//inc pl, combine qulfr
 	Node *starlist = get_child_node_w(root, StarList);
 	Node *typequlfrlist = get_child_node_w(root, TypeQulfrList);
-	root->cv.t = starlist->cv.t + 1;//initial to be 1
-	root->cv.ex = starlist->cv.ex | typequlfrlist->cv.ex;//transmit qulfr
+	root->dt = starlist->dt;
+	root->dt->comp.pl ++;
+	root->cv.ex = starlist->cv.ex | typequlfrlist->cv.ex;//combine qulfr
 }
 
 //TypeQulfrList
@@ -230,41 +239,126 @@ void analyse_typequlfrlist_is_typequlfrlist_typequlfr(Node *root) {
 
 //Declr
 void analyse_declr_is_starlist_directdeclr(Node *root) {
-	//for `StarList` node, cv.t records pointer level,
+	//for `StarList` node, dt->comp->pl records pointer level,
 	//  cv.ex records qulfr
 	//assume directdeclr return comp type
+	/* Declr
+	 *   +--StarList --> pointer level and qualifier
+	 *   |
+	 *   +--DirectDeclr --> array, function
+	 *
+	 * note: array and pointer can be combined to complex type
+	 */
 	Node *starlist = get_child_node_w(root, StarList);
-	root->cv.t = starlist->cv.t + 1;//initial to be 1
-	root->cv.ex = starlist->cv.ex;
+	Node *directdeclr = get_child_node_w(root, DirectDeclr);
+	//FIXME: ex and str collide
+	root->cv.ex = starlist->cv.ex;//qualifier
+	root->cv.id = directdeclr->cv.id;
+	//set dt, assume:
+	//  1. DirectDeclr's dt has been filled
+	//  2. StarList ...
+	if(directdeclr->dt->bt == SpecTypeFunction) {
+		root->dt = starlist->dt;
+		root->dt->comp.dt = starlist->dt;
+	}else if(directdeclr->dt->bt == SpecTypeArray){//array
+		//  StarList(ptr)  +  DirectDeclr(arr)
+		root->dt = directdeclr->dt;
+		root->dt->bt = SpecTypeComplex;
+		root->dt->comp.pl = starlist->dt->comp.pl;
+	}else{
+		//invalid
+		assert(0);
+	}
 }
 
 void analyse_declr_is_directdeclr(Node *root) {
-	//
+	//TODO: id and type
+	Node *directdeclr = get_child_node_w(root, DirectDeclr);
+	root->cv.ex = directdeclr->cv.ex;
+	root->dt = directdeclr->dt;//datatype
+	root->cv.id = directdeclr->cv.id;//variable name
 }
 
-//DirectDeclr
+
+//IdList
+void analyse_idlist(Node *root) {
+	if(root->reduce_rule == AST_IdList_is_ID)
+		root->cv.cnt = 1;
+	else {
+		Node *child_idlist = get_child_node_w(root, IdList);
+		root->cv.cnt = child_idlist->cv.cnt + 1;
+	}
+}
+
+void backtrack_analyse_idlist(Node *root) {
+	//backfill, give up bottom-up fill
+	//FIXME: root node has not yet set parent node while reducing
+	//       algorithm using this production
+	//need to be called by other analyse function who has
+	//  nonterminal symbol IdList in its production
+	int cnt = 0;
+	Spec *default_argtype = get_spec_by_btype(SpecTypeInt32);
+	char **varname = (char **)malloc(root->cv.cnt * sizeof(char *));
+	Spec **funcarg = (Spec **)malloc(root->cv.cnt * sizeof(Spec *));
+	Node *idlist = root;
+	//traverse child AST
+	while(idlist) {
+		Node *idnode = get_child_node_w(idlist, ID);
+		varname[cnt] = idnode->cv.id;
+		funcarg[cnt] = default_argtype;
+		//prepare for next iteration
+		idlist = get_child_node(root, IdList);
+		cnt ++;
+	}
+	//check cnt
+	assert(root->cv.cnt == cnt);
+	//set pstr
+	root->cv.pid = varname;
+	//set spec
+	root->dt = new_spec();
+	root->dt->bt = SpecTypeFunction;
+	root->dt->func.argc = cnt;
+	root->dt->func.argv = funcarg;
+}
+
+
+/* DirectDeclr
+ *   -> ID {pure variable}
+ *   -> ( Declr ) {nested declarator}
+ *
+ *   {array}
+ *   -> self [ ConstExp ] {array}
+ *   -> self [] {null array}
+ *
+ *   {function}
+ *   -> self(ParaTypeList) {common function decalration}
+ *   -> self(IdList) {argument's type default to be integer}
+ *   -> self() {function without argument}
+ */
 void analyse_directdeclr_is_id(Node *root) {
 	//transmit id's name
 	Node *idnode = get_child_node_w(root, ID);
-	root->cv.str = idnode->cv.str;
+	root->cv.id = idnode->cv.id;
 }
 
 void analyse_directdeclr_is_lp_declr_rp(Node *root) {
 	Node *declr = get_child_node_w(root, Declr);
 	root->dt = declr->dt;
-	root->cv.str = declr->cv.str;//transmit id
+	root->cv.id = declr->cv.id;//transmit id
 }
 
 void analyse_directdeclr_is_self_index(Node *root) {
 	//array
+	//FIXME: record size of array
+	Node *exp = get_child_node_w(root, Exp);
 	Node *directdeclr = get_child_node_w(root, DirectDeclr);
-	root->cv.str = directdeclr->cv.str;//transmit id
+	root->cv.id = directdeclr->cv.id;//transmit id
 }
 
 void analyse_directdeclr_is_self_nullindex(Node *root) {
 	//array
 	Node *directdeclr = get_child_node_w(root, DirectDeclr);
-	root->cv.str = directdeclr->cv.str;//transmit id
+	root->cv.id = directdeclr->cv.id;//transmit id
 }
 
 Spec *combine_datatype_of_directdeclr(Spec *ddt, Spec *exdt) {
@@ -279,7 +373,7 @@ Spec *combine_datatype_of_directdeclr(Spec *ddt, Spec *exdt) {
 			ddt->comp.dt = exdt;
 		}else if(ddt->bt == SpecTypePointer){
 			//eg. int (*func)(int, int)
-			ddt->ptr.dt = exdt;
+			ddt->comp.dt = exdt;
 		}else{
 			//invalid
 			//TODO: call yyerrtype to format error information and
@@ -301,7 +395,7 @@ void analyse_directdeclr_is_func_paralist(Node *root) {
 	//assume directdeclr's dt and paralist's dt have been filled
 	Node *directdeclr = get_child_node_w(root, DirectDeclr);
 	Node *paralist = get_child_node_w(root, ParaTypeList);
-	root->cv.str = directdeclr->cv.str;//transmit id
+	root->cv.id = directdeclr->cv.id;//transmit id
 	root->dt = combine_datatype_of_directdeclr(directdeclr->dt, paralist->dt);
 }
 
@@ -309,7 +403,8 @@ void analyse_directdeclr_is_func_idlist(Node *root) {
 	//func
 	Node *directdeclr = get_child_node_w(root, DirectDeclr);
 	Node *idlist = get_child_node_w(root, IdList);
-	root->cv.str = directdeclr->cv.str;//transmit id
+	backtrack_analyse_idlist(idlist);
+	root->cv.id = directdeclr->cv.id;//transmit id
 	root->dt = combine_datatype_of_directdeclr(directdeclr->dt, idlist->dt);
 }
 
@@ -317,19 +412,10 @@ void analyse_directdeclr_is_func_lp_rp(Node *root) {
 	//func
 	Spec *funcdt = new_spec();
 	Node *directdeclr = get_child_node_w(root, DirectDeclr);
-	root->cv.str = directdeclr->cv.str;//transmit id
+	root->cv.id = directdeclr->cv.id;//transmit id
 	funcdt->bt = SpecTypeFunction;
 	funcdt->func.argc = 0;
 	root->dt = combine_datatype_of_directdeclr(directdeclr->dt, funcdt);
-}
-
-void analyse_paratypelist(Node *root) {
-	Node *paralist = get_child_node_w(root, ParaList);
-	root->dt = paralist->dt;
-	root->cv.pstr = paralist->cv.pstr;//pstr stores each argument's id
-	if(get_child_node(root, ELLIPSIS)) {
-		root->dt->func.ellipsis = 1;
-	}
 }
 
 void analyse_paralist(Node *root) {
@@ -354,7 +440,7 @@ void backtrack_analyse_paralist(Node *root) {
 	Spec **funcarg = (Spec **)malloc(root->cv.cnt * sizeof(Spec *));
 	while(paralist) {
 		Node *paradecln = get_child_node_w(paralist, ParaDecln);
-		varname[cnt] = paradecln->cv.str;
+		varname[cnt] = paradecln->cv.id;
 		funcarg[cnt] = paradecln->dt;
 		//prepare for next iteration
 		paralist = get_child_node(paralist, ParaList);
@@ -362,13 +448,23 @@ void backtrack_analyse_paralist(Node *root) {
 	}
 	//check cnt
 	assert(cnt == root->cv.cnt);
-	//set root->cv.pstr
-	root->cv.pstr = varname;
+	//set root->cv.pid
+	root->cv.pid = varname;
 	//set root->dt
 	root->dt = new_spec();
 	root->dt->bt = SpecTypeFunction;
 	root->dt->func.argc = root->cv.cnt;
 	root->dt->func.argv = funcarg;
+}
+
+void analyse_paratypelist(Node *root) {
+	Node *paralist = get_child_node_w(root, ParaList);
+	backtrack_analyse_paralist(paralist);
+	root->dt = paralist->dt;
+	root->cv.pid = paralist->cv.pid;//pstr stores each argument's id
+	if(get_child_node(root, ELLIPSIS)) {
+		root->dt->func.ellipsis = 1;
+	}
 }
 
 /* ParaDecln -> DeclnSpec Declr --> id
@@ -394,9 +490,9 @@ Spec* combine_datatype_of_paradecln(Spec *dsdt, Spec *drdt) {
 	if(drdt->bt == SpecTypeComplex) {
 		drdt->comp.dt = dsdt;
 	}else if(drdt->bt == SpecTypePointer) {
-		drdt->ptr.dt = dsdt;
+		drdt->comp.dt = dsdt;
 	}else if(drdt->bt == SpecTypeArray) {
-		drdt->arr.dt = dsdt;
+		drdt->comp.dt = dsdt;
 	}else if(drdt->bt == SpecTypeFunction) {
 		drdt->func.ret = dsdt;
 	}else{
@@ -409,7 +505,7 @@ Spec* combine_datatype_of_paradecln(Spec *dsdt, Spec *drdt) {
 void analyse_paradecln_is_declnspec_declr(Node *root) {
 	Node *declnspec = get_child_node_w(root, DeclnSpec);
 	Node *declr = get_child_node_w(root, Declr);
-	root->cv.str = declr->cv.str;
+	root->cv.id = declr->cv.id;
 	root->dt = combine_datatype_of_paradecln(declnspec->dt, declr->dt);
 }
 
@@ -424,47 +520,7 @@ void analyse_paradecln_is_declnspec(Node *root) {
 	root->dt = declnspec->dt;
 }
 
-void analyse_idlist(Node *root) {
-	if(root->reduce_rule == AST_IdList_is_ID)
-		root->cv.cnt = 1;
-	else {
-		Node *child_idlist = get_child_node_w(root, IdList);
-		root->cv.cnt = child_idlist->cv.cnt + 1;
-	}
-}
-
-void backtrack_analyse_idlist(Node *root) {
-	//backfill, give up bottom-up fill
-	//FIXME: root node has not yet set parent node while reducing
-	//       algorithm using this production
-	//need to be called by other analyse function who has
-	//  nonterminal symbol IdList in its production
-	int cnt = 0;
-	Spec *default_argtype = get_spec_by_btype(SpecTypeInt32);
-	char **varname = (char **)malloc(root->cv.cnt * sizeof(char *));
-	Spec **funcarg = (Spec **)malloc(root->cv.cnt * sizeof(Spec *));
-	Node *idlist = root;
-	//traverse child AST
-	while(idlist) {
-		Node *idnode = get_child_node_w(idlist, ID);
-		varname[cnt] = idnode->cv.str;
-		funcarg[cnt] = default_argtype;
-		//prepare for next iteration
-		idlist = get_child_node(root, IdList);
-		cnt ++;
-	}
-	//check cnt
-	assert(root->cv.cnt == cnt);
-	//set pstr
-	root->cv.pstr = varname;
-	//set spec
-	root->dt = new_spec();
-	root->dt->bt = SpecTypeFunction;
-	root->dt->func.argc = cnt;
-	root->dt->func.argv = funcarg;
-}
-
-void analyse_typespec_is_compspec(Node *root) {
+void analyse_compspec(Node *root) {
 	/*backfill offset and size of each member id by comptype's
 	 *  information(struct or union)
 	 *
@@ -488,7 +544,7 @@ void analyse_compdecln_is_declnspec_compdeclrlist(Node *root) {
 	//TODO:
 }
 
-void analyse_compdeclrlist_is_compdeclr(Node *root) {
+void analyse_compdeclrlist(Node *root) {
 }
 
 void analyse_compdeclr_is_declr() {
@@ -500,16 +556,9 @@ void analyse_compdeclr_is_colon_exp() {
 void analyse_compdeclr_is_declr_colon_exp() {
 }
 
-void analyse_typespec_is_typename(Node *root) {
-	//need information from context
-	Node *typename = get_child_node_w(root, TYPE_NAME);
-	root->dt = typename->dt;
-	//TODO: and qulfr?
-}
-
 void analyse_exp_is_id(Node *root) {
 	//FIXME
-	char *vn = get_child_node_w(root, ID)->cv.str;
+	char *vn = get_child_node_w(root, ID)->cv.id;
 	IdentInfo *ve = find_variable(vn);
 	if(!ve) {
 		yyerrtype(ErrorUndeclaredIdentifier, root->lineno, vn);
@@ -596,7 +645,7 @@ void analyse_exp_is_indirection(Node *root) {
 void analyse_exp_is_minus_exp(Node *root) {
 }
 
-void analyse_exp_is_add_exp(Node *root) {
+void analyse_exp_is_plus_exp(Node *root) {
 }
 
 void analyse_exp_is_logic_not(Node *root) {
@@ -639,6 +688,32 @@ static SemanFunc analyse_function[] = {
 	[AST_StarList_is_MULT_TypeQulfrList_StarList] = analyse_starlist_is_mult_typequlfrlist_starlist,
 	[AST_TypeQulfrList_is_TypeQulfr] = analyse_typequlfrlist_is_typequlfr,
 	[AST_TypeQulfrList_is_TypeQulfrList_TypeQulfr] = analyse_typequlfrlist_is_typequlfrlist_typequlfr,
+	[AST_Declr_is_StarList_DirectDeclr] = analyse_declr_is_starlist_directdeclr,
+	[AST_Declr_is_DirectDeclr] = analyse_declr_is_directdeclr,
+	[AST_IdList_is_ID] = analyse_idlist,
+	[AST_IdList_is_IdList_COMMA_ID] = analyse_idlist,
+	[AST_DirectDeclr_is_ID] = analyse_directdeclr_is_id,
+	[AST_DirectDeclr_is_LP_Declr_RP] = analyse_directdeclr_is_lp_declr_rp,
+	[AST_DirectDeclr_is_DirectDeclr_LB_Exp_RB] = analyse_directdeclr_is_self_index,
+	[AST_DirectDeclr_is_DirectDeclr_LB_RB] = analyse_directdeclr_is_self_nullindex,
+	[AST_DirectDeclr_is_DirectDeclr_LP_ParaTypeList_RP] = analyse_directdeclr_is_func_paralist,
+	[AST_DirectDeclr_is_DirectDeclr_LP_IdList_RP] = analyse_directdeclr_is_func_idlist,
+	[AST_DirectDeclr_is_DirectDeclr_LP_RP] = analyse_directdeclr_is_func_lp_rp,
+	[AST_ParaList_is_ParaDecln] = analyse_paralist,
+	[AST_ParaList_is_ParaList_COMMA_ParaDecln] = analyse_paralist,
+	[AST_ParaTypeList_is_ParaList] = analyse_paratypelist,
+	[AST_ParaTypeList_is_ParaList_COMMA_ELLIPSIS] = analyse_paratypelist,
+	[AST_ParaDecln_is_DeclnSpec_Declr] = analyse_paradecln_is_declnspec_declr,
+	[AST_ParaDecln_is_DeclnSpec_AbstDeclr] = analyse_paradecln_is_declnspec_abstdeclr,
+	[AST_ParaDecln_is_DeclnSpec] = analyse_paradecln_is_declnspec,
+	[AST_CompDecln_is_DeclnSpec_SEMI] = analyse_compdecln_is_declnspec,
+	[AST_CompDecln_is_DeclnSpec_CompDeclrList_SEMI] = analyse_compdecln_is_declnspec_compdeclrlist,
+	[AST_CompDeclrList_is_CompDeclr] = analyse_compdeclrlist,
+	[AST_CompDeclrList_is_CompDeclr_COMMA_CompDeclrList] = analyse_compdeclrlist,
+	[AST_CompDeclr_is_Declr] = analyse_compdeclr_is_declr,
+	[AST_CompDeclr_is_COLON_Exp] = analyse_compdeclr_is_colon_exp,
+	[AST_CompDeclr_is_Declr_COLON_Exp] = analyse_compdeclr_is_declr_colon_exp,
+	
 	[AST_Exp_is_ID] = analyse_exp_is_id,
 	[AST_Exp_is_NUM] = analyse_exp_is_num,
 	//[AST_Exp_is_Exp_RELOP_Exp] = analyse_exp_is_relop,
