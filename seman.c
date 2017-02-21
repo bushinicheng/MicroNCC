@@ -248,14 +248,19 @@ void analyse_directdeclr_is_id(Node *root) {
 void analyse_directdeclr_is_lp_declr_rp(Node *root) {
 	Node *declr = get_child_node_w(root, Declr);
 	root->dt = declr->dt;
+	root->cv.str = declr->cv.str;//transmit id
 }
 
 void analyse_directdeclr_is_self_index(Node *root) {
 	//array
+	Node *directdeclr = get_child_node_w(root, DirectDeclr);
+	root->cv.str = directdeclr->cv.str;//transmit id
 }
 
 void analyse_directdeclr_is_self_nullindex(Node *root) {
 	//array
+	Node *directdeclr = get_child_node_w(root, DirectDeclr);
+	root->cv.str = directdeclr->cv.str;//transmit id
 }
 
 Spec *combine_datatype_of_directdeclr(Spec *ddt, Spec *exdt) {
@@ -268,7 +273,7 @@ Spec *combine_datatype_of_directdeclr(Spec *ddt, Spec *exdt) {
 		if(ddt->bt == SpecTypeComplex) {
 			//eg. int (*func[])(int, int)
 			ddt->comp.dt = exdt;
-		}else if(directdeclr->dt->bt == SpecTypePointer){
+		}else if(ddt->bt == SpecTypePointer){
 			//eg. int (*func)(int, int)
 			ddt->ptr.dt = exdt;
 		}else{
@@ -309,9 +314,53 @@ void analyse_directdeclr_is_func_lp_rp(Node *root) {
 	Spec *funcdt = new_spec();
 	Node *directdeclr = get_child_node_w(root, DirectDeclr);
 	root->cv.str = directdeclr->cv.str;//transmit id
-	funcdt->btype = SpecTypeFunc;
+	funcdt->bt = SpecTypeFunc;
 	funcdt->func.argc = 0;
 	root->dt = combine_datatype_of_directdeclr(directdeclr->dt, funcdt);
+}
+
+void analyse_paratypelist(Node *root) {
+	Node *paralist = get_child_node_w(root, ParaList);
+	root->dt = paralist->dt;
+	root->cv.pstr = paralist->cv.pstr;//pstr stores each argument's id
+	if(get_child_node(root, ELLIPSIS)) {
+		root->dt->func.ellipsis = 1;
+	}
+}
+
+void analyse_paralist(Node *root) {
+}
+
+void analyse_paradecln(Node *root) {
+	/* ParaDecln -> DeclnSpec Declr
+	 *              DeclnSpec AbstDeclr
+	 *              DeclnSpec
+	 */
+}
+
+void analyse_idlist(Node *root) {
+	//backfill, give up bottom-up fill
+	if(root->parent->token == IdList) return;
+	int cnt = 0;
+	char **varname = get_memory_pointer();
+	Node *idlist = get_child_node(root, IdList);
+	while(idlist) {
+		Node *idnode = get_child_node_w(idlist, ID);
+		varname[cnt ++] = idnode->cv.str;
+		idlist = get_child_node(root, IdList);
+	}
+	Node *idnode = get_child_node_w(root, ID);
+	varname[cnt ++] = idnode->cv.str;
+	root->cv.pstr = (char **)require_memory(sizeof(char *) * cnt);
+	//set spec
+	Spec *default_argtype = get_spec_by_btype(SpecTypeInt32);
+	Spec **func_argv = (Spec **)malloc(sizeof(Spec *) * cnt);
+	for(int i = 0; i < cnt; i++)
+		func_argv[i] = default_argtype;
+	root->dt = new_spec();
+	root->dt->bt = SpecTypeFunc;
+	root->dt->func.argc = cnt;
+	root->dt->func.argv = func_argv;
 }
 
 void analyse_typespec_is_compspec(Node *root) {

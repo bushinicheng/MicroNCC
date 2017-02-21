@@ -99,20 +99,27 @@ typedef struct InitorMemoryMap {
 	size_t nr_var;
 } InitorMemoryMap;
 
+struct Spec;
+
 typedef struct ExpConstPart{
 	//warning:string is not constant
 	//        string == char *[no const]
-	int t; //sometimes store extra information of tree node
-			//for example, `Const` or `Extern` or ... in `Qulfr` node 
-			//if node->dt != NULL, t donates the const attribute
+	union {
+		int t; //sometimes store extra information of tree node
+				//for example, `Const` or `Extern` or ... in `Qulfr` node 
+				//if node->dt != NULL, t donates the const attribute
+		struct Spec *type;
+		InitorMemoryMap *mm;
+	};
+
 	union {
 		int8_t _8;int16_t _16;int32_t _32;int64_t _64;
 		uint8_t _u8;uint16_t _u16;uint32_t _u32;uint64_t _u64;
 		float _f32; double _f64;
 		int i;float f;double llf;void *p;
 		char* str;// the address of string or id
+		char **pstr;
 		int ex;
-		InitorMemoryMap *mm;
 	};
 } ExpConstPart;
 
@@ -137,13 +144,14 @@ typedef struct Spec {
 		struct {
 			struct Spec *ret;
 			struct Spec **argv;
+			int ellipsis;//int func(int a, int b, ...)
 			size_t argc;
 		} func;//func type
 
 		struct {
 			char *sn;//struct name
 			struct {
-				char *vn;//var name
+				char *id;//member name
 				off_t off;//offset in bits
 				size_t size;//bits
 				struct Spec *dt;
