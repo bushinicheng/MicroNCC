@@ -78,9 +78,27 @@ void *mempool_free(MemPool *mp) {
 	mp->block_ptr = 0;
 }
 
+/* 320012162211825
+ * 0--\
+ *    get_memory_pointer
+ * 1--<
+ *    push_bpool_state
+ * 2--<
+ *    pop_bpool_state
+ * 3--<
+ *    require_memory
+ * 0--/
+ */
+void *get_memory_pointer() {
+	if(toggle_caller_state != 0 && toggle_caller_state != 2) {
+		logw("some function else has hold the memptr\n");
+	}
+	toggle_caller_state = 1;
+	return &bpool[ptr];
+}
 
 void push_bpool_state(off_t op) {
-	toggle_caller_state = 0;
+	toggle_caller_state = 2;
 	vector_push(&bpool_state_stack, &ptr);
 	ptr = op;
 }
@@ -88,15 +106,8 @@ void push_bpool_state(off_t op) {
 void pop_bpool_state() {
 	int *p = vector_pop(&bpool_state_stack);
 	if(!p) loge("bpool state stack should not be empty.\n");
+	toggle_caller_state = 3;
 	ptr = p[0];
-}
-
-void *get_memory_pointer() {
-	if(toggle_caller_state) {
-		logw("some function else has hold the memptr\n");
-	}
-	toggle_caller_state = 1;
-	return &bpool[ptr];
 }
 
 void *require_memory(size_t size) {
@@ -141,6 +152,16 @@ int strcnt(const char *strin, char ch) {
 	return ret;
 }
 
+char *strseek(const char *strin, char ch) {
+	while(*strin && *strin != ch) {
+		strin ++;
+	}
+	if(*strin == ch)
+		return (char *)strin;
+	else
+		return NULL;
+}
+
 int init_bpool() {
 	vector_init(&bpool_state_stack, sizeof(off_t));
 #ifdef __DEBUG__
@@ -148,14 +169,14 @@ int init_bpool() {
 	MemPool mp;
 	mempool_init(&mp, sizeof(int));
 	const int test_size = 65536;
-	int *p[test_size];
+	int *pt[test_size];
 	for(int i = 0; i < test_size; i++) {
-		p[i] = mempool_new(&mp);
-		p[i][0] = i;
+		pt[i] = mempool_new(&mp);
+		pt[i][0] = i;
 	}
 
 	for(int i = 0; i < test_size; i++) {
-		UNIT_TEST_EQUAL(p[i][0], i);
+		UNIT_TEST_EQUAL(pt[i][0], i);
 	}
 	mempool_free(&mp);
 	UNIT_TEST_END;

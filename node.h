@@ -16,8 +16,8 @@ enum {
 	SpecTypeFloat64 = 9,
 	/*number*/
 	SpecTypeString = 10, //char *s="hello";equivalent to `char *`
+	SpecTypeVoid = 11,
 	//the above must be registered firstly
-	SpecTypeVoid,
 	SpecTypePointer,//pointer type
 	SpecTypeArray,
 	SpecTypeComplex,//pointer array
@@ -150,15 +150,16 @@ typedef struct Spec {
 		} func;//func type
 
 		struct {
-			char *sn;//struct name
+			char *id;//struct name
 			struct {
 				char *id;//member name
-				off_t off;//offset in bits
+				off_t off;//offset in bits, for union
+				          //  it works only for anonymous struct
 				size_t size;//bits
 				struct Spec *dt;
 			} *argv;
 			size_t size;
-		} struc;//for structure
+		} uos;//union or struct
 	};
 } Spec;
 

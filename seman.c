@@ -68,6 +68,7 @@ IdentInfo *find_variable(char *vn) {
 void analyse_decln_is_declnspec(Node *root) {
 	//FIXME
 	Node *declnspec = get_child_node_w(root, DeclnSpec);
+	
 }
 
 int assign_value_of_enumorlist(Node *enumorlist, int st) {
@@ -746,4 +747,12 @@ int init_seman() {
 	mempool_init(&idinfopool, sizeof(IdentInfo));
 	vector_init(&asv, sizeof(HashTable));
 	increase_actionlevel();
+#ifdef __DEBUG__
+	extern Node *astroot;
+	void yy_scan_string(const char *);
+	yy_scan_string("int * extern*const*b;");
+	yyparse();
+	Node *starlist = find_child_node(astroot, StarList);
+	printf("%s\n", type_format(starlist->dt));
+#endif
 }

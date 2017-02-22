@@ -158,6 +158,18 @@ Node* __attribute__((noinline))get_child_node_dw(Node *root, int depth, ...)
 	return root;
 }
 
+Node* find_child_node(Node *root, int token)
+{
+	if(!root) return NULL;
+	if(root->token == token) return root;
+
+	Node *node = NULL;
+	node = find_child_node(root->child, token);
+	if(!node)
+		return find_child_node(root->sibling, token);
+	return node;
+}
+
 void print_ast(Node *root)
 {
 	if(root == NULL)

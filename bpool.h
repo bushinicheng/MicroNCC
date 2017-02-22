@@ -38,5 +38,6 @@ char *strjoin(char **strlist, int size, char *delim);
 int strcnt(const char *strin, char ch);
 void push_bpool_state(off_t op);
 void pop_bpool_state();
+char *strseek(const char *strin, char ch);
 
 #endif

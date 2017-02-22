@@ -549,6 +549,7 @@ Node* get_child_node(Node *root, int token);
 Node* get_child_node_with_skip_w(Node *root, int token, int skip);
 Node* get_child_node_w(Node *root, int token);
 Node* __attribute__((noinline))get_child_node_dw(Node *root, int depth, ...);
+Node* find_child_node(Node *root, int token);
 void print_ast(Node *root);
 
 #endif
