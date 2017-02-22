@@ -246,7 +246,7 @@ void analyse_declr_is_starlist_directdeclr(Node *root) {
 	/* Declr
 	 *   +--StarList --> pointer level and qualifier
 	 *   |
-	 *   +--DirectDeclr --> array, function
+	 *   +--DirectDeclr --> array, function, pure id
 	 *
 	 * note: array and pointer can be combined to complex type
 	 */
@@ -258,9 +258,14 @@ void analyse_declr_is_starlist_directdeclr(Node *root) {
 	//set dt, assume:
 	//  1. DirectDeclr's dt has been filled
 	//  2. StarList ...
-	if(directdeclr->dt->bt == SpecTypeFunction) {
+	//since pointer's dt and array's dt hven't been backfilled,
+	//here set default type `SpecTypeInt32` for them
+	starlist->dt->comp.dt = get_spec_by_btype(SpecTypeInt32);
+	if(!directdeclr->dt) {
 		root->dt = starlist->dt;
-		root->dt->comp.dt = starlist->dt;
+	}else if(directdeclr->dt->bt == SpecTypeFunction) {
+		root->dt = starlist->dt;
+		root->dt->func.ret = starlist->dt;
 	}else if(directdeclr->dt->bt == SpecTypeArray){//array
 		//  StarList(ptr)  +  DirectDeclr(arr)
 		root->dt = directdeclr->dt;
@@ -278,6 +283,15 @@ void analyse_declr_is_directdeclr(Node *root) {
 	root->cv.ex = directdeclr->cv.ex;
 	root->dt = directdeclr->dt;//datatype
 	root->cv.id = directdeclr->cv.id;//variable name
+	//default type
+	if(!(root->dt)) {
+		root->dt = get_spec_by_btype(SpecTypeInt32);
+	}else if(root->dt->bt == SpecTypeFunction){
+		logl();
+		root->dt->func.ret = get_spec_by_btype(SpecTypeInt32);
+	}else if(root->dt->bt == SpecTypeArray){
+		root->dt->comp.dt = get_spec_by_btype(SpecTypeInt32);
+	}
 }
 
 
@@ -358,6 +372,7 @@ void analyse_directdeclr_is_self_index(Node *root) {
 
 void analyse_directdeclr_is_self_nullindex(Node *root) {
 	//array
+	//FIXME
 	Node *directdeclr = get_child_node_w(root, DirectDeclr);
 	root->cv.id = directdeclr->cv.id;//transmit id
 }
@@ -429,10 +444,9 @@ void analyse_paralist(Node *root) {
 }
 
 void backtrack_analyse_paralist(Node *root) {
+	//declare !important: cv.pid <> cv.cnt
 	//for each ParaDecln
 	//    id and dt 
-	//FIXME: root node has not yet set parent node while reducing
-	//       algorithm using this production
 	int cnt = 0;
 	//temporary strategy: traverse child AST twice
 	//  since id and dt can't be put together
@@ -462,6 +476,7 @@ void analyse_paratypelist(Node *root) {
 	Node *paralist = get_child_node_w(root, ParaList);
 	backtrack_analyse_paralist(paralist);
 	root->dt = paralist->dt;
+	logw("%d\n", root->dt->func.argc);
 	root->cv.pid = paralist->cv.pid;//pstr stores each argument's id
 	if(get_child_node(root, ELLIPSIS)) {
 		root->dt->func.ellipsis = 1;
@@ -742,17 +757,41 @@ void free_seman() {
 	vector_free(&asv);
 }
 
+void scan_from_string(const char *string) {
+	extern Node *astroot;
+	void yylex_destroy();
+	void *yy_scan_string(const char *);
+	void yy_switch_to_buffer(void *);
+	void *buffer_state = yy_scan_string(string);
+	yy_switch_to_buffer(buffer_state);
+	yyparse();
+	yylex_destroy();
+}
+
 int init_seman() {
 	mempool_init(&vipool, sizeof(VarInfo));
 	mempool_init(&idinfopool, sizeof(IdentInfo));
 	vector_init(&asv, sizeof(HashTable));
 	increase_actionlevel();
 #ifdef __DEBUG__
+	UNIT_TEST_START;
 	extern Node *astroot;
-	void yy_scan_string(const char *);
-	yy_scan_string("int * extern*const*b;");
-	yyparse();
-	Node *starlist = find_child_node(astroot, StarList);
-	printf("%s\n", type_format(starlist->dt));
+	struct {
+		int token;
+		const char *sample;
+		const char *format_string;
+	} test_case[] = {
+		{Declr, "int * b;", "int32_t *"},
+		{Declr, "int * extern *const *p;", "int32_t ***"},
+		{Declr, "int func(int, int);", "int32_t (int32_t, int32_t)"}
+	};
+
+	for(int i = 0; i < sizeof(test_case)/sizeof(test_case[0]); i++){
+		scan_from_string(test_case[i].sample);
+		Node *target = find_child_node(astroot, test_case[i].token);
+		char *sol = type_format(target->dt);
+		UNIT_TEST_STR_EQUAL(test_case[i].format_string, sol);
+	}
+	UNIT_TEST_END;
 #endif
 }

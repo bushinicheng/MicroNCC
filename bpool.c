@@ -91,7 +91,7 @@ void *mempool_free(MemPool *mp) {
  */
 void *get_memory_pointer() {
 	if(toggle_caller_state != 0 && toggle_caller_state != 2) {
-		logw("some function else has hold the memptr\n");
+		logw("state:%d, some function else has hold the memptr\n", toggle_caller_state);
 	}
 	toggle_caller_state = 1;
 	return &bpool[ptr];
@@ -111,8 +111,8 @@ void pop_bpool_state() {
 }
 
 void *require_memory(size_t size) {
-	if(!size) return NULL;
 	toggle_caller_state = 0;
+	if(!size) return NULL;
 	void *ret = malloc(size);
 	memcpy(ret, &bpool[ptr], size);
 	assert(ptr + size <= POOL_SIZE);

@@ -15,6 +15,8 @@ OBJ_DIR=output/
 TEST_DIR=test/
 COMPILER=compiler
 
+DEBUG_LEX=true
+
 #CMM=test/simple.c
 #CMM=test/token.c
 CMM=test/more.c
@@ -25,7 +27,11 @@ $(LCFILE):$(LFILE)
 	@$(LEX) -o $(LCFILE) $(LFILE)
 
 $(YHFILE) $(YCFILE):$(YFILE)
+ifeq ($(DEBUG_LEX),true)
+	@$(YACC) -t -v $(YFILE) --defines=$(YHFILE) -o $(YCFILE)
+else
 	@$(YACC) -v $(YFILE) --defines=$(YHFILE) -o $(YCFILE)
+endif
 
 $(COMPILER):$(YFILE) $(LFILE) $(CFILES) $(HFILES)
 	@mkdir -p $(OBJ_DIR)

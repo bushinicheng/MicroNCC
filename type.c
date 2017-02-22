@@ -162,9 +162,11 @@ char *type_format(Spec *type) {
 		char *func_type = (char *)get_memory_pointer();
 		strcpy(func_type, retv_type);
 		strcat(func_type, " (");
+		logl();
 		for(int i = 0; i < type->func.argc; i++) {
 			total_length = strlen(func_type);
 			push_bpool_state(total_length + 1);
+			logw("%d, %p\n", type->func.argc, type->func.argv[i]);
 			char *arg_type = type_format(type->func.argv[i]);
 			pop_bpool_state();
 			strcat(func_type, arg_type);
@@ -173,6 +175,7 @@ char *type_format(Spec *type) {
 			else
 				strcat(func_type, ")");
 		}
+		logl();
 		total_length = strlen(func_type);
 		type->format_string = require_memory(total_length + 1);
 	} else if(type->bt == SpecTypePointer) {
@@ -309,7 +312,7 @@ void init_spec() {
 	assert(specpool.bs[0] > 32);//leave space for bt
 	construct_type_relations();
 	reset_spec_state();
-
+#ifdef __DEBUG__
 	UNIT_TEST_START;
 	Spec *func_type = new_spec();
 	func_type->bt = SpecTypeFunction;
@@ -366,4 +369,6 @@ void init_spec() {
 	UNIT_TEST_STR_EQUAL(type_format(func_type), "int32_t (int32_t (*[1][2][3][4])(int32_t, int32_t, int32_t), int32_t, int32_t)");
 
 	UNIT_TEST_END;
+
+#endif
 }

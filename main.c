@@ -77,6 +77,7 @@ int main(int argc, char *argv[])
 #ifdef __DEBUG_LEX__
 	logd("enter debug mode, while(yylex()>0)\n");
 	yyrestart(fp);
+	int yylex();
 	while(yylex()>0);
 #else
 

@@ -102,12 +102,11 @@ typedef struct InitorMemoryMap {
 struct Spec;
 
 typedef struct ExpConstPart{
-	//warning:string is not constant
-	//        string == char *[no const]
-	union {
+	//FIXME
+	//pid <> cnt, id <> t, t <> ex, ex <> id, cnt <> pid
+	//cnt <> pid
+	struct {
 		int t; //sometimes store extra information of tree node
-				//for example, `Const` or `Extern` or ... in `Qulfr` node 
-				//if node->dt != NULL, t donates the const attribute
 		int cnt;
 		char *id;
 		char **pid;
