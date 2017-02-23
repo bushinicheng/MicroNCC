@@ -41,6 +41,19 @@ void mempool_init(MemPool *mp, size_t unit_size) {
 	mp->p[0] = (void *)malloc(mp->bs[0]);
 }
 
+size_t mempool_size(MemPool *mp) {
+	if(mp->index_ptr == 0) {
+		//most common case
+		return mp->block_ptr / mp->unit_size;
+	}else{
+		int i, total_size = 0;
+		for(i = 0; i < mp->index_ptr; i++)
+			total_size += mp->bs[i];
+		total_size += mp->bs[i];
+		return total_size / mp->unit_size;
+	}
+}
+
 void *mempool_new(MemPool *mp) {
 	if(!mp->index_size) return NULL;
 	void *ret = NULL;

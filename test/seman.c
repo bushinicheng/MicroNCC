@@ -241,13 +241,13 @@ int analyse_expression(Node *root) {
 	switch(root->reduce_rule) {
 		case AST_Exp_is_ID:
 			id = get_child_node_w(root, ID);
-			root->idtype = get_spec_by_btype(SpecTypeInt32, SpecLvalue);
+			root->idtype = convert_btype_to_pointer(SpecTypeInt32, SpecLvalue);
 			var = find_variable(root, id->idtype->cons.supval.st);
 			if(var)	root->idtype = var->type;
 			break;
 		case AST_Exp_is_ID_LP_RP:
 			id = get_child_node_w(root, ID);
-			root->idtype = get_spec_by_btype(SpecTypeInt32, SpecLvalue);
+			root->idtype = convert_btype_to_pointer(SpecTypeInt32, SpecLvalue);
 			var = find_variable(root, id->idtype->cons.supval.st);
 			if(var) {
 				root->idtype = var->type->func.ret;
@@ -257,7 +257,7 @@ int analyse_expression(Node *root) {
 			break;
 		case AST_Exp_is_ID_LP_FuncCallArgList_RP:
 			id = get_child_node_w(root, ID);
-			root->idtype = get_spec_by_btype(SpecTypeInt32, SpecLvalue);
+			root->idtype = convert_btype_to_pointer(SpecTypeInt32, SpecLvalue);
 			var = find_variable(root, id->idtype->cons.supval.st);
 			if(var) {
 				root->idtype = var->type->func.ret;
@@ -325,9 +325,9 @@ int analyse_expression(Node *root) {
 			//int p; ~p; ==> rval
 			exp = get_child_node_w(root, Exp);
 			analyse_expression(exp);
-			root->idtype = get_spec_by_btype(SpecTypeInt32, SpecRvalue);
+			root->idtype = convert_btype_to_pointer(SpecTypeInt32, SpecRvalue);
 			if(exp->idtype->btype == SpecTypeUint32) {
-				root->idtype = get_spec_by_btype(SpecTypeUint32, SpecRvalue);
+				root->idtype = convert_btype_to_pointer(SpecTypeUint32, SpecRvalue);
 			}else if(!type_is_bit(exp->idtype))
 				yyerrtype(ErrorUnaryOperatorMismatch, root->lineno);
 			break;
@@ -336,7 +336,7 @@ int analyse_expression(Node *root) {
 			//ok: num or (comp and (plevel>0 or size>0))
 			exp = get_child_node_w(root, Exp);
 			analyse_expression(exp);
-			root->idtype = get_spec_by_btype(SpecTypeUint8, SpecRvalue);
+			root->idtype = convert_btype_to_pointer(SpecTypeUint8, SpecRvalue);
 			if(!(type_is_num(exp->idtype)
 				|| ( exp->idtype->btype == SpecTypeComplex
 				   && (exp->idtype->comp.plevel
@@ -533,7 +533,7 @@ int analyse_expression(Node *root) {
 			analyse_expression(exp);
 			exp2 = get_child_node_with_skip_w(root, Exp, 1);
 			analyse_expression(exp2);
-			root->idtype = get_spec_by_btype(SpecTypeUint8, SpecRvalue);
+			root->idtype = convert_btype_to_pointer(SpecTypeUint8, SpecRvalue);
 			/* limit: no float, no struct
 			 * type(operand) not in (
 			 *      SpecTypeStruct
@@ -572,7 +572,7 @@ int analyse_expression(Node *root) {
 			analyse_expression(exp);
 			exp2 = get_child_node_with_skip_w(root, Exp, 1);
 			analyse_expression(exp2);
-			root->idtype = get_spec_by_btype(SpecTypeUint8, SpecRvalue);
+			root->idtype = convert_btype_to_pointer(SpecTypeUint8, SpecRvalue);
 			if(exp->idtype->btype == SpecTypeStruct
 			|| exp2->idtype->btype == SpecTypeStruct) {
 				yyerrtype(ErrorInvalidOperand, root->lineno, type_format(exp->idtype), type_format(exp2->idtype));
@@ -903,7 +903,7 @@ void init_seman()
 		analyse_vardef(vardef);
 		analyse_expression(exp);
 		//print_exp(exp);//check all samples by human !important!
-		UNIT_TEST_ASSERT(compare_type(exp->idtype, get_spec_by_btype(exp_test_answer[i][0], exp_test_answer[i][1])), "fail at #%d: '%s'", i, exp_test_sample[i]);
+		UNIT_TEST_ASSERT(compare_type(exp->idtype, convert_btype_to_pointer(exp_test_answer[i][0], exp_test_answer[i][1])), "fail at #%d: '%s'", i, exp_test_sample[i]);
 	}
 */
 

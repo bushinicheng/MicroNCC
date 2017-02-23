@@ -52,11 +52,11 @@ Spec *get_spec_of_const(Spec *const_spec) {
 	if(const_spec->btype != SpecTypeConst)
 		return NULL;
 	switch(const_spec->cons.suptype) {
-		case 'i':return get_spec_by_btype(SpecTypeInt32, SpecRvalue);
-		case 'u':return get_spec_by_btype(SpecTypeUint32, SpecRvalue);
-		case 'f':return get_spec_by_btype(SpecTypeFloat32, SpecRvalue);
-		case 's':return get_spec_by_btype(SpecTypeString, SpecLvalue);
-		case 'c':return get_spec_by_btype(SpecTypeInt8, SpecRvalue);
+		case 'i':return convert_btype_to_pointer(SpecTypeInt32, SpecRvalue);
+		case 'u':return convert_btype_to_pointer(SpecTypeUint32, SpecRvalue);
+		case 'f':return convert_btype_to_pointer(SpecTypeFloat32, SpecRvalue);
+		case 's':return convert_btype_to_pointer(SpecTypeString, SpecLvalue);
+		case 'c':return convert_btype_to_pointer(SpecTypeInt8, SpecRvalue);
 		default:assert(0);
 	}
 	return NULL;
@@ -107,16 +107,16 @@ Spec *type_more_accurate(Spec *typeA, Spec *typeB) {
 	|| typeB->btype == SpecTypeConst) {
 		if(typeA->cons.suptype == 'f'
 		|| typeB->cons.suptype == 'f') {
-			return get_spec_by_btype(SpecTypeFloat32, SpecRvalue);
+			return convert_btype_to_pointer(SpecTypeFloat32, SpecRvalue);
 		}else if(typeA->cons.suptype == 'i'
 		      || typeB->cons.suptype == 'i') {
-			return get_spec_by_btype(SpecTypeInt32, SpecRvalue);
+			return convert_btype_to_pointer(SpecTypeInt32, SpecRvalue);
 		}
 	}else{
 		if(typeA->btype > typeB->btype)
-			return get_spec_by_btype(typeA->btype, SpecRvalue);
+			return convert_btype_to_pointer(typeA->btype, SpecRvalue);
 		else
-			return get_spec_by_btype(typeB->btype, SpecRvalue);
+			return convert_btype_to_pointer(typeB->btype, SpecRvalue);
 	}
 	/**/
 	logw("maybe ... :(");
@@ -164,11 +164,11 @@ Spec *find_type_of_spec(Node *root) {
 	if(root->reduce_rule == AST_TypeSpec_is_CommonSpec) {
 		switch(get_child_node_w(root, TypeSpec)->idtype->cons.suptype){
 			case CHAR:
-				return get_spec_by_btype(SpecTypeInt8, SpecLvalue);
+				return convert_btype_to_pointer(SpecTypeInt8, SpecLvalue);
 			case INT:
-				return get_spec_by_btype(SpecTypeInt32, SpecLvalue);
+				return convert_btype_to_pointer(SpecTypeInt32, SpecLvalue);
 			case FLOAT:
-				return get_spec_by_btype(SpecTypeFloat32, SpecLvalue);
+				return convert_btype_to_pointer(SpecTypeFloat32, SpecLvalue);
 			default:
 				yyerr("error type B:type `%s` not supported!\n",\
 						type_format(get_child_node_w(root, TypeSpec)->idtype));
@@ -195,7 +195,7 @@ Spec *find_type_of_spec(Node *root) {
 /* function:
  *   get spec pointer by btype
  */
-Spec *get_spec_by_btype(int btype, int lr) {
+Spec *convert_btype_to_pointer(int btype, int lr) {
 	switch(btype) {
 		case SpecTypeConst:
 		case SpecTypeVoid:

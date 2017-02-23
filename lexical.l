@@ -237,7 +237,7 @@ static int type(int token, int typeinfo) {
 	pnd->token = TYPE;
 	pnd->reduce_rule = token;
 	pnd->cv.t = typeinfo;
-	pnd->dt = get_spec_by_btype(WORD_PART1(typeinfo));
+	pnd->dt = convert_btype_to_pointer(WORD_PART1(typeinfo));
 	pnd->lineno = yylineno;
 	pnd->column = yycolumn;
 	yylval.pnd = pnd;
@@ -290,12 +290,12 @@ static int reg(int syntaxval) {
 		break;
 	case STRING:
 		pnd->lrv = SpecLvalue;
-		pnd->dt = get_spec_by_btype(SpecTypeString);
+		pnd->dt = convert_btype_to_pointer(SpecTypeString);
 		pnd->cv.str = register_string(yytext);
 		break;
 	case LITERAL:
 		pnd->lrv = SpecRvalue;
-		pnd->dt = get_spec_by_btype(SpecTypeInt8);
+		pnd->dt = convert_btype_to_pointer(SpecTypeInt8);
 		pnd->cv._8 = register_literal(yytext);
 		break;
 	}

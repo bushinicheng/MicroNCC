@@ -16,6 +16,8 @@ static MemPool vipool;
 static MemPool idinfopool;
 Vector asv;//hash table vector
 
+void backtrack_analyse_array_directdeclr(Node *);
+
 /* push variable into current hash table
  * IN[0]: char *
  *    variabe name
@@ -96,7 +98,7 @@ void analyse_typespec(Node *root) {
 }
 
 void analyse_enumspec(Node *root) {
-	root->dt = get_spec_by_btype(SpecTypeInt32);
+	root->dt = convert_btype_to_pointer(SpecTypeInt32);
 	if(root->reduce_rule == AST_EnumSpec_is_ENUM_ID) {
 		return;
 	}
@@ -107,7 +109,7 @@ void analyse_enumspec(Node *root) {
 void analyse_enumor_is_id(Node *root) {
 	Node *idnode = get_child_node_w(root, ID);
 	char *vn = idnode->cv.id;
-	Spec *type = get_spec_by_btype(SpecTypeInt32);
+	Spec *type = convert_btype_to_pointer(SpecTypeInt32);
 	push_variable(vn, type, root);
 }
 
@@ -116,7 +118,7 @@ void analyse_enumor_is_id_assign_exp(Node *root) {
 	Node *idnode = get_child_node_w(root, ID);
 	char *vn = idnode->cv.id;
 	int rel = get_type_relation(exp->dt->bt, exp->dt->bt);
-	Spec *type = get_spec_by_btype(SpecTypeInt32);
+	Spec *type = convert_btype_to_pointer(SpecTypeInt32);
 	//FIXME
 	if(exp->cv.t == PrConstValue) {
 		if(rel & CBitop) {
@@ -156,9 +158,9 @@ void analyse_declnspec_is_typespec_declnspec(Node *root) {
 		int btype = convert_ctype2type(root->cv.t);
 		if(btype == -1) {//invalid combination
 			root->cv.t &= ~1;
-			root->dt = get_spec_by_btype(SpecTypeInt32);
+			root->dt = convert_btype_to_pointer(SpecTypeInt32);
 		}else{
-			root->dt = get_spec_by_btype(btype);
+			root->dt = convert_btype_to_pointer(btype);
 		}
 	}else{
 		//TODO:invalid combination
@@ -166,7 +168,7 @@ void analyse_declnspec_is_typespec_declnspec(Node *root) {
 		//  omit further type combination
 		root->cv.t &= ~1;
 		//once fail to combine, transmit null spec to upper node
-		root->dt = get_spec_by_btype(SpecTypeInt32);
+		root->dt = convert_btype_to_pointer(SpecTypeInt32);
 	}
 }
 
@@ -175,7 +177,7 @@ void analyse_declnspec_is_typequlfr(Node *root) {
 	Node *typequlfr = get_child_node_w(root, TypeQulfr);
 	root->cv.ex = typequlfr->cv.ex;//ex records combine qulfr
 	root->cv.t = 1;//1 means combinable
-	root->dt = get_spec_by_btype(SpecTypeInt32);//default to be int32 if no typespec found
+	root->dt = convert_btype_to_pointer(SpecTypeInt32);//default to be int32 if no typespec found
 }
 
 void analyse_declnspec_is_typequlfr_declnspec(Node *root) {
@@ -260,7 +262,7 @@ void analyse_declr_is_starlist_directdeclr(Node *root) {
 	//  2. StarList ...
 	//since pointer's dt and array's dt hven't been backfilled,
 	//here set default type `SpecTypeInt32` for them
-	starlist->dt->comp.dt = get_spec_by_btype(SpecTypeInt32);
+	starlist->dt->comp.dt = convert_btype_to_pointer(SpecTypeUnknown);
 	if(!directdeclr->dt) {
 		root->dt = starlist->dt;
 	}else if(directdeclr->dt->bt == SpecTypeFunction) {
@@ -268,28 +270,38 @@ void analyse_declr_is_starlist_directdeclr(Node *root) {
 		root->dt->func.ret = starlist->dt;
 	}else if(directdeclr->dt->bt == SpecTypeArray){//array
 		//  StarList(ptr)  +  DirectDeclr(arr)
+		//FIXME:should be called by Decln
+		backtrack_analyse_array_directdeclr(directdeclr);
 		root->dt = directdeclr->dt;
 		root->dt->bt = SpecTypeComplex;
 		root->dt->comp.pl = starlist->dt->comp.pl;
+	}else if(directdeclr->dt->bt == SpecTypeUnknown){
+		// StarList(ptr) + pure id
+		root->dt = starlist->dt;
+		root->dt->comp.dt = convert_btype_to_pointer(SpecTypeUnknown);
 	}else{
 		//invalid
 		assert(0);
+		root->dt = convert_btype_to_pointer(SpecTypeBad);
 	}
 }
 
 void analyse_declr_is_directdeclr(Node *root) {
 	//TODO: id and type
 	Node *directdeclr = get_child_node_w(root, DirectDeclr);
+	Spec *drdt = directdeclr->dt;
 	root->cv.ex = directdeclr->cv.ex;
-	root->dt = directdeclr->dt;//datatype
+	root->dt = drdt;//datatype
 	root->cv.id = directdeclr->cv.id;//variable name
 	//default type
-	if(!(root->dt)) {
-		root->dt = get_spec_by_btype(SpecTypeInt32);
-	}else if(root->dt->bt == SpecTypeFunction){
-		root->dt->func.ret = get_spec_by_btype(SpecTypeInt32);
-	}else if(root->dt->bt == SpecTypeArray){
-		root->dt->comp.dt = get_spec_by_btype(SpecTypeInt32);
+	if(!drdt) {
+		drdt = convert_btype_to_pointer(SpecTypeUnknown);
+	}else if(drdt->bt == SpecTypeFunction){
+		drdt->func.ret = convert_btype_to_pointer(SpecTypeUnknown);
+	}else if(drdt->bt == SpecTypeArray){
+		//FIXME:should be called by Decln
+		backtrack_analyse_array_directdeclr(directdeclr);
+		drdt->comp.dt = convert_btype_to_pointer(SpecTypeInt32);
 	}
 }
 
@@ -311,7 +323,7 @@ void backtrack_analyse_idlist(Node *root) {
 	//need to be called by other analyse function who has
 	//  nonterminal symbol IdList in its production
 	int cnt = 0;
-	Spec *default_argtype = get_spec_by_btype(SpecTypeInt32);
+	Spec *default_argtype = convert_btype_to_pointer(SpecTypeInt32);
 	char **varname = (char **)malloc(root->cv.cnt * sizeof(char *));
 	Spec **funcarg = (Spec **)malloc(root->cv.cnt * sizeof(Spec *));
 	Node *idlist = root;
@@ -378,8 +390,7 @@ void analyse_directdeclr_is_id(Node *root) {
 	//transmit id's name
 	Node *idnode = get_child_node_w(root, ID);
 	root->cv.id = idnode->cv.id;
-	root->dt = new_spec();//need to be backfilled
-	root->dt->bt = SpecTypeInt32;
+	root->dt = convert_btype_to_pointer(SpecTypeUnknown);//need to be backfilled
 }
 
 void analyse_directdeclr_is_lp_declr_rp(Node *root) {
@@ -397,32 +408,45 @@ Spec *combine_array_type_of_directdeclr(Spec *drdt, int reduce_rule){
 	 *
 	 *  bottom-up traverse
 	 *  first null-index, then sized-index
+	 *
+	 *  first meet null-index, comp.nil = 1
+	 *  then sized-index, comp.size ++, if null, error
+	 *  if other production, error
+	 *
+	 *  FIXME:
+	 *    int (a[2])[3];
 	 */
 	Spec *rtdt = drdt;
-	if(!(drdt)){
-		logw("check here!\n");
-	}else{
-		if(reduce_rule == AST_DirectDeclr_is_DirectDeclr_LB_RB) {
-			if(drdt->bt == SpecTypeInt32){//DirectDeclr' is ID
-				rtdt->bt = SpecTypeArray;
-				rtdt->comp.nil = 1;
-			}else{
-				//invalid case
-				assert(0);
-			}
+	if(!(drdt)) logw("check here!\n");
+
+	if(reduce_rule == AST_DirectDeclr_is_DirectDeclr_LB_RB) {
+		//meet null-index
+		if(drdt->bt == SpecTypeUnknown){//DirectDeclr' is ID
+			//DirectDeclr -> id will set dt to SpecTypeUnknown
+			//first meet
+			rtdt = new_spec();
+			rtdt->bt = SpecTypeArray;
+			rtdt->comp.nil = 1;
 		}else{
-			if(drdt->bt == SpecTypeInt32){
-				rtdt->bt = SpecTypeArray;
-				rtdt->comp.size = 1;
-				rtdt->comp.dt = get_spec_by_btype(SpecTypeInt32);
-			}else if(drdt->bt == SpecTypeArray){
-				rtdt->comp.size ++;
-			}else{
-				//FIXME:invalid case
-				assert(0);
-				//default behavior:
-				return drdt;
-			}
+			//invalid case
+			rtdt = convert_btype_to_pointer(SpecTypeBad);
+			assert(0);
+		}
+	}else{
+		if(drdt->bt == SpecTypeUnknown){
+			//firstly meet sized index
+			rtdt = new_spec();
+			rtdt->bt = SpecTypeArray;
+			rtdt->comp.size = 1;
+			rtdt->comp.dt = convert_btype_to_pointer(SpecTypeUnknown);
+		}else if(drdt->bt == SpecTypeArray){
+			//n times to meet
+			rtdt->comp.size ++;
+		}else{
+			//FIXME:invalid case
+			assert(0);
+			//default behavior:
+			rtdt = convert_btype_to_pointer(SpecTypeBad);
 		}
 	}
 	return rtdt;
@@ -471,8 +495,7 @@ void backtrack_analyse_array_directdeclr(Node *root) {
 	 *            DirectDeclr [...]        | default behavior |
 	 *                 \-> ID              +------------------+
 	 *
-	 * from the above two examples, we can easily get the end
-	 *  conditions:
+	 * end conditions from the above two examples
 	 *    1. DirectDeclr non-index(report error)
 	 *    2. DirectDeclr null-index
 	 *
@@ -489,15 +512,33 @@ void backtrack_analyse_array_directdeclr(Node *root) {
 	 *   once fail to deduce type of id, see it as int
 	 */
 
+	if(root->dt->bt != SpecTypeArray)
+		return;
+	int cnt = root->dt->comp.size;
 	Node *directdeclr = root;
-	directdeclr->comp.dim = (size_t *)malloc(directdeclr->comp.size * sizeof(size_t));
+	root->dt->comp.dim = (size_t *)malloc(directdeclr->dt->comp.size * sizeof(size_t));
 	while(directdeclr) {
-
+		if(directdeclr->reduce_rule == AST_DirectDeclr_is_DirectDeclr_LB_Exp_RB) {
+			cnt --;
+			Node *exp = get_child_node_w(directdeclr, Exp);
+			if(exp->cv.t == PrConstValue){
+				root->dt->comp.dim[cnt] = exp->cv._32;
+			} else {
+				//FIXME
+				assert(0);
+			}
+		}else if(directdeclr->reduce_rule == AST_DirectDeclr_is_DirectDeclr_LB_RB) {
+			root->dt->comp.nil = 1;
+		}else{
+			break;
+		}
 		directdeclr = get_child_node(directdeclr, DirectDeclr);
 	}
+	//check
+	assert(cnt == 0);
 }
 
-Spec *combine_datatype_of_directdeclr(Spec *ddt, Spec *exdt) {
+Spec *combine_funcype_of_directdeclr(Spec *ddt, Spec *exdt) {
 	/*eg.
 	 * DirectDeclr -> DirectDeclr LP IdList RP
 	 *                     ^      \----------/
@@ -510,16 +551,20 @@ Spec *combine_datatype_of_directdeclr(Spec *ddt, Spec *exdt) {
 		}else if(ddt->bt == SpecTypePointer){
 			//eg. int (*func)(int, int)
 			ddt->comp.dt = exdt;
+		}else if(ddt->bt == SpecTypeUnknown){
+			//eg. int (*func)(int, int)
+			exdt->func.ret = ddt;
+			ddt = exdt;
 		}else{
 			//invalid
 			//eg. int (a[2])(int, int);
 			//    int a[2](int, int)
 			//    int a(int, int)(int, int);
-			//TODO: call yyerrtype to format error information and
+			//FIXME: call yyerrtype to format error information and
 			//      set global variable is_syntax_error
 			assert(0);
-			//default behavior: use dt of DirectDeclr and discard
-			//    other part in this production
+			//default behavior
+			return convert_btype_to_pointer(SpecTypeBad);
 		}
 		return ddt;
 	}else{
@@ -535,7 +580,7 @@ void analyse_directdeclr_is_func_paralist(Node *root) {
 	Node *directdeclr = get_child_node_w(root, DirectDeclr);
 	Node *paralist = get_child_node_w(root, ParaTypeList);
 	root->cv.id = directdeclr->cv.id;//transmit id
-	root->dt = combine_datatype_of_directdeclr(directdeclr->dt, paralist->dt);
+	root->dt = combine_funcype_of_directdeclr(directdeclr->dt, paralist->dt);
 }
 
 void analyse_directdeclr_is_func_idlist(Node *root) {
@@ -544,7 +589,7 @@ void analyse_directdeclr_is_func_idlist(Node *root) {
 	Node *idlist = get_child_node_w(root, IdList);
 	backtrack_analyse_idlist(idlist);
 	root->cv.id = directdeclr->cv.id;//transmit id
-	root->dt = combine_datatype_of_directdeclr(directdeclr->dt, idlist->dt);
+	root->dt = combine_funcype_of_directdeclr(directdeclr->dt, idlist->dt);
 }
 
 void analyse_directdeclr_is_func_lp_rp(Node *root) {
@@ -554,7 +599,7 @@ void analyse_directdeclr_is_func_lp_rp(Node *root) {
 	root->cv.id = directdeclr->cv.id;//transmit id
 	funcdt->bt = SpecTypeFunction;
 	funcdt->func.argc = 0;
-	root->dt = combine_datatype_of_directdeclr(directdeclr->dt, funcdt);
+	root->dt = combine_funcype_of_directdeclr(directdeclr->dt, funcdt);
 }
 
 void analyse_paralist(Node *root) {
@@ -638,6 +683,8 @@ Spec* combine_datatype_of_paradecln(Spec *dsdt, Spec *drdt) {
 		}
 	}else if(drdt->bt == SpecTypeFunction) {
 		drdt->func.ret = dsdt;
+	}else if(drdt->bt == SpecTypeUnknown) {
+		drdt = dsdt;
 	}else{
 		//invalid case
 		assert(0);
@@ -649,7 +696,9 @@ void analyse_paradecln_is_declnspec_declr(Node *root) {
 	Node *declnspec = get_child_node_w(root, DeclnSpec);
 	Node *declr = get_child_node_w(root, Declr);
 	root->cv.id = declr->cv.id;
+	logw("%s\n", root->cv.id);
 	root->dt = combine_datatype_of_paradecln(declnspec->dt, declr->dt);
+	logl();
 }
 
 void analyse_paradecln_is_declnspec_abstdeclr(Node *root) {
@@ -705,7 +754,7 @@ void analyse_exp_is_id(Node *root) {
 	IdentInfo *ve = find_variable(vn);
 	if(!ve) {
 		yyerrtype(ErrorUndeclaredIdentifier, root->lineno, vn);
-		root->dt = get_spec_by_btype(SpecTypeInt32);
+		root->dt = convert_btype_to_pointer(SpecTypeInt32);
 	}else{
 		root->dt = ve->type;
 		if(ve->vi->qulfr & QulfrConst) {
@@ -716,28 +765,28 @@ void analyse_exp_is_id(Node *root) {
 void analyse_exp_is_num(Node *root) {
 	Node *numnode = get_child_node_w(root, NUM);
 	root->lrv = SpecRvalue;
-	root->dt = get_spec_by_btype(SpecTypeInt32);
+	root->dt = convert_btype_to_pointer(SpecTypeInt32);
 	root->cv.t = PrConstValue;
 	root->cv._32 = numnode->cv.i;
 }
 
 void analyse_exp_is_nil(Node *root) {
 	root->lrv = SpecRvalue;
-	root->dt = get_spec_by_btype(SpecTypeInt32);
+	root->dt = convert_btype_to_pointer(SpecTypeInt32);
 	root->cv.t = PrConstValue;
 	root->cv._32 = 0;
 }
 
 void analyse_exp_is_false(Node *root) {
 	root->lrv = SpecRvalue;
-	root->dt = get_spec_by_btype(SpecTypeInt32);
+	root->dt = convert_btype_to_pointer(SpecTypeInt32);
 	root->cv.t = PrConstValue;
 	root->cv._32 = 0;
 }
 
 void analyse_exp_is_true(Node *root) {
 	root->lrv = SpecRvalue;
-	root->dt = get_spec_by_btype(SpecTypeInt32);
+	root->dt = convert_btype_to_pointer(SpecTypeInt32);
 	root->cv.t = PrConstValue;
 	root->cv._32 = 1;
 }
@@ -746,14 +795,14 @@ void analyse_exp_is_string(Node *root) {
 	//FIXME:
 	Node *strnode = get_child_node_w(root, STRING);
 	root->lrv = SpecLvalue;
-	root->dt = get_spec_by_btype(SpecTypeString);
+	root->dt = convert_btype_to_pointer(SpecTypeString);
 	root->cv.str = strnode->cv.str;
 }
 
 void analyse_exp_is_literal(Node *root) {
 	Node *charnode = get_child_node_w(root, LITERAL);
 	root->lrv = SpecRvalue;
-	root->dt = get_spec_by_btype(SpecTypeInt8);
+	root->dt = convert_btype_to_pointer(SpecTypeInt8);
 	root->cv.t = PrConstValue;
 	root->cv._8 = charnode->cv._8;
 }
@@ -803,7 +852,7 @@ void analyse_exp_is_relop(Node *root) {
 	Node *exp2 = get_child_node_with_skip_w(root, Exp, 1);
 	int rel = get_type_relation(exp1->dt->bt, exp2->dt->bt);
 	root->lrv = SpecRvalue;
-	root->dt = get_spec_by_btype(SpecTypeInt32);
+	root->dt = convert_btype_to_pointer(SpecTypeInt32);
 	if(!(rel & CRelop)) {
 		yyerrtype(ErrorInvalidOperand, root->lineno, type_format(exp1->dt), type_format(exp2->dt));
 	}
@@ -908,19 +957,25 @@ int init_seman() {
 		const char *sample;
 		const char *format_string;
 	} test_case[] = {
-		{Declr, "int * b;", "int32_t *"},
-		{Declr, "int * extern *const *p;", "int32_t ***"},
-		{Declr, "int func(int, int);", "int32_t (int32_t, int32_t)"},
+		{Declr, "int * b;", "<TypeUnknown> *"},
+		{Declr, "int * extern *const *p;", "<TypeUnknown> ***"},
+		{Declr, "int func(int, int);", "<TypeUnknown> (int32_t, int32_t)"},
 		{Declr, "int (*func)(int, float);", "<UnknownType> (*)(int32_t, float)"},
 		{Declr, "int (*func)(int(*p)(float,short), char);", "<UnknownType> (*)(int32_t (*)(float, int16_t), char)"},
+		{Declr, "int func[];", "int32_t []"},
+		{Declr, "int *func[];", "<UnknownType> *[]"},
+		{Declr, "int *func[][2];", "<UnknownType> *[][2]"},
+		{Declr, "int func[2];", "int32_t [2]"},
 		{Declr, "int (**func[2])(int, float);", "<UnknownType> (**[2])(int32_t, float)"},
+		{Declr, "bool check_dupset(char *dupformat, void *set, size_t len, size_t unitsize, off_t off){}", "<TypeUnknown> (char *, void *, uint32_t, uint32_t, int32_t)"}
 	};
 
 	for(int i = 0; i < sizeof(test_case)/sizeof(test_case[0]); i++){
+		logw("at:%d\n", i);
 		scan_from_string(test_case[i].sample);
 		Node *target = find_child_node(astroot, test_case[i].token);
 		char *sol = type_format(target->dt);
-		if(i == 5) {
+		if(i == 10) {
 			print_ast(target);
 			printf("%s\n", sol);
 		}

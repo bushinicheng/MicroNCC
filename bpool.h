@@ -22,7 +22,7 @@ typedef struct MemPool {
 	off_t block_ptr;
 	size_t index_size;
 	size_t *bs;//block size array
-	void **p;
+	void **p;//buffer
 } MemPool;
 
 
@@ -30,6 +30,7 @@ void *wt_alloc(size_t size);
 void *wt_realloc(void *ptr, size_t oldsize, size_t newsize);
 void mempool_init(MemPool *mp, size_t unit_size);
 void *mempool_new(MemPool *mp);
+size_t mempool_size(MemPool *mp);
 void *mempool_free(MemPool *mp);
 void *get_memory_pointer();
 void *require_memory(size_t size);

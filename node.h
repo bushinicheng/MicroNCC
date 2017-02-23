@@ -17,6 +17,10 @@ enum {
 	/*number*/
 	SpecTypeString = 10, //char *s="hello";equivalent to `char *`
 	SpecTypeVoid = 11,
+	/*-------type for semantic errors-------*/
+	SpecTypeBad = 12,//fail to deduce type
+	SpecTypeUnknown = 13,//declarator
+	SpecBTSeparator,
 	//the above must be registered firstly
 	SpecTypePointer,//pointer type
 	SpecTypeArray,
@@ -24,9 +28,6 @@ enum {
 	SpecTypeFunction,
 	SpecTypeStruct,
 	SpecTypeUnion,
-	/*-------type for semantic errors-------*/
-	SpecTypeBad,//fail to deduce type
-	SpecTypeUnknown,//such declarator
 	SpecTypeEnd,
 };
 
@@ -215,7 +216,7 @@ typedef struct Node {
 Spec *new_spec();
 char *type_format(Spec *type);
 int get_type_relation(int btA, int btB);
-Spec *get_spec_by_btype(uint32_t btype);
+Spec *convert_btype_to_pointer(uint32_t btype);
 int convert_ctype2type(int ct);
 
 typedef void (*SemanFunc)(Node *);
