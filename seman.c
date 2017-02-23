@@ -287,7 +287,6 @@ void analyse_declr_is_directdeclr(Node *root) {
 	if(!(root->dt)) {
 		root->dt = get_spec_by_btype(SpecTypeInt32);
 	}else if(root->dt->bt == SpecTypeFunction){
-		logl();
 		root->dt->func.ret = get_spec_by_btype(SpecTypeInt32);
 	}else if(root->dt->bt == SpecTypeArray){
 		root->dt->comp.dt = get_spec_by_btype(SpecTypeInt32);
@@ -349,11 +348,38 @@ void backtrack_analyse_idlist(Node *root) {
  *   -> self(ParaTypeList) {common function decalration}
  *   -> self(IdList) {argument's type default to be integer}
  *   -> self() {function without argument}
+ *
+ *   for DirectDeclr, node->vi need to be used,
+ *     node->vi->qulfr store information of variable's qualifier
+ *
+ *   information needed for DirectDeclr:
+ *     id: store the string of identifier
+ *     cnt: record the number of array dimension
+ *     t: identify this node is array or function, can be reached
+ *        by node->dt
+ *
+ *   for DirectDeclr's production -> DirectDeclr' (...)
+ *     if DirectDeclr' -> (Declr) and (Declr->dt == comp or ptr):
+ *       note: report error if Declr->dt == array,
+ *         no such type called function array
+ *         error form: int (funcptr[2])(int, int);
+ *       this is a function pointer [array]
+ *     elif DirectDeclr' -> ID:
+ *       this is pure function declarator:
+ *     elif DirectDeclr' -> DirectDeclr index:
+ *       invalid case, report error and terminate analysis
+ *       or default behavior: set root->dt = DirectDeclr'->dt
+ *     elif DirectDeclr' -> DirectDeclr (...)
+ *       error form: int func(int, int)(int, int);
+ *     fi
+ *   endfor
  */
 void analyse_directdeclr_is_id(Node *root) {
 	//transmit id's name
 	Node *idnode = get_child_node_w(root, ID);
 	root->cv.id = idnode->cv.id;
+	root->dt = new_spec();//need to be backfilled
+	root->dt->bt = SpecTypeInt32;
 }
 
 void analyse_directdeclr_is_lp_declr_rp(Node *root) {
@@ -362,19 +388,113 @@ void analyse_directdeclr_is_lp_declr_rp(Node *root) {
 	root->cv.id = declr->cv.id;//transmit id
 }
 
+Spec *combine_array_type_of_directdeclr(Spec *drdt, int reduce_rule){
+	/* DirectDeclr
+	 *   ->  DirectDeclr [...]
+	 *            |      \---/
+	 *            |        \-> didt
+	 *            \->drdt
+	 *
+	 *  bottom-up traverse
+	 *  first null-index, then sized-index
+	 */
+	Spec *rtdt = drdt;
+	if(!(drdt)){
+		logw("check here!\n");
+	}else{
+		if(reduce_rule == AST_DirectDeclr_is_DirectDeclr_LB_RB) {
+			if(drdt->bt == SpecTypeInt32){//DirectDeclr' is ID
+				rtdt->bt = SpecTypeArray;
+				rtdt->comp.nil = 1;
+			}else{
+				//invalid case
+				assert(0);
+			}
+		}else{
+			if(drdt->bt == SpecTypeInt32){
+				rtdt->bt = SpecTypeArray;
+				rtdt->comp.size = 1;
+				rtdt->comp.dt = get_spec_by_btype(SpecTypeInt32);
+			}else if(drdt->bt == SpecTypeArray){
+				rtdt->comp.size ++;
+			}else{
+				//FIXME:invalid case
+				assert(0);
+				//default behavior:
+				return drdt;
+			}
+		}
+	}
+	return rtdt;
+}
+
 void analyse_directdeclr_is_self_index(Node *root) {
 	//array
+	//DirectDeclr -> DirectDeclr LB Exp RB
 	//FIXME: record size of array
 	Node *exp = get_child_node_w(root, Exp);
 	Node *directdeclr = get_child_node_w(root, DirectDeclr);
 	root->cv.id = directdeclr->cv.id;//transmit id
+	root->dt = combine_array_type_of_directdeclr(directdeclr->dt,
+			AST_DirectDeclr_is_DirectDeclr_LB_Exp_RB);
+	//ConstValue of index will be checked in backtrack routine
 }
 
 void analyse_directdeclr_is_self_nullindex(Node *root) {
-	//array
+	//array, use nullindex
 	//FIXME
 	Node *directdeclr = get_child_node_w(root, DirectDeclr);
 	root->cv.id = directdeclr->cv.id;//transmit id
+	root->dt = combine_array_type_of_directdeclr(directdeclr->dt,
+			AST_DirectDeclr_is_DirectDeclr_LB_RB);
+}
+
+void backtrack_analyse_array_directdeclr(Node *root) {
+	/* assume combine_array_type_of_directdeclr filter non-array
+	 *  production, that means, traverse this child AST, the only
+	 *  form of production is DirectDeclr -> DirectDeclr' index,
+	 * but this can only be ensured in test stage
+	 * eg. satisfy assumption
+	 *   DirectDeclr -> DirectDeclr [...]
+	 *                       |
+	 *               /---------------\
+	 *               DirectDeclr [...]
+	 *                    \-> ID
+	 *
+	 * eg. dissatisfy assumption
+	 *   DirectDeclr -> DirectDeclr [...]
+	 *                       |
+	 *               /---------------\
+	 *               DirectDeclr (...)   DB: end analysis at here
+	 *                    |                +------------------+
+	 *            /---------------\        | note: DB donates |
+	 *            DirectDeclr [...]        | default behavior |
+	 *                 \-> ID              +------------------+
+	 *
+	 * from the above two examples, we can easily get the end
+	 *  conditions:
+	 *    1. DirectDeclr non-index(report error)
+	 *    2. DirectDeclr null-index
+	 *
+	 * rules of array:
+	 *    1. the size of highest dimension can be null, which
+	 *       occurs in Initor.
+	 *       eg. int a[][2][3][4];
+	 *    2. the size of all dimensions must be decided in common
+	 *       variable declaration.
+	 *
+	 * another problem: who calls this function? 
+	 *
+	 * general principles:
+	 *   once fail to deduce type of id, see it as int
+	 */
+
+	Node *directdeclr = root;
+	directdeclr->comp.dim = (size_t *)malloc(directdeclr->comp.size * sizeof(size_t));
+	while(directdeclr) {
+
+		directdeclr = get_child_node(directdeclr, DirectDeclr);
+	}
 }
 
 Spec *combine_datatype_of_directdeclr(Spec *ddt, Spec *exdt) {
@@ -392,6 +512,9 @@ Spec *combine_datatype_of_directdeclr(Spec *ddt, Spec *exdt) {
 			ddt->comp.dt = exdt;
 		}else{
 			//invalid
+			//eg. int (a[2])(int, int);
+			//    int a[2](int, int)
+			//    int a(int, int)(int, int);
 			//TODO: call yyerrtype to format error information and
 			//      set global variable is_syntax_error
 			assert(0);
@@ -447,22 +570,22 @@ void backtrack_analyse_paralist(Node *root) {
 	//declare !important: cv.pid <> cv.cnt
 	//for each ParaDecln
 	//    id and dt 
-	int cnt = 0;
+	int cnt = root->cv.cnt;
 	//temporary strategy: traverse child AST twice
 	//  since id and dt can't be put together
 	Node *paralist = root;
 	char **varname = (char **)malloc(root->cv.cnt * sizeof(char *));
 	Spec **funcarg = (Spec **)malloc(root->cv.cnt * sizeof(Spec *));
 	while(paralist) {
+		cnt --;
 		Node *paradecln = get_child_node_w(paralist, ParaDecln);
 		varname[cnt] = paradecln->cv.id;
 		funcarg[cnt] = paradecln->dt;
 		//prepare for next iteration
 		paralist = get_child_node(paralist, ParaList);
-		cnt ++;
 	}
 	//check cnt
-	assert(cnt == root->cv.cnt);
+	assert(cnt == 0);
 	//set root->cv.pid
 	root->cv.pid = varname;
 	//set root->dt
@@ -476,7 +599,6 @@ void analyse_paratypelist(Node *root) {
 	Node *paralist = get_child_node_w(root, ParaList);
 	backtrack_analyse_paralist(paralist);
 	root->dt = paralist->dt;
-	logw("%d\n", root->dt->func.argc);
 	root->cv.pid = paralist->cv.pid;//pstr stores each argument's id
 	if(get_child_node(root, ELLIPSIS)) {
 		root->dt->func.ellipsis = 1;
@@ -503,12 +625,17 @@ Spec* combine_datatype_of_paradecln(Spec *dsdt, Spec *drdt) {
 	 *
 	 *  influenced type of declr: Comp, Pointer, Array, Func
 	 */
-	if(drdt->bt == SpecTypeComplex) {
-		drdt->comp.dt = dsdt;
-	}else if(drdt->bt == SpecTypePointer) {
-		drdt->comp.dt = dsdt;
-	}else if(drdt->bt == SpecTypeArray) {
-		drdt->comp.dt = dsdt;
+	if(drdt->bt == SpecTypeComplex
+	|| drdt->bt == SpecTypePointer
+	|| drdt->bt == SpecTypeArray) {
+		//function pointer array
+		//may be invalid: function array
+		//special case: function pointer
+		if(!(drdt->comp.dt)) {
+			drdt->comp.dt = dsdt;
+		}else if(drdt->comp.dt->bt == SpecTypeFunction) {
+			drdt->comp.dt->func.ret = dsdt;
+		}
 	}else if(drdt->bt == SpecTypeFunction) {
 		drdt->func.ret = dsdt;
 	}else{
@@ -783,13 +910,20 @@ int init_seman() {
 	} test_case[] = {
 		{Declr, "int * b;", "int32_t *"},
 		{Declr, "int * extern *const *p;", "int32_t ***"},
-		{Declr, "int func(int, int);", "int32_t (int32_t, int32_t)"}
+		{Declr, "int func(int, int);", "int32_t (int32_t, int32_t)"},
+		{Declr, "int (*func)(int, float);", "<UnknownType> (*)(int32_t, float)"},
+		{Declr, "int (*func)(int(*p)(float,short), char);", "<UnknownType> (*)(int32_t (*)(float, int16_t), char)"},
+		{Declr, "int (**func[2])(int, float);", "<UnknownType> (**[2])(int32_t, float)"},
 	};
 
 	for(int i = 0; i < sizeof(test_case)/sizeof(test_case[0]); i++){
 		scan_from_string(test_case[i].sample);
 		Node *target = find_child_node(astroot, test_case[i].token);
 		char *sol = type_format(target->dt);
+		if(i == 5) {
+			print_ast(target);
+			printf("%s\n", sol);
+		}
 		UNIT_TEST_STR_EQUAL(test_case[i].format_string, sol);
 	}
 	UNIT_TEST_END;

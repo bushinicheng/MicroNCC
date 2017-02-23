@@ -196,7 +196,7 @@ void print_ast(Node *root)
 
 	/* print semanval or lexval */
 	if(root->token == ID)
-		printf("%s:%s", str_lexval[root->token], root->cv.str);
+		printf("ID:%s", root->cv.id);
 	else if(root->token == NUM) {
 		switch(root->cv.t) {
 			case 'i':

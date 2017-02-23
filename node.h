@@ -24,6 +24,9 @@ enum {
 	SpecTypeFunction,
 	SpecTypeStruct,
 	SpecTypeUnion,
+	/*-------type for semantic errors-------*/
+	SpecTypeBad,//fail to deduce type
+	SpecTypeUnknown,//such declarator
 	SpecTypeEnd,
 };
 
@@ -103,14 +106,35 @@ struct Spec;
 
 typedef struct ExpConstPart{
 	//FIXME
-	//pid <> cnt, id <> t, t <> ex, ex <> id, cnt <> pid
-	//cnt <> pid
-	struct {
+	/* note: some collision in AST node
+	 *    Enumor->_32 and Enumor->t
+	 *    TypeSpec->t(combine type)
+	 *    DeclnSpec->t(combine type), DeclnSpec->ex(qulfr)
+	 *    TypeQulfr->ex(qulfr)
+	 *
+	 *    StarList->t(pointer level), StarList->ex(qulfr)
+	 *    TypeQulfrList->ex(qulfr)
+	 *    TypeQulfr->ex(qulfr)
+	 *
+	 *    Declr->ex(qulfr), Declr->id
+	 *    DirectDeclr->ex(qulfr), DirectDeclr->id
+	 *
+	 *    IdList->cnt, IdList->pid
+	 *    ParaList->cnt, ParaList->pid
+	 *    ParaTypeList->pid
+	 *
+	 *    ParaDecln->id
+	 *
+	 *    ID->id
+	 *    for `Exp` node, use of member variable can be identified
+	 *      by dt.
+	 *    Exp->t(const or not), Exp->_32(value), Exp->str
+	 */
+	union {
 		int t; //sometimes store extra information of tree node
-		int cnt;
 		char *id;
-		char **pid;
 		char *str;
+		char **pid;
 		struct Spec *type;
 		InitorMemoryMap *mm;
 	};
@@ -119,8 +143,10 @@ typedef struct ExpConstPart{
 		int8_t _8;int16_t _16;int32_t _32;int64_t _64;
 		uint8_t _u8;uint16_t _u16;uint32_t _u32;uint64_t _u64;
 		float _f32; double _f64;
-		int i;float f;double llf;void *p;
+		int i;float f;double llf;
+		/*---------------------------------------------------*/
 		int ex;
+		int cnt;
 	};
 } ExpConstPart;
 
@@ -139,6 +165,7 @@ typedef struct Spec {
 			int pl;//pointer level, works if bt == SpecTypePointer
 			           //or bt == SpecTypeComplex
 					   //must not be zero(not pointer)
+			int nil;//eg. int a[]; int a[][2][3];
 		} comp;//complex variable, array or pointer or both
 
 		struct {

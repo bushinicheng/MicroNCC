@@ -23,6 +23,7 @@ typedef unsigned char bool;
 #define true 1
 #define false 0
 #define INT_MAX 2147483647
+#define UINT_MAX 0xFFFFFFFF 
 
 //#define __DEBUG_LEX__
 

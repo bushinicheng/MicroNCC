@@ -85,7 +85,7 @@ char *sformat(const char *format, ...);
 #define __TEST_STR_EQUAL__(info, a, b) \
 	if(strcmp((a), (b)) != 0) {\
 		logR("FAIL\n"); \
-		logw(#a " <> " #b ", test failed!"); \
+		logw( "%s <> %s, test failed!", a, b); \
 		goto __##info##_test_fail__;\
 	}
 

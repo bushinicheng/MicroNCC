@@ -143,7 +143,7 @@ void free_spec() {
  *   format given type to string
  */
 char *type_format(Spec *type) {
-	if(!type) return NULL;
+	if(!type) return "<UnknownType>";
 	if(type->format_string) return type->format_string;
 	if(type->bt == SpecTypeStruct) {
 		type->format_string = sformat("struct %s", type->uos.id);
@@ -162,11 +162,9 @@ char *type_format(Spec *type) {
 		char *func_type = (char *)get_memory_pointer();
 		strcpy(func_type, retv_type);
 		strcat(func_type, " (");
-		logl();
 		for(int i = 0; i < type->func.argc; i++) {
 			total_length = strlen(func_type);
 			push_bpool_state(total_length + 1);
-			logw("%d, %p\n", type->func.argc, type->func.argv[i]);
 			char *arg_type = type_format(type->func.argv[i]);
 			pop_bpool_state();
 			strcat(func_type, arg_type);
@@ -175,62 +173,11 @@ char *type_format(Spec *type) {
 			else
 				strcat(func_type, ")");
 		}
-		logl();
 		total_length = strlen(func_type);
 		type->format_string = require_memory(total_length + 1);
-	} else if(type->bt == SpecTypePointer) {
-		/* some type of pointer:
-		 *   1. int **p;//dt => int
-		 *   2. int (*func)(int a, int b);//dt => int(int, int)
-		 *       ^         \------------/
-		 *       |                \--> argv type
-		 *       +--return type
-		 */
-		Spec *dt = type->comp.dt;
-		char *dt_type = type_format(dt);
-		char *ptr_type = get_memory_pointer();
-		if(dt->bt == SpecTypeFunction) {
-			//case function pointer
-			if(dt->func.ret) {
-				strcpy(ptr_type, type_format(dt->func.ret));
-			}else{
-				strcpy(ptr_type, "int");
-			}
-			strcat(ptr_type, " (");
-			for(int i = 0; i < type->comp.pl; i++) {
-				strcat(ptr_type, "*");
-			}
-			strcat(ptr_type, ")");
-			strcat(ptr_type, strseek(dt_type, '('));
-			total_length = strlen(ptr_type);
-			type->format_string = require_memory(total_length + 1);
-		}else{
-			//case common pointer
-			strcpy(ptr_type, dt_type);
-			strcat(ptr_type, " ");
-			for(int i = 0; i < type->comp.pl; i++) {
-				strcat(ptr_type, "*");
-			}
-			total_length = strlen(ptr_type);
-			type->format_string = require_memory(total_length + 1);
-		}
-	} else if(type->bt == SpecTypeArray) {
-		// int a[4][5]; //common array
-		Spec *dt = type->comp.dt;
-		char *dt_type = type_format(dt);
-		if(!dt_type) dt_type = "<UnknownType>";
-		char *arr_type = get_memory_pointer();
-		strcpy(arr_type, dt_type);
-		strcat(arr_type, " ");
-		total_length = strlen(arr_type);
-		for(int i = 0; i < type->comp.size; i++) {
-			//"[%d]" % (type->comp.dim[i])
-			total_length += sprintf(arr_type + total_length, 
-					"[%lu]", type->comp.dim[i]);
-		}
-		total_length = strlen(arr_type);
-		type->format_string = require_memory(total_length + 1);
-	} else if(type->bt == SpecTypeComplex) {
+	} else if(type->bt == SpecTypePointer
+			||type->bt == SpecTypeArray
+			||type->bt == SpecTypeComplex) {
 		/* some type of comp:
 		 *   1. int **p[2];//dt => int
 		 *   2. int (*func[3])(int a, int b);//dt => int(int, int)
@@ -242,12 +189,12 @@ char *type_format(Spec *type) {
 		Spec *dt = type->comp.dt;
 		char *dt_type = type_format(dt);
 		char *comp_type = get_memory_pointer();
-		if(dt->bt == SpecTypeFunction) {
+		if(dt && dt->bt == SpecTypeFunction) {
 			//case function pointer
 			if(dt->func.ret) {
 				strcpy(comp_type, type_format(dt->func.ret));
 			}else{
-				strcpy(comp_type, "int");
+				strcpy(comp_type, "<UnknownType>");
 			}
 			strcat(comp_type, " (");
 			for(int i = 0; i < type->comp.pl; i++) {
@@ -264,7 +211,6 @@ char *type_format(Spec *type) {
 			total_length = strlen(comp_type);
 			type->format_string = require_memory(total_length + 1);
 		}else{
-			//case common pointer
 			strcpy(comp_type, dt_type);
 			strcat(comp_type, " ");
 			for(int i = 0; i < type->comp.pl; i++) {
