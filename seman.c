@@ -145,6 +145,10 @@ void analyse_declnspec_is_typespec_declnspec(Node *root) {
 	Node *declnspec = get_child_node_w(root, DeclnSpec);
 	root->cv.ex = declnspec->cv.ex;//transmit type qulfr
 	/* structure of cv.t
+	 * +----------------+--------+--------+
+	 * |       ct       |   bt   |   0/1  |
+	 * +----------------+--------+--------+
+	 *
 	 * +-----------------+---------------+
 	 * |  SpecTypeVoid   |       0       |
 	 * +-----------------+---------------+
@@ -155,10 +159,14 @@ void analyse_declnspec_is_typespec_declnspec(Node *root) {
 	 */
 	if((typespec->cv.t & 1) && (declnspec->cv.t & 1)) {
 		root->cv.t = typespec->cv.t | declnspec->cv.t;//t records combine type
-		int btype = convert_ctype2type(root->cv.t);
+		if((DWORD2_PART1(typespec->cv.t) & CombineTypeLong)
+		&& (DWORD2_PART1(declnspec->cv.t) & CombineTypeLong)){
+			root->cv.t |= (CombineTypeLongLong << 16);
+		}
+		int btype = convert_ctype2type(DWORD2_PART1(root->cv.t));
 		if(btype == -1) {//invalid combination
 			root->cv.t &= ~1;
-			root->dt = convert_btype_to_pointer(SpecTypeInt32);
+			root->dt = convert_btype_to_pointer(SpecTypeBad);
 		}else{
 			root->dt = convert_btype_to_pointer(btype);
 		}
@@ -169,6 +177,7 @@ void analyse_declnspec_is_typespec_declnspec(Node *root) {
 		root->cv.t &= ~1;
 		//once fail to combine, transmit null spec to upper node
 		root->dt = convert_btype_to_pointer(SpecTypeInt32);
+		assert(0);
 	}
 }
 
@@ -957,6 +966,12 @@ int init_seman() {
 		const char *sample;
 		const char *format_string;
 	} test_case[] = {
+		{DeclnSpec, "void a;", "void"},
+		{DeclnSpec, "long long a;", "int64_t"},
+		{DeclnSpec, "signed long a;", "int32_t"},
+		{DeclnSpec, "unsigned long a;", "uint32_t"},
+		{DeclnSpec, "signed long long a;", "int64_t"},
+		{DeclnSpec, "unsigned long long a;", "uint64_t"},
 		{Declr, "int * b;", "<TypeUnknown> *"},
 		{Declr, "int * extern *const *p;", "<TypeUnknown> ***"},
 		{Declr, "int func(int, int);", "<TypeUnknown> (int32_t, int32_t)"},
@@ -967,17 +982,19 @@ int init_seman() {
 		{Declr, "int *func[][2];", "<NullType> *[][2]"},
 		{Declr, "int func[2];", "int32_t [2]"},
 		{Declr, "int (**func[2])(int, float);", "<UnknownType> (**[2])(int32_t, float)"},
-		{Declr, "bool check_dupset(char *dupformat, void *set, size_t len, size_t unitsize, off_t off){}", "<TypeUnknown> (char *, void *, uint32_t, uint32_t, int32_t)"}
+		{Declr, "bool check_dupset(char *dupformat, void *set, size_t len, size_t unitsize, off_t off){}", "<TypeUnknown> (char *, void *, uint32_t, uint32_t, int32_t)"},
 	};
 
 	for(int i = 0; i < sizeof(test_case)/sizeof(test_case[0]); i++){
 		scan_from_string(test_case[i].sample);
 		Node *target = find_child_node(astroot, test_case[i].token);
 		char *sol = type_format(target->dt);
-		if(i == 10) {
-			//print_ast(target);
+		if(i == 1) {
+			print_ast(target);
 			//printf("%s\n", sol);
 		}
+		if(strcmp(test_case[i].format_string, sol) != 0)
+			logw("fail at %d\n", i);
 		UNIT_TEST_STR_EQUAL(test_case[i].format_string, sol);
 	}
 	UNIT_TEST_END;

@@ -2669,6 +2669,10 @@ static int symbol(int syntaxval) {
 }
 
 static int type(int token, int typeinfo) {
+	/* +----------------+--------+--------+
+	 * |       ct       |   bt   |   0/1  |
+	 * +----------------+--------+--------+
+	 */
 	Node *pnd = new_node();
 	pnd->token = TYPE;
 	pnd->reduce_rule = token;
