@@ -145,17 +145,10 @@ void analyse_declnspec_is_typespec_declnspec(Node *root) {
 	Node *declnspec = get_child_node_w(root, DeclnSpec);
 	root->cv.ex = declnspec->cv.ex;//transmit type qulfr
 	/* structure of cv.t
+	 * 31               15       7        0
 	 * +----------------+--------+--------+
 	 * |       ct       |   bt   |   0/1  |
 	 * +----------------+--------+--------+
-	 *
-	 * +-----------------+---------------+
-	 * |  SpecTypeVoid   |       0       |
-	 * +-----------------+---------------+
-	 * or
-	 * +-----------------+---------------+
-	 * | CombineTypeChar |       1       |
-	 * +-----------------+---------------+
 	 */
 	if((typespec->cv.t & 1) && (declnspec->cv.t & 1)) {
 		root->cv.t = typespec->cv.t | declnspec->cv.t;//t records combine type
@@ -284,6 +277,15 @@ void analyse_declr_is_starlist_directdeclr(Node *root) {
 		root->dt = directdeclr->dt;
 		root->dt->bt = SpecTypeComplex;
 		root->dt->comp.pl = starlist->dt->comp.pl;
+	}else if(directdeclr->dt->bt == SpecTypePointer
+		  || directdeclr->dt->bt == SpecTypeComplex){//pointer
+		/* int * (* p);
+		 *     ^ \---/
+		 *     |   \->DirectDeclr
+		 *     \->StarList  
+		 */
+		root->dt = directdeclr->dt;
+		root->dt->comp.pl += starlist->dt->comp.pl;
 	}else if(directdeclr->dt->bt == SpecTypeUnknown){
 		// StarList(ptr) + pure id
 		root->dt = starlist->dt;
@@ -973,24 +975,35 @@ int init_seman() {
 		{DeclnSpec, "signed long long a;", "int64_t"},
 		{DeclnSpec, "unsigned long long a;", "uint64_t"},
 		{Declr, "int * b;", "<TypeUnknown> *"},
-		{Declr, "int * extern *const *p;", "<TypeUnknown> ***"},
-		{Declr, "int func(int, int);", "<TypeUnknown> (int32_t, int32_t)"},
-		{Declr, "int (*func)(int, float);", "<UnknownType> (*)(int32_t, float)"},
-		{Declr, "int (*func)(int(*p)(float,short), char);", "<UnknownType> (*)(int32_t (*)(float, int16_t), char)"},
+		{Declr, "int (* b);", "<TypeUnknown> *"},
+		{Declr, "int ** b;", "<TypeUnknown> **"},
+		{Declr, "int *(* b);", "<TypeUnknown> **"},
+		{Declr, "int ** b[];", "<NullType> **[]"},
+		{Declr, "int *(* b[]);", "<NullType> **[]"},
+		{Declr, "int ** b[2];", "<TypeUnknown> **[2]"},
+		{Declr, "int *(* b[2]);", "<TypeUnknown> **[2]"},
+		{Declr, "int ** b[][2];", "<NullType> **[][2]"},
+		{Declr, "int ** b[1][2];", "<TypeUnknown> **[1][2]"},
+		{Declr, "int ** b[][2][3];", "<NullType> **[][2][3]"},
 		{Declr, "int func[];", "int32_t []"},
 		{Declr, "int *func[];", "<NullType> *[]"},
 		{Declr, "int *func[][2];", "<NullType> *[][2]"},
 		{Declr, "int func[2];", "int32_t [2]"},
+		{Declr, "int * extern *const *p;", "<TypeUnknown> ***"},
+		{Declr, "int func(int, int);", "<TypeUnknown> (int32_t, int32_t)"},
+		{Declr, "int (*func)(int, float);", "<UnknownType> (*)(int32_t, float)"},
+		{Declr, "int (*func)(int(*p)(float,short), char);", "<UnknownType> (*)(int32_t (*)(float, int16_t), char)"},
 		{Declr, "int (**func[2])(int, float);", "<UnknownType> (**[2])(int32_t, float)"},
 		{Declr, "bool check_dupset(char *dupformat, void *set, size_t len, size_t unitsize, off_t off){}", "<TypeUnknown> (char *, void *, uint32_t, uint32_t, int32_t)"},
 	};
 
 	for(int i = 0; i < sizeof(test_case)/sizeof(test_case[0]); i++){
+		//logw("at %d\n", i);
 		scan_from_string(test_case[i].sample);
 		Node *target = find_child_node(astroot, test_case[i].token);
 		char *sol = type_format(target->dt);
-		if(i == 1) {
-			print_ast(target);
+		if(i == 9) {
+			//print_ast(target);
 			//printf("%s\n", sol);
 		}
 		if(strcmp(test_case[i].format_string, sol) != 0)
