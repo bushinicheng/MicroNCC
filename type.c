@@ -81,6 +81,7 @@ static const char *btype_format_string[] = {
 	[SpecTypeUint64] = "uint64_t",
 	[SpecTypeFloat32] = "float",
 	[SpecTypeFloat64] = "double",
+	[SpecTypeVoid] = "void",
 	[SpecTypeBad] = "<TypeBad>",
 	[SpecTypeUnknown] = "<TypeUnknown>",
 };
@@ -145,7 +146,7 @@ void free_spec() {
  *   format given type to string
  */
 char *type_format(Spec *type) {
-	if(!type) return "<UnknownType>";
+	if(!type) return "<NullType>";
 	if(type->format_string) return type->format_string;
 	if(type->bt == SpecTypeStruct) {
 		type->format_string = sformat("struct %s", type->uos.id);

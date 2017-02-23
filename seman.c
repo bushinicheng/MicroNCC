@@ -680,6 +680,8 @@ Spec* combine_datatype_of_paradecln(Spec *dsdt, Spec *drdt) {
 			drdt->comp.dt = dsdt;
 		}else if(drdt->comp.dt->bt == SpecTypeFunction) {
 			drdt->comp.dt->func.ret = dsdt;
+		}else if(drdt->comp.dt->bt == SpecTypeUnknown) {
+			drdt->comp.dt = dsdt;
 		}
 	}else if(drdt->bt == SpecTypeFunction) {
 		drdt->func.ret = dsdt;
@@ -696,9 +698,7 @@ void analyse_paradecln_is_declnspec_declr(Node *root) {
 	Node *declnspec = get_child_node_w(root, DeclnSpec);
 	Node *declr = get_child_node_w(root, Declr);
 	root->cv.id = declr->cv.id;
-	logw("%s\n", root->cv.id);
 	root->dt = combine_datatype_of_paradecln(declnspec->dt, declr->dt);
-	logl();
 }
 
 void analyse_paradecln_is_declnspec_abstdeclr(Node *root) {
@@ -963,24 +963,24 @@ int init_seman() {
 		{Declr, "int (*func)(int, float);", "<UnknownType> (*)(int32_t, float)"},
 		{Declr, "int (*func)(int(*p)(float,short), char);", "<UnknownType> (*)(int32_t (*)(float, int16_t), char)"},
 		{Declr, "int func[];", "int32_t []"},
-		{Declr, "int *func[];", "<UnknownType> *[]"},
-		{Declr, "int *func[][2];", "<UnknownType> *[][2]"},
+		{Declr, "int *func[];", "<NullType> *[]"},
+		{Declr, "int *func[][2];", "<NullType> *[][2]"},
 		{Declr, "int func[2];", "int32_t [2]"},
 		{Declr, "int (**func[2])(int, float);", "<UnknownType> (**[2])(int32_t, float)"},
 		{Declr, "bool check_dupset(char *dupformat, void *set, size_t len, size_t unitsize, off_t off){}", "<TypeUnknown> (char *, void *, uint32_t, uint32_t, int32_t)"}
 	};
 
 	for(int i = 0; i < sizeof(test_case)/sizeof(test_case[0]); i++){
-		logw("at:%d\n", i);
 		scan_from_string(test_case[i].sample);
 		Node *target = find_child_node(astroot, test_case[i].token);
 		char *sol = type_format(target->dt);
 		if(i == 10) {
-			print_ast(target);
-			printf("%s\n", sol);
+			//print_ast(target);
+			//printf("%s\n", sol);
 		}
 		UNIT_TEST_STR_EQUAL(test_case[i].format_string, sol);
 	}
 	UNIT_TEST_END;
+	assert(0);
 #endif
 }
