@@ -126,6 +126,9 @@ typedef struct ExpConstPart{
 	 *
 	 *    ParaDecln->id
 	 *
+	 *    CompDecln->cnt
+	 *    CompDeclr->id, CompDeclr->cnt
+	 *
 	 *    ID->id
 	 *    for `Exp` node, use of member variable can be identified
 	 *      by dt.
@@ -148,6 +151,7 @@ typedef struct ExpConstPart{
 		/*---------------------------------------------------*/
 		int ex;
 		int cnt;
+		off_t off;
 	};
 } ExpConstPart;
 
@@ -182,7 +186,7 @@ typedef struct Spec {
 				char *id;//member name
 				off_t off;//offset in bits, for union
 				          //  it works only for anonymous struct
-				size_t size;//bits
+				size_t w;//bits
 				struct Spec *dt;
 			} *argv;
 			size_t size;

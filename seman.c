@@ -556,16 +556,15 @@ Spec *combine_funcype_of_directdeclr(Spec *ddt, Spec *exdt) {
 	 *                    ddt         exdt
 	 */
 	if(ddt) {
-		if(ddt->bt == SpecTypeComplex) {
-			//eg. int (*func[])(int, int)
-			ddt->comp.dt = exdt;
-		}else if(ddt->bt == SpecTypePointer){
-			//eg. int (*func)(int, int)
-			ddt->comp.dt = exdt;
-		}else if(ddt->bt == SpecTypeUnknown){
+		if(ddt->bt == SpecTypeUnknown){
 			//eg. int (*func)(int, int)
 			exdt->func.ret = ddt;
 			ddt = exdt;
+		}else if(ddt->bt == SpecTypeComplex
+		      || ddt->bt == SpecTypePointer){
+			//eg. int (*func[])(int, int)
+			//eg. int (*func)(int, int)
+			ddt->comp.dt = exdt;
 		}else{
 			//invalid
 			//eg. int (a[2])(int, int);
@@ -661,6 +660,38 @@ void analyse_paratypelist(Node *root) {
 	}
 }
 
+void backfill_declr_datatype(Node *declnspec, Node *declr) {
+	/*  Spec  Declr
+	 *   int   *p;
+	 *    |     \->drdt
+	 *    \-> supdt
+	 */
+	if(declr->dt) {
+		//back fill declr->dt
+		if(declr->dt->bt == SpecTypeUnknown) {
+			declr->dt = declnspec->dt;
+		}else if(declr->dt->bt == SpecTypeFunction) {
+			declr->dt->func.ret = declnspec->dt;
+		}else if(declr->dt->bt == SpecTypeComplex
+			  || declr->dt->bt == SpecTypePointer
+			  || declr->dt->bt == SpecTypeArray)
+		{
+			if(!declr->dt->comp.dt) {
+				logw("check here :(\n");
+			}else if(declr->dt->comp.dt->bt == SpecTypeUnknown){
+				declr->dt->comp.dt = declnspec->dt;
+			}else if(declr->dt->comp.dt->bt == SpecTypeFunction){
+				declr->dt->comp.dt->func.ret = declnspec->dt;
+			}else{
+				logw("invalid case\n");
+				assert(0);
+			}
+		}
+	}else{
+		logw("check here :(\n");
+	}
+}
+
 /* ParaDecln -> DeclnSpec Declr --> id
  *                          ^---------+
  *              DeclnSpec AbstDeclr   |-> dt
@@ -670,52 +701,20 @@ void analyse_paratypelist(Node *root) {
  *                  ^---- for some specicial type,
  *                          eg. function pointer
  */
-Spec* combine_datatype_of_paradecln(Spec *dsdt, Spec *drdt) {
-	/*                dsdt    drdt
-	 * ParaDecln -> DeclnSpec Declr
-	 *                  ^       ^
-	 *                  \-------/
-	 *                      +----- new dt
-	 *         eg.     int    *[4]
-	 *                 int  func(void)
-	 *
-	 *  influenced type of declr: Comp, Pointer, Array, Func
-	 */
-	if(drdt->bt == SpecTypeComplex
-	|| drdt->bt == SpecTypePointer
-	|| drdt->bt == SpecTypeArray) {
-		//function pointer array
-		//may be invalid: function array
-		//special case: function pointer
-		if(!(drdt->comp.dt)) {
-			drdt->comp.dt = dsdt;
-		}else if(drdt->comp.dt->bt == SpecTypeFunction) {
-			drdt->comp.dt->func.ret = dsdt;
-		}else if(drdt->comp.dt->bt == SpecTypeUnknown) {
-			drdt->comp.dt = dsdt;
-		}
-	}else if(drdt->bt == SpecTypeFunction) {
-		drdt->func.ret = dsdt;
-	}else if(drdt->bt == SpecTypeUnknown) {
-		drdt = dsdt;
-	}else{
-		//invalid case
-		assert(0);
-	}
-	return drdt;
-}
 
 void analyse_paradecln_is_declnspec_declr(Node *root) {
 	Node *declnspec = get_child_node_w(root, DeclnSpec);
 	Node *declr = get_child_node_w(root, Declr);
 	root->cv.id = declr->cv.id;
-	root->dt = combine_datatype_of_paradecln(declnspec->dt, declr->dt);
+	backfill_declr_datatype(declnspec, declr);
+	root->dt = declr->dt;
 }
 
 void analyse_paradecln_is_declnspec_abstdeclr(Node *root) {
 	Node *declnspec = get_child_node_w(root, DeclnSpec);
 	Node *abstdeclr = get_child_node_w(root, AbstDeclr);
-	root->dt = combine_datatype_of_paradecln(declnspec->dt, abstdeclr->dt);
+	backfill_declr_datatype(declnspec, abstdeclr);
+	root->dt = abstdeclr->dt;
 }
 
 void analyse_paradecln_is_declnspec(Node *root) {
@@ -735,28 +734,147 @@ void analyse_compspec(Node *root) {
 	 *           //     this struct scope
 	 *       int y;
 	 *   };
+	 *
+	 * need information of numbers of member variable,
+	 * which stored in cv.cnt
 	 **/
+	Spec *stdt = new_spec();
+	int cnt = 0;
+	//FIXME:union
+	root->dt = stdt;
+	stdt->bt = SpecTypeStruct;
+	stdt->uos.size = root->cv.cnt;
+	stdt->uos.argv = malloc(sizeof(stdt->uos.argv[0]) * root->cv.cnt);
+	if(root->reduce_rule == AST_CompSpec_is_CompType_ID) {
+		//TODO: transmit type by ID
+		assert(0);
+		printf("line %d: warning:\n", root->lineno);
+	}else{
+		Node *compdeclnlist = get_child_node_w(root, CompDeclnList);
+		while(compdeclnlist) {
+			Node *compdecln = get_child_node_w(compdeclnlist, CompDecln);
+			if(compdecln->reduce_rule == AST_CompDecln_is_DeclnSpec_SEMI) {
+				//may be anonymous struct
+			}else{
+				//DeclnSpec CompDeclrList SEMI
+				Node *compdeclrlist = get_child_node_w(compdecln, CompDeclrList);
+				while(compdeclrlist) {
+					Node *compdeclr = get_child_node_w(compdeclrlist, CompDeclr);
+					//FIXME
+					stdt->uos.argv[cnt].id = compdeclr->cv.id;
+					stdt->uos.argv[cnt].off = 0;
+					stdt->uos.argv[cnt].w = 0;
+					stdt->uos.argv[cnt].dt = compdeclr->dt;
+					cnt ++;
+					compdeclrlist = get_child_node(compdecln, CompDeclrList);
+				}
+			}
+		
+			compdeclnlist = get_child_node(root, CompDeclnList);
+		}
+	}
+
+	assert(cnt == stdt->uos.size);
+}
+
+/* compdeclnlist, compdecln, compdeclrlist, compdeclr
+ *  node->cv.cnt records number of member variable
+ */
+void analyse_compdeclnlist_is_compdecln(Node *root) {
+	Node *compdecln = get_child_node_w(root, CompDecln);
+	root->cv.cnt = compdecln->cv.cnt;
+}
+
+void analyse_compdeclnlist_is_compdeclnlist_compdecln(Node *root) {
+	Node *compdeclnlist = get_child_node_w(root, CompDeclnList);
+	Node *compdecln = get_child_node_w(root, CompDecln);
+	root->cv.cnt = compdeclnlist->cv.cnt + compdecln->cv.cnt;
 }
 
 void analyse_compdecln_is_declnspec(Node *root) {
+	//count anonymous struct/union
 	Node *declnspec = get_child_node_w(root, DeclnSpec);
+	Node *typespec = find_child_node(declnspec, TypeSpec);
 	root->dt = declnspec->dt;//transmit dt
+	assert(typespec != NULL);
+	if(typespec->reduce_rule == AST_TypeSpec_is_CompSpec) {
+		char *uos = NULL;
+		Node *compspec = get_child_node_w(typespec, CompSpec);
+		Node *comptype = get_child_node_w(compspec, CompType);
+		uos = comptype->reduce_rule == AST_CompType_is_STRUCT ? 
+			"struct" : "union";
+		if(compspec->reduce_rule == AST_CompSpec_is_CompType_ID_LC_CompDeclnList_RC) {
+			Node *idnode = get_child_node_w(compspec, ID);
+			//inner struct declaration
+			push_variable(sformat("%s@%s", uos, idnode->cv.id),
+					compspec->dt, compspec);
+		}else if(compspec->reduce_rule == AST_CompSpec_is_CompType_LC_CompDeclnList_RC) {
+			//anonymous inner struct
+			Node *compdeclnlist = get_child_node_w(compspec, CompDeclnList);
+			root->cv.cnt = compdeclnlist->cv.cnt;
+		}else{
+			//struct ID;
+			printf("line %d: warning:\n", root->lineno);
+		}
+	}else{
+		//report warning
+		printf("line %d: warning:\n", root->lineno);
+	}
 }
 
+/* CompDecln -> DeclnSpec CompDeclrList SEMI
+ *
+ * DeclnSpec provides dt
+ *
+ * CompDeclrList -> CompDeclr
+ *               -> CompDeclr COMMA CompDeclrList
+ *
+ * CompDeclr -> Declr
+ *           -> COLON Exp //no influence
+ *           -> Declr COLON Exp
+ *
+ */
 void analyse_compdecln_is_declnspec_compdeclrlist(Node *root) {
-	//TODO:
+	Node *declnspec = get_child_node_w(root, DeclnSpec);
+	Node *compdeclrlist = get_child_node_w(root, CompDeclrList);
+	root->cv.cnt = compdeclrlist->cv.cnt;
+	//backfill
+	while(compdeclrlist) {
+		Node *compdeclr = get_child_node_w(compdeclrlist, CompDeclr);
+		Node *declr = get_child_node(compdeclr, Declr);
+		//omit case: COLON Exp
+		if(declr)
+			backfill_declr_datatype(declnspec, declr);
+	
+		compdeclrlist = get_child_node(compdeclrlist, CompDeclrList);
+	}
 }
 
-void analyse_compdeclrlist(Node *root) {
+void analyse_compdeclrlist_is_compdeclr(Node *root) {
+	Node *compdeclr = get_child_node_w(root, CompDeclr);
+	root->cv.cnt = compdeclr->cv.cnt;//in case of `COLON Exp`
 }
 
-void analyse_compdeclr_is_declr() {
+void analyse_compdeclrlist_is_compdeclr_compdeclrlist(Node *root) {
+	Node *compdeclrlist = get_child_node_w(root, CompDeclrList);
+	root->cv.cnt = compdeclrlist->cv.cnt + 1;
 }
 
-void analyse_compdeclr_is_colon_exp() {
+void analyse_compdeclr_is_declr(Node *root) {
+	Node *declr = get_child_node_w(root, Declr);
+	root->cv.id = declr->cv.id;
+	root->cv.cnt = 1;
+	root->dt = declr->dt;
 }
 
-void analyse_compdeclr_is_declr_colon_exp() {
+void analyse_compdeclr_is_colon_exp(Node *root) {
+	//TODO
+	assert(0);
+}
+
+void analyse_compdeclr_is_declr_colon_exp(Node *root) {
+	//TODO
+	assert(0);
 }
 
 void analyse_exp_is_id(Node *root) {
@@ -909,10 +1027,15 @@ static SemanFunc analyse_function[] = {
 	[AST_ParaDecln_is_DeclnSpec_Declr] = analyse_paradecln_is_declnspec_declr,
 	[AST_ParaDecln_is_DeclnSpec_AbstDeclr] = analyse_paradecln_is_declnspec_abstdeclr,
 	[AST_ParaDecln_is_DeclnSpec] = analyse_paradecln_is_declnspec,
+	[AST_CompSpec_is_CompType_ID_LC_CompDeclnList_RC] = analyse_compspec,
+	[AST_CompSpec_is_CompType_LC_CompDeclnList_RC] = analyse_compspec,
+	[AST_CompSpec_is_CompType_ID] = analyse_compspec,
+	[AST_CompDeclnList_is_CompDeclnList_CompDecln] = analyse_compdeclnlist_is_compdeclnlist_compdecln,
+	[AST_CompDeclnList_is_CompDecln] = analyse_compdeclnlist_is_compdecln,
 	[AST_CompDecln_is_DeclnSpec_SEMI] = analyse_compdecln_is_declnspec,
 	[AST_CompDecln_is_DeclnSpec_CompDeclrList_SEMI] = analyse_compdecln_is_declnspec_compdeclrlist,
-	[AST_CompDeclrList_is_CompDeclr] = analyse_compdeclrlist,
-	[AST_CompDeclrList_is_CompDeclr_COMMA_CompDeclrList] = analyse_compdeclrlist,
+	[AST_CompDeclrList_is_CompDeclr] = analyse_compdeclrlist_is_compdeclr,
+	[AST_CompDeclrList_is_CompDeclr_COMMA_CompDeclrList] = analyse_compdeclrlist_is_compdeclr_compdeclrlist,
 	[AST_CompDeclr_is_Declr] = analyse_compdeclr_is_declr,
 	[AST_CompDeclr_is_COLON_Exp] = analyse_compdeclr_is_colon_exp,
 	[AST_CompDeclr_is_Declr_COLON_Exp] = analyse_compdeclr_is_declr_colon_exp,
@@ -968,6 +1091,7 @@ int init_seman() {
 		const char *sample;
 		const char *format_string;
 	} test_case[] = {
+		//{DeclnSpec, "struct{int (*func)(int, int);int b;};", "void"},
 		{DeclnSpec, "void a;", "void"},
 		{DeclnSpec, "long long a;", "int64_t"},
 		{DeclnSpec, "signed long a;", "int32_t"},

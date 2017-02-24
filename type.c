@@ -147,7 +147,9 @@ void free_spec() {
  */
 char *type_format(Spec *type) {
 	if(!type) return "<NullType>";
+#ifndef __DEBUG__
 	if(type->format_string) return type->format_string;
+#endif
 	if(type->bt == SpecTypeStruct) {
 		type->format_string = sformat("struct %s", type->uos.id);
 		return type->format_string;
@@ -292,7 +294,9 @@ void init_spec() {
 	ptr_type->comp.dt = convert_btype_to_pointer(SpecTypeInt32);
 	UNIT_TEST_STR_EQUAL(type_format(ptr_type), "int32_t ****");
 
+#ifndef __DEBUG__
 	free(ptr_type->format_string);
+#endif
 	ptr_type->format_string = NULL;
 	ptr_type->comp.dt = func_type;
 	UNIT_TEST_STR_EQUAL(type_format(ptr_type), "int32_t (****)(int32_t, int32_t, int32_t)");
@@ -320,14 +324,25 @@ void init_spec() {
 	comp_type->comp.dim[3] = 4;
 	UNIT_TEST_STR_EQUAL(type_format(comp_type), "int32_t *[1][2][3][4]");
 
+#ifndef __DEBUG__
 	free(comp_type->format_string);
+#endif
 	comp_type->format_string = NULL;
 	comp_type->comp.dt = func_type;
 	UNIT_TEST_STR_EQUAL(type_format(comp_type), "int32_t (*[1][2][3][4])(int32_t, int32_t, int32_t)");
 
+#ifndef __DEBUG__
 	free(func_type->format_string);
+#endif
 	func_type->format_string = NULL;
+	func_type = new_spec();
+	func_type->bt = SpecTypeFunction;
+	func_type->func.ret = convert_btype_to_pointer(SpecTypeInt32);
+	func_type->func.argc = 3;
+	func_type->func.argv = (Spec **)malloc(sizeof(Spec *) * 3);
 	func_type->func.argv[0] = comp_type;
+	func_type->func.argv[1] = convert_btype_to_pointer(SpecTypeInt32);
+	func_type->func.argv[2] = convert_btype_to_pointer(SpecTypeInt32);
 	UNIT_TEST_STR_EQUAL(type_format(func_type), "int32_t (int32_t (*[1][2][3][4])(int32_t, int32_t, int32_t), int32_t, int32_t)");
 
 	UNIT_TEST_END;
