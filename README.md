@@ -1,439 +1,53 @@
-# compiler work
+# MicroNCC
 
-##introduction
+##编译和运行
 * build this project
  * `make`
+* run this project
+ * `make run`
 
-##syntax of c11
-```
-%nonassoc LOWWER_THAN_ELSE
-%nonassoc ELSE
+##项目说明
 
-%token
-	ID NUM STRING LITERAL SIZEOF TYPE_NAME
-	COMMA DOT PTR QOP COLON
-	ASSIGNOP DIVE MULTE MODE ADDE SUBE LSHIFTE RSHIFTE ANDE XORE ORE
-	LAND LOR OR XOR AND
-	EQ NE LT LE GE GT
-	LSHIFT RSHIFT ADD SUB MULT DIV MOD
-	INC DEC LNOT NOT
-	TYPEDEF EXTERN STATIC AUTO REGISTER CONST VOLATILE
-	CHAR SHORT INT LONG SIGNED UNSIGNED FLOAT DOUBLE VOID
-	STRUCT UNION ENUM ELLIPSIS
-	CASE DEFAULT IF ELSE SWITCH WHILE DO FOR GOTO CONTINUE BREAK RETURN
-	LC RC LB RB LP RP SEMI
-	BOOL INT8T INT16T INT32T INT64T UINT8T UINT16T UINT32T UINT64T
-	FLOAT32T FLOAT64T
-	SIZET UINTPTRT OFFT NIL TRUE FALSE
+###添加新模块
+####目录结构上的变化
+front目录为当前我正在开发的模块
+如果需要开发自己的模块，则需要先建立对应的文件夹。假设你的模块名back，那么你需要建立back文件夹，并在back下新建文件Makefile.part。Makefile.part是你的模块的生成规则，在这里我们约定你的规则应将你的模块编译连接为一个可重定向文件，添加完之后需要将你的Makefile.part包含到根目录下的Makefile中。
+为了减少写Makefile的负担，你可以使用build文件的自动生成编译连接规则，比如你在你的back模块下的Makefile.part中添加一句`$(eval $(call make_common_rules,back,))`，这条语句会加载Makefile.build文件中的所有规则：
 
-%left COMMA
-%right ASSIGNOP DIVE MULTE MODE ADDE SUBE LSHIFTE RSHIFTE ANDE XORE ORE
-%right QOP COLON
-%left LOR
-%left LAND
-%left OR
-%left XOR
-%left AND
-%left EQ NE
-%left LT LE GE GT
-%left LSHIFT RSHIFT
-%left ADD SUB
-%left MULT DIV MOD
-%right INC DEC LNOT NOT SIZEOF
-%left DOT PTR LB RB
-%left LP RP
+* 设定你的可重定向文件的目标位置为output/back。
+* 在你的目录下查找所有的.c文件和.S文件(注意大小写)。
+* 添加依赖规则，生成目标为<你的模块名>.o，其依赖于你模块下所有.c文件对应的.o文件。
+* 对所有的.c文件进行编译，编译输出文件放在output/<你的模块名>下。
+* 将你的模块里的所有.o文件链接为一个可重定向文件。
 
-%type
-	Program
-	ExtDecln
-	ExtDeclnList
-	FuncDef
-	ExpList
-	Decln
-	DeclnSpec
-	InitorDeclrList
-	InitorDeclr
-	TypeSpec
-	CompSpec
-	CompType
-	CompDeclnList
-	CompDecln
-	CompDeclrList
-	CompDeclr
-	EnumSpec
-	EnumorList
-	Enumor
-	TypeQulfr
-	Declr
-	DirectDeclr
-	StarList
-	TypeQulfrList
-	ParaTypeList
-	ParaList
-	ParaDecln
-	IdList
-	TypeName
-	AbstDeclr
-	DirectAbstDeclr
-	Initor
-	InitorList
-	StmtList
-	ExpStmt
-	CompSt
-	DeclnList
-	Stmt
-	Exp
+####添加自己模块的编译规则的注意点
+* 你需要在根目录的Makefile的ALL\_PARTS变量右边加上你的模块名。
+* 在约20行的地方加上你的模块的伪目标，这个可以没有。
+* 在\$(COMPILER)的依赖文件中加上你的模块的最终生成的文件名，如果你使用Makefile.build自动生成，这里加上$(<你的模块名>\_PART\_OBJ)即可。
 
-%start Program
-%%
+###库函数
+####注意点
+在lib目录下放着本项目所有使用到的库文件，由于本项目最终目标是运行在一个几乎裸的机器上，所以不建议开发过程中使用除c标准库以外的库，如果你需要编写自己的库，直接在这个目录下编写即可。编写完毕需要将包含库函数声明的头文件名写在common.h的相应位置。
 
-Program
-	:ExtDeclnList
-;
+####已实现的库
+* hash
+ * 一个hash库
+* vector
+ * 一个动态增长的数组
+* mempool
+ * 这个库分段式分配内存，相较于realloc和vector会保留所有已分配元素的位置，这意味着指向这些元素的指针始终是有效的，单从这一点看，和malloc似乎没什么区别，但相较于为每一个元素malloc，用mempool可以按模块的释放内存。
+* bpool
+ * 这个库或许没什么用处，是我之前开发过程中设计出来应对特定情况的，它可以返回给你一个不限大小的指针，你可以在这个指针上尽情的使用内存，并只需要在使用完毕告诉这个模块你用了多少内存，这个模块会将你依旧需要的这部分内存拷贝给你。这个模块适用于目标内存大小未知，但可以确定不会无限增长的情形。
 
-ExtDeclnList
-	:ExtDecln
-	|ExtDecln ExtDeclnList
-;
+###命令行参数解析
+####说明
+每个模块可能或多或少需要一部分命令参数，本着让开发者专注于自己模块开发而不被琐事干扰的原则，这些琐事便由我提前代劳。这个模块我想过很多方案，最后一一否决保留了这一个方案，可能这依旧不符合你的需求/审美，不过你可以按照自己的需求更改这个模块。
 
-ExtDecln
-	:FuncDef
-	|Decln
-;
+####简介
+命令行参数的解析遵循POSIX标准，即参数有长短名之分，对于长名有形式`--link`和`--output=a.c`，前者是纯开关，后者附带一个取值。对应于短名其形式分别为`-l`和`-o a.c`。
 
-FuncDef:functype
-	:DeclnSpec Declr DeclnList CompSt
-	|DeclnSpec Declr CompSt
-	|Declr DeclnList CompSt
-	|Declr CompSt
-;
-
-ExpList
-	:Exp %prec ASSIGNOP
-	|Exp COMMA ExpList
-;
-
-DeclnList
-	:Decln
-	|DeclnList Decln
-;
-
-Decln
-	:DeclnSpec SEMI
-	|DeclnSpec InitorDeclrList SEMI
-;
-
-DeclnSpec
-	:TypeSpec
-	|TypeSpec DeclnSpec
-	|TypeQulfr
-	|TypeQulfr DeclnSpec
-;
-
-InitorDeclrList
-	:InitorDeclr
-	|InitorDeclrList COMMA InitorDeclr
-;
-
-InitorDeclr
-	:Declr
-	|Declr ASSIGNOP Initor
-;
-
-TypeQulfr
-	:TYPEDEF
-	|EXTERN
-	|STATIC
-	|AUTO
-	|REGISTER
-	|CONST
-	|VOLATILE
-;
-
-TypeSpec
-	:TYPE
-	|CompSpec
-	|EnumSpec
-	|TYPE_NAME
-;
-
-CompSpec
-	:CompType ID LC CompDeclnList RC
-	|CompType LC CompDeclnList RC
-	|CompType ID
-;
-
-CompType
-	:STRUCT
-	|UNION
-;
-
-CompDeclnList
-	:CompDecln
-	|CompDeclnList CompDecln
-;
-
-CompDecln
-	:DeclnSpec SEMI
-	|DeclnSpec CompDeclrList SEMI
-;
-
-CompDeclrList
-	:CompDeclr
-	|CompDeclr COMMA CompDeclrList
-;
-
-CompDeclr
-	:Declr
-	|COLON Exp
-	|Declr COLON Exp
-;
-
-EnumSpec
-	:ENUM LC EnumorList RC
-	|ENUM LC EnumorList COMMA RC
-	|ENUM ID LC EnumorList RC
-	|ENUM ID LC EnumorList COMMA RC
-	|ENUM ID
-;
-
-EnumorList
-	:Enumor
-	|EnumorList COMMA Enumor
-;
-
-Enumor
-	:ID
-	|ID ASSIGNOP Exp
-;
-
-Declr
-	:StarList DirectDeclr
-	|DirectDeclr
-;
-
-DirectDeclr
-	:ID
-	|LP Declr RP
-	|DirectDeclr LB Exp RB
-	|DirectDeclr LB RB
-	|DirectDeclr LP ParaTypeList RP
-	|DirectDeclr LP IdList RP
-	|DirectDeclr LP RP
-;
-
-StarList
-	:MULT
-	|MULT TypeQulfrList
-	|MULT StarList
-	|MULT TypeQulfrList StarList
-;
-
-TypeQulfrList
-	:TypeQulfr
-	|TypeQulfrList TypeQulfr
-;
-
-ParaTypeList
-	:ParaList
-	|ParaList COMMA ELLIPSIS
-;
-
-ParaList
-	:ParaDecln
-	|ParaList COMMA ParaDecln
-;
-
-ParaDecln
-	:DeclnSpec Declr
-	|DeclnSpec AbstDeclr
-	|DeclnSpec
-;
-
-IdList
-	:ID
-	|IdList COMMA ID
-;
-
-TypeName
-	:DeclnSpec
-	|DeclnSpec AbstDeclr
-;
-
-AbstDeclr
-	:StarList
-	|DirectAbstDeclr
-	|StarList DirectAbstDeclr
-;
-
-DirectAbstDeclr
-	:LP AbstDeclr RP
-	|LB RB
-	|LB Exp RB
-	|DirectAbstDeclr LB RB
-	|DirectAbstDeclr LB Exp RB
-	|LP RP
-	|LP ParaTypeList RP
-	|DirectAbstDeclr LP RP
-	|DirectAbstDeclr LP ParaTypeList RP
-;
-
-Initor
-	:Exp %prec ASSIGNOP
-	|LB Exp RB ASSIGNOP Exp %prec ASSIGNOP
-	|LC InitorList RC
-	|LC InitorList COMMA RC
-;
-
-InitorList
-	:Initor
-	|InitorList COMMA Initor
-;
-
-StmtList
-	:Stmt
-	|StmtList Stmt
-;
-
-ExpStmt
-	:Decln
-	|Exp SEMI
-	|SEMI
-;
-
-CompSt
-	:LC RC
-	|LC StmtList RC
-;
-
-Stmt
-	:SEMI
-	|Decln
-	|Exp SEMI
-	|CompSt
-	|GOTO ID SEMI
-	|ID COLON
-	|CONTINUE SEMI
-	|BREAK SEMI
-	|RETURN SEMI
-	|RETURN Exp SEMI
-	|IF LP Exp RP Stmt %prec LOWWER_THAN_ELSE
-	|IF LP Exp RP Stmt ELSE Stmt
-	|SWITCH LP Exp RP Stmt
-	|CASE Exp COLON Stmt
-	|DEFAULT COLON Stmt
-	|WHILE LP Exp RP Stmt
-	|DO Stmt WHILE LP Exp RP SEMI
-	|FOR LP ExpStmt ExpStmt RP Stmt
-	|FOR LP ExpStmt ExpStmt Exp RP Stmt
-;
-
-Exp
-	:ID
-	|NUM
-	|NIL
-	|TRUE
-	|FALSE
-	|STRING
-	|LITERAL
-	|LP Exp RP
-	|Exp LB Exp RB
-	|Exp LP RP
-	|Exp LP ExpList RP
-	|Exp DOT ID
-	|Exp PTR ID
-	|Exp INC
-	|Exp DEC
-	|INC Exp
-	|DEC Exp
-	|AND Exp
-	|MULT Exp
-	|ADD Exp
-	|SUB Exp
-	|NOT Exp
-	|LNOT Exp
-	|SIZEOF Exp
-	|SIZEOF LP TypeName RP
-	|LP TypeName RP Exp
-	|Exp MULT Exp
-	|Exp DIV Exp
-	|Exp MOD Exp
-	|Exp ADD Exp
-	|Exp SUB Exp
-	|Exp LSHIFT Exp
-	|Exp RSHIFT Exp
-	|Exp LT Exp
-	|Exp GT Exp
-	|Exp LE Exp
-	|Exp GE Exp
-	|Exp EQ Exp
-	|Exp NE Exp
-	|Exp AND Exp
-	|Exp XOR Exp
-	|Exp OR Exp
-	|Exp LAND Exp
-	|Exp LOR Exp
-	|Exp QOP Exp COLON Exp
-	|Exp ASSIGNOP Exp
-	|Exp MULTE Exp
-	|Exp DIVE Exp
-	|Exp MODE Exp
-	|Exp ADDE Exp
-	|Exp SUBE Exp
-	|Exp LSHIFTE Exp
-	|Exp RSHIFTE Exp
-	|Exp ANDE Exp
-	|Exp XORE Exp
-	|Exp ORE Exp
-	|Exp COMMA Exp
-;
-
-```
-
-##expected features
-
-* compile-language, target platform: x86, ubuntu 16.04
-* compatibility with C
-* see follow
-```
-/************
- * examples *
- ************/
-
-any a = u"string";//utf8/ascii/unicode string, not just byte string
-
-any b = ["A", 123, "B", [1, 2, "C"]];//list like python
-//some operations of b
-b[0];//"a"
-b[1];//123
-b[0:2];//["A", 123]
-//some other operation: __add__, __MULT__, ...
-
-any c = {"a":1, "b":2};//object like javascript
-c.a;//1
-c.b;//2
-c["a"];//1
-c["b"];//2
-//unlike python, the key of dict can only be string instead of hashable object
-
-//extend feature of dict, similar to array in php
-any d = {"a":1, 2, "C":3};
-d.a == d["a"] && d.a == 1;//true
-d[0] == 2;//true
-
-//command, copy from bash
-any e = `ls -l`;
-e = e.run();
-e.output;//output of command `ls -l`
-e.status;//return code of command
-
-//generator in json
-any f = [2 * i for i in range(4)];
-any g = {i:j for i, j in [["a", 1], ["b", 2]]}
-
-//function closure, very expected but maybe hard to reach
-//   same as javascript
-
-//document, um, twice the time needed in this project
-
-```
+####使用
+* 在entry/opt.h的enum结构中添加你自己的参数名
+* 在entry/main.c的registered\_arguments数组中你的参数的长短名
+* 使用函数get\_onoff\_from\_arguments(< your_arg>)可以查询你的参数是否被传入命令行
+* 使用函数get\_value\_from\_arguments(< your_arg>)可以查询你的参数在命令行中的取值

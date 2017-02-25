@@ -1,11 +1,11 @@
 #ifndef __OPT_H__
 #define __OPT_H__
 
-/* declare your own opt here
- */
 enum {
 	ArgumentPrintSyntaxTree,
 	ArgumentPrintReduceStep,
+/* declare your own opt here
+ */
 };
 
 bool get_onoff_from_arguments(int arg);
