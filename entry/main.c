@@ -2,26 +2,40 @@
 #include <string.h>
 #include <unistd.h>
 
-int init_bpool();
-int init_hash();
-int yyparse();
-int init_ast();
-int init_spec();
-int init_seman();
-int init_component();
-int init_vector();
-void dump_ast(void*);
-void print_ast(void*);
-void yyrestart(FILE *);
-int semantic_analysis(void *root);
+void init_bpool();
+void init_hash();
+void init_vector();
+void init_front();
 
-FILE *fp = NULL;
-extern void *astroot;
-/*global onoff*/
-bool is_dump_ast = false;
-bool is_print_ast = false;
-bool is_print_reduce_step = false;
-bool is_file = false;
+/*your can get file list by declaring this variable*/
+Vector cmd_files;
+
+static struct {
+	char *short_opt;
+	char *long_opt;
+	char *value;
+	bool onoff;
+} registered_arguments[] = {
+	/* add your options here.
+	 * for example:
+	 */
+	[ArgumentPrintSyntaxTree] = {NULL, "print-syntax-tree"},
+	[ArgumentPrintReduceStep] = {NULL, "print-reduce-step"},
+};
+
+bool get_onoff_from_arguments(int arg) {
+	if(arg < sizeof(registered_arguments) / sizeof(registered_arguments[0])) {
+		return registered_arguments[arg].onoff;
+	}
+	return false;
+}
+
+char *get_value_from_arguments(int arg) {
+	if(arg < sizeof(registered_arguments) / sizeof(registered_arguments[0])) {
+		return registered_arguments[arg].value;
+	}
+	return NULL;
+}
 
 char *dumps_argv(int argc, char *argv[]) {
 	static char ret[1024];
@@ -38,23 +52,48 @@ char *dumps_argv(int argc, char *argv[]) {
 }
 
 void parse_arguments(int argc, char *argv[]) {
-	fp = stdin;
 	logd("parse arguments={%d, %s}.\n", argc - 1, dumps_argv(argc, argv));
-	for(int i = 1; i < argc; i++)
-	{
-		if(strcmp(argv[i], "--print-src") == 0)
-			is_dump_ast=true;
-		else if(strcmp(argv[i], "--print-ast") == 0)
-			is_print_ast=true;
-		else if(strcmp(argv[i], "--print-reduce") == 0)
-			is_print_reduce_step=true;
-		else if(!is_file) {
-			fp=fopen(argv[i], "rb");
-			if(fp != NULL) {
-				is_file=true;
+	vector_init(&cmd_files, sizeof(char *));
+	for(int i = 1; i < argc; i++) {
+		int match_state = 0;
+		for(int j = 0; j < sizeof(registered_arguments) / sizeof(registered_arguments[0]); j++) {
+			if(argv[i][0] == '-' && argv[i][1] == '-') {
+				//long opt
+				char *long_opt = registered_arguments[j].long_opt;
+				if(!long_opt) continue;
+				int len = strlen(long_opt);
+				if(strncmp(&argv[i][2], long_opt, len) == 0) {
+					match_state = 1;
+					registered_arguments[j].onoff = true;
+					if(long_opt[len - 1] == '=') {
+						//fetch value
+						registered_arguments[j].value = &argv[i][2 + len];
+					}
+				}
+			}else if(argv[i][0] == '-') {
+				//short opt
+				char *short_opt = registered_arguments[j].short_opt;
+				if(!short_opt) continue;
+				if(argv[i][1] == short_opt[0]) {
+					match_state = 1;
+					registered_arguments[j].onoff = true;
+					if(short_opt[1] == ':') {
+						//fetch value
+						if(i + 1 < argc)
+							registered_arguments[j].value = argv[i + 1];
+						else
+							registered_arguments[j].value = NULL;
+					}
+				}
 			}else{
-				loge("FAIL to open file '%s'\n", argv[i]);
+				//files
+				match_state = 2;
+				vector_push(&cmd_files, argv[i]);
 			}
+		}
+
+		if(match_state == 0) {
+			fprintf(stderr, "Unknown Option '%s'.\n", argv[i]);
 		}
 	}
 }
@@ -64,31 +103,20 @@ int main(int argc, char *argv[])
 	/*dont't move it*/
 	parse_arguments(argc, argv);
 
+	/*init bpool module*/
 	init_bpool();
+
+	/*init hash module*/
 	init_hash();
-	init_component();
+
+	/*init hash module*/
 	init_vector();
-	init_ast();
-	init_spec();
-	init_seman();
 
-#ifdef __DEBUG_LEX__
-	logd("enter debug mode, while(yylex()>0)\n");
-	yyrestart(fp);
-	int yylex();
-	while(yylex()>0);
-#else
+	/*int front module*/
+	init_front();
 
+	/*init your own module*/
 
-	/*grammer:shift and reduce*/
-	logd("call yyrestart(fp=%p).\n", fp);
-	yyrestart(fp);
-	logd("call yyparse(void).\n");
-	yyparse();
-	logd("call print_ast(astroot=%p), is_print_ast=%d.\n", astroot, is_print_ast);
-	if(is_print_ast) print_ast(astroot);
-	if(fp && fp != stdin) fclose(fp);
-#endif
 	logd("normal exit.\n");
     return 0;
 }

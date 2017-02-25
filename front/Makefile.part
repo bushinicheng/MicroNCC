@@ -7,10 +7,10 @@ YCFILE=$(YFILE:.y=.c)
 YHFILE=$(YFILE:.y=.h)
 
 $(LCFILE):$(LFILE)
-	$(LEX) -o $(LCFILE) $(LFILE)
+	@$(LEX) -o $(LCFILE) $(LFILE)
 
 $(YHFILE) $(YCFILE):$(YFILE)
-	$(YACC) -v $(YFILE) --defines=$(YHFILE) -o $(YCFILE)
+	@$(YACC) -v $(YFILE) --defines=$(YHFILE) -o $(YCFILE)
 
 #front/ast.h:front/syntax.y front/ast.c
 #	python front/genast.py > front/ast.h

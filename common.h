@@ -31,6 +31,7 @@ typedef unsigned char bool;
 #include "lib/vector.h"
 #include "lib/bpool.h"
 #include "lib/hash.h"
+#include "entry/opt.h"
 
 #define MAKE_WORD(a, b) ((a) << 8 | b)
 #define WORD_PART1(a) (((a) >> 8) & 0xff)

@@ -25,7 +25,7 @@ entry: $(entry_PART_OBJ)
 
 # final target file: executable file
 $(COMPILER): $(front_PART_OBJ) $(lib_PART_OBJ) $(entry_PART_OBJ)
-	$(CC) $^ -o $(COMPILER)
+	@$(CC) $^ -o $(COMPILER)
 
 gdb: $(COMPILER)
 	@gdb $(COMPILER)

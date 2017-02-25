@@ -402,7 +402,7 @@ char* register_id(const char *text) {
 }
 
 
-int init_component() {
+int init_lexical() {
 #ifdef __DEBUG__
 	/* unit test of register_string */
 	UNIT_TEST_START;
