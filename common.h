@@ -4,7 +4,6 @@
 /* some common macro will be defined in this file  */
 
 #define __DEBUG__
-//#define __DEBUG_LEX__
 
 /* some common header files will be included here. */
 #include <stdio.h>
@@ -17,7 +16,7 @@
 
 /*since bool isn't valid datatype in c*/
 /*define some basic type*/
-typedef unsigned off_t;
+typedef int off_t;
 typedef unsigned char bool;
 
 #define true 1
@@ -27,15 +26,11 @@ typedef unsigned char bool;
 
 //#define __DEBUG_LEX__
 
-/*other header files*/
-#include "error.h"
-#include "debug.h"
-#include "vector.h"
-#include "node.h"
-#include "syntax.h"
-#include "ast.h"
-#include "bpool.h"
-#include "hash.h"
+/*common header files*/
+#include "lib/debug.h"
+#include "lib/vector.h"
+#include "lib/bpool.h"
+#include "lib/hash.h"
 
 #define MAKE_WORD(a, b) ((a) << 8 | b)
 #define WORD_PART1(a) (((a) >> 8) & 0xff)

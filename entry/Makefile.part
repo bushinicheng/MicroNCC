@@ -1,0 +1,1 @@
+$(eval $(call make_common_rules,entry,))

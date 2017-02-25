@@ -6,6 +6,7 @@
 *.html
 parser
 compiler
+MicroNCC
 *.[oO]
 obj/*
 output/*
@@ -18,4 +19,3 @@ test/case*
 tags
 *.png
 *.tab.c
-xxx.py

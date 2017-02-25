@@ -1,72 +1,37 @@
-CC=gcc
-LEX=flex
-YACC=bison
+CC := gcc
+LD := ld
+CFLAGS := -c -std=c11 -O2 -MMD -fno-builtin -fno-stack-protector -include common.h # -m32
+LDFLAGS := -r # -m elf_i386 -nostdlib
+OBJ_DIR := output
+COMPILER := $(OBJ_DIR)/MicroNCC
+# add your target here
+ALL_PARTS := front lib entry
 
-LFILE=lexical.l
-YFILE=syntax.y
-LCFILE=$(LFILE:.l=.c)
-YCFILE=$(YFILE:.y=.c)
-YHFILE=$(YFILE:.y=.h)
-CFILES=$(shell echo "ls *.c" | bash)
-HFILES=$(shell echo "ls *.h" | bash)
-CFLAGS=-O2 -std=c11
+.PHONY: count run clean gdb $(ALL_PARTS)
 
-OBJ_DIR=output/
-TEST_DIR=test/
-COMPILER=compiler
+all: $(COMPILER)
 
-DEBUG_LEX=true
+include Makefile.build
+include $(patsubst %,%/Makefile.part,$(ALL_PARTS))
 
-#CMM=test/simple.c
-#CMM=test/token.c
-CMM=test/more.c
+# use your own testcase
+TESTCASE := test/more.c
 
-all:$(COMPILER)
+# add your part target rule here
+front: $(front_PART_OBJ)
+lib: $(lib_PART_OBJ)
+entry: $(entry_PART_OBJ)
+#$(eval $(foreach part,$(ALL_PARTS),"\n"$(part): $($(part)_PART_OBJ)))
 
-$(LCFILE):$(LFILE)
-	@$(LEX) -o $(LCFILE) $(LFILE)
+# final target file: executable file
+$(COMPILER): $(front_PART_OBJ) $(lib_PART_OBJ) $(entry_PART_OBJ)
+	$(CC) $^ -o $(COMPILER)
 
-$(YHFILE) $(YCFILE):$(YFILE)
-ifeq ($(DEBUG_LEX),true)
-	@$(YACC) -t -v $(YFILE) --defines=$(YHFILE) -o $(YCFILE)
-else
-	@$(YACC) -v $(YFILE) --defines=$(YHFILE) -o $(YCFILE)
-endif
+gdb: $(COMPILER)
+	@gdb $(COMPILER)
 
-$(COMPILER):$(YFILE) $(LFILE) $(CFILES) $(HFILES)
-	@mkdir -p $(OBJ_DIR)
-	@$(CC) $(CFLAGS) $(CFILES) -o $(COMPILER) -lfl
-
-ast.h:syntax.y ast.c
-	@python genast.py > ast.h
-
-.PHONY:run run-ast run-src run-rdu test test-lex clean count
-
-run:$(COMPILER)
-	@./$(COMPILER) $(CMM)
-
-run-ast:$(COMPILER)
-	@./$(COMPILER) --print-ast $(CMM)
-
-run-src:$(COMPILER)
-	@./$(COMPILER) --print-src $(CMM)
-
-run-rdu:$(COMPILER)
-	@./$(COMPILER) --print-reduce $(CMM)
-
-test:$(COMPILER)
-	@bash test.sh $(COMPILER)
-
-test-lex:
-	@mkdir -p $(OBJ_DIR)
-	@$(LEX) -o $(LFILE:.l=.c) $(LFILE)
-	@$(CC) $(LFILE:.l=.c) component.c -o $(COMPILER) -lfl
-	@bash test.sh $(COMPILER)
+run: $(COMPILER)
+	./$(COMPILER)
 
 clean:
-	@rm -rf $(COMPILER)
-	@rm -rf $(OBJ_DIR)
-
-count:
-	@printf "total lines: "
-	@echo $(LFILE) $(YFILE) $(CFILES) $(HFILES) | sed "s/\(lexical.c\|syntax.[ch]\)//g" | xargs cat | wc -l
+	rm -rf $(OBJ_DIR)

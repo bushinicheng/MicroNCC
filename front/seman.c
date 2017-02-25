@@ -1,4 +1,4 @@
-#include "common.h"
+#include "front-com.h"
 
 bool is_syntax_error = false;
 bool is_print_inter_code = false;
@@ -722,6 +722,26 @@ void analyse_paradecln_is_declnspec(Node *root) {
 	root->dt = declnspec->dt;
 }
 
+int analyse_nested_declr_in_struct(Node *root, Spec *rdt, int off) {
+	/* root->token == CompDecln
+	 * CompDecln -> DeclnSpec CompDeclrList
+	 * assume CompDeclr's type has been set
+	 */
+	int cnt = 0;
+	Node *compdeclrlist = get_child_node_w(root, CompDeclrList);
+	while(compdeclrlist) {
+		Node *compdeclr = get_child_node_w(compdeclrlist, CompDeclr);
+		//FIXME
+		rdt->uos.argv[cnt].id = compdeclr->cv.id;
+		rdt->uos.argv[cnt].off = 0;
+		rdt->uos.argv[cnt].w = 0;
+		rdt->uos.argv[cnt].dt = compdeclr->dt;
+		cnt ++;
+		compdeclrlist = get_child_node(compdeclrlist, CompDeclrList);
+	}
+	return cnt;
+}
+
 void analyse_compspec(Node *root) {
 	/*backfill offset and size of each member id by comptype's
 	 *  information(struct or union)
@@ -738,40 +758,36 @@ void analyse_compspec(Node *root) {
 	 * need information of numbers of member variable,
 	 * which stored in cv.cnt
 	 **/
+	assert(root->token == CompSpec);
 	Spec *stdt = new_spec();
+	print_ast(root);
 	int cnt = 0;
 	//FIXME:union
+	logl();
 	root->dt = stdt;
 	stdt->bt = SpecTypeStruct;
 	stdt->uos.size = root->cv.cnt;
 	stdt->uos.argv = malloc(sizeof(stdt->uos.argv[0]) * root->cv.cnt);
+	logw("cnt:%d\n", stdt->uos.size);
 	if(root->reduce_rule == AST_CompSpec_is_CompType_ID) {
 		//TODO: transmit type by ID
 		assert(0);
 		printf("line %d: warning:\n", root->lineno);
 	}else{
+	logl();
 		Node *compdeclnlist = get_child_node_w(root, CompDeclnList);
 		while(compdeclnlist) {
+	logl();
 			Node *compdecln = get_child_node_w(compdeclnlist, CompDecln);
 			if(compdecln->reduce_rule == AST_CompDecln_is_DeclnSpec_SEMI) {
 				//may be anonymous struct
 			}else{
 				//DeclnSpec CompDeclrList SEMI
-				Node *compdeclrlist = get_child_node_w(compdecln, CompDeclrList);
-				while(compdeclrlist) {
-					Node *compdeclr = get_child_node_w(compdeclrlist, CompDeclr);
-					//FIXME
-					stdt->uos.argv[cnt].id = compdeclr->cv.id;
-					stdt->uos.argv[cnt].off = 0;
-					stdt->uos.argv[cnt].w = 0;
-					stdt->uos.argv[cnt].dt = compdeclr->dt;
-					cnt ++;
-					compdeclrlist = get_child_node(compdecln, CompDeclrList);
-				}
 			}
-		
-			compdeclnlist = get_child_node(root, CompDeclnList);
+	logl();	
+			compdeclnlist = get_child_node(compdeclnlist, CompDeclnList);
 		}
+	logl();	
 	}
 
 	assert(cnt == stdt->uos.size);
@@ -1092,6 +1108,8 @@ int init_seman() {
 		const char *format_string;
 	} test_case[] = {
 		//{DeclnSpec, "struct{int (*func)(int, int);int b;};", "void"},
+		{CompSpec, "struct {int a; int b;};", "struct {int a; int b;}"},
+		/*
 		{DeclnSpec, "void a;", "void"},
 		{DeclnSpec, "long long a;", "int64_t"},
 		{DeclnSpec, "signed long a;", "int32_t"},
@@ -1119,6 +1137,7 @@ int init_seman() {
 		{Declr, "int (*func)(int(*p)(float,short), char);", "<UnknownType> (*)(int32_t (*)(float, int16_t), char)"},
 		{Declr, "int (**func[2])(int, float);", "<UnknownType> (**[2])(int32_t, float)"},
 		{Declr, "bool check_dupset(char *dupformat, void *set, size_t len, size_t unitsize, off_t off){}", "<TypeUnknown> (char *, void *, uint32_t, uint32_t, int32_t)"},
+		*/
 	};
 
 	for(int i = 0; i < sizeof(test_case)/sizeof(test_case[0]); i++){

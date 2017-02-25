@@ -1,6 +1,6 @@
-#line 2 "lexical.c"
+#line 2 "front/lexical.c"
 
-#line 4 "lexical.c"
+#line 4 "front/lexical.c"
 
 #define  YY_INT_ALIGNED short int
 
@@ -722,9 +722,9 @@ int yy_flex_debug = 0;
 #define YY_MORE_ADJ 0
 #define YY_RESTORE_YY_MORE_OFFSET
 char *yytext;
-#line 1 "lexical.l"
-#line 2 "lexical.l"
-#include "common.h"
+#line 1 "front/lexical.l"
+#line 2 "front/lexical.l"
+#include "front-com.h"
 
 /*function declaration*/
 int next_number(char **str, int base);
@@ -766,7 +766,7 @@ static int reg(int syntaxval);
 static int relop(int token);
 static int equop(int token);
 
-#line 770 "lexical.c"
+#line 770 "front/lexical.c"
 
 #define INITIAL 0
 
@@ -984,9 +984,9 @@ YY_DECL
 		}
 
 	{
-#line 63 "lexical.l"
+#line 63 "front/lexical.l"
 
-#line 990 "lexical.c"
+#line 990 "front/lexical.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -1055,487 +1055,487 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 64 "lexical.l"
+#line 64 "front/lexical.l"
 {tokout("AS");		return symbol(ASSIGNOP);}
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 65 "lexical.l"
+#line 65 "front/lexical.l"
 {tokout("EQ");		return symbol(EQ);}
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 66 "lexical.l"
+#line 66 "front/lexical.l"
 {tokout("NE");		return symbol(NE);}
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 67 "lexical.l"
+#line 67 "front/lexical.l"
 {tokout("LT");		return relop(LT);}
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 68 "lexical.l"
+#line 68 "front/lexical.l"
 {tokout("LE");		return relop(LE);}
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 69 "lexical.l"
+#line 69 "front/lexical.l"
 {tokout("GT");		return relop(GT);}
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 70 "lexical.l"
+#line 70 "front/lexical.l"
 {tokout("GE");		return relop(GE);}
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 72 "lexical.l"
+#line 72 "front/lexical.l"
 {tokout("LSHIFT");	return symbol(LSHIFT);}
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 73 "lexical.l"
+#line 73 "front/lexical.l"
 {tokout("RSHIFT");	return symbol(RSHIFT);}
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 74 "lexical.l"
+#line 74 "front/lexical.l"
 {tokout("LSHIFTE");	return symbol(LSHIFTE);}
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 75 "lexical.l"
+#line 75 "front/lexical.l"
 {tokout("RSHIFTE");	return symbol(RSHIFTE);}
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 77 "lexical.l"
+#line 77 "front/lexical.l"
 {tokout("ADD");		return symbol(ADD);}
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 78 "lexical.l"
+#line 78 "front/lexical.l"
 {tokout("SUB");		return symbol(SUB);}
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 79 "lexical.l"
+#line 79 "front/lexical.l"
 {tokout("MULT");	return symbol(MULT);}
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 80 "lexical.l"
+#line 80 "front/lexical.l"
 {tokout("DIV");		return symbol(DIV);}
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 81 "lexical.l"
+#line 81 "front/lexical.l"
 {tokout("MOD");		return symbol(MOD);}
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 82 "lexical.l"
+#line 82 "front/lexical.l"
 {tokout("INC"); 	return symbol(INC);}
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 83 "lexical.l"
+#line 83 "front/lexical.l"
 {tokout("DEC");		return symbol(DEC);}
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 84 "lexical.l"
+#line 84 "front/lexical.l"
 {tokout("ADDE");	return equop(ADDE);}
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 85 "lexical.l"
+#line 85 "front/lexical.l"
 {tokout("SUBE");	return equop(SUBE);}
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 86 "lexical.l"
+#line 86 "front/lexical.l"
 {tokout("MULTE");	return equop(MULTE);}
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 87 "lexical.l"
+#line 87 "front/lexical.l"
 {tokout("DIVE");	return equop(DIVE);}
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 88 "lexical.l"
+#line 88 "front/lexical.l"
 {tokout("MODE");	return equop(MODE);}
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 89 "lexical.l"
+#line 89 "front/lexical.l"
 {tokout("ANDE");	return equop(ANDE);}
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 90 "lexical.l"
+#line 90 "front/lexical.l"
 {tokout("ORE");		return equop(ORE);}
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 91 "lexical.l"
+#line 91 "front/lexical.l"
 {tokout("XORE");	return equop(XORE);}
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 93 "lexical.l"
+#line 93 "front/lexical.l"
 {tokout("AND");		return symbol(AND);}
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 94 "lexical.l"
+#line 94 "front/lexical.l"
 {tokout("OR");		return symbol(OR);}
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 95 "lexical.l"
+#line 95 "front/lexical.l"
 {tokout("XOR");		return symbol(XOR);}
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 96 "lexical.l"
+#line 96 "front/lexical.l"
 {tokout("NOT");		return symbol(NOT);}
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 97 "lexical.l"
+#line 97 "front/lexical.l"
 {tokout("LAND");	return symbol(LAND);}
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 98 "lexical.l"
+#line 98 "front/lexical.l"
 {tokout("LOR");		return symbol(LOR);}
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 99 "lexical.l"
+#line 99 "front/lexical.l"
 {tokout("LNOT");	return symbol(LNOT);}
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 100 "lexical.l"
+#line 100 "front/lexical.l"
 {tokout("SIZEOF");	return symbol(SIZEOF);}
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 102 "lexical.l"
+#line 102 "front/lexical.l"
 {tokout("LP");		return symbol(LP);}
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 103 "lexical.l"
+#line 103 "front/lexical.l"
 {tokout("RP");		return symbol(RP);}
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 104 "lexical.l"
+#line 104 "front/lexical.l"
 {tokout("LB");		return symbol(LB);}
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 105 "lexical.l"
+#line 105 "front/lexical.l"
 {tokout("RB");		return symbol(RB);}
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 106 "lexical.l"
+#line 106 "front/lexical.l"
 {tokout("LC");increase_actionlevel();return symbol(LC);}
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 107 "lexical.l"
+#line 107 "front/lexical.l"
 {tokout("RC");return symbol(RC);}
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 108 "lexical.l"
+#line 108 "front/lexical.l"
 {tokout("DOT");		return symbol(DOT);}
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 109 "lexical.l"
+#line 109 "front/lexical.l"
 {tokout("PT");		return symbol(PTR);}
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 110 "lexical.l"
+#line 110 "front/lexical.l"
 {tokout("COMMA");	return symbol(COMMA);}
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 111 "lexical.l"
+#line 111 "front/lexical.l"
 {tokout("QOP");		return symbol(QOP);}
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 112 "lexical.l"
+#line 112 "front/lexical.l"
 {tokout("COLON");	return symbol(COLON);}
 	YY_BREAK
 case 46:
 YY_RULE_SETUP
-#line 113 "lexical.l"
+#line 113 "front/lexical.l"
 {tokout("SEMI");	return symbol(SEMI);}
 	YY_BREAK
 case 47:
 YY_RULE_SETUP
-#line 114 "lexical.l"
+#line 114 "front/lexical.l"
 {tokout("ELLIPSIS");return symbol(ELLIPSIS);}
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
-#line 116 "lexical.l"
+#line 116 "front/lexical.l"
 {tokout("VOID");	return type(VOID, MAKE_WORD(SpecTypeVoid, false));}
 	YY_BREAK
 case 49:
 YY_RULE_SETUP
-#line 117 "lexical.l"
+#line 117 "front/lexical.l"
 {tokout("BOOL");	return type(BOOL, MAKE_WORD(SpecTypeUint8, false));}
 	YY_BREAK
 case 50:
 YY_RULE_SETUP
-#line 118 "lexical.l"
+#line 118 "front/lexical.l"
 {tokout("CHAR");	return type(CHAR, MAKE_DWORD2(CombineTypeChar, MAKE_WORD(SpecTypeInt8, true)));}
 	YY_BREAK
 case 51:
 YY_RULE_SETUP
-#line 119 "lexical.l"
+#line 119 "front/lexical.l"
 {tokout("SHORT");	return type(SHORT, MAKE_DWORD2(CombineTypeShort, MAKE_WORD(SpecTypeInt16, true)));}
 	YY_BREAK
 case 52:
 YY_RULE_SETUP
-#line 120 "lexical.l"
+#line 120 "front/lexical.l"
 {tokout("INT");		return type(INT, MAKE_DWORD2(CombineTypeInt, MAKE_WORD(SpecTypeInt32, true)));}
 	YY_BREAK
 case 53:
 YY_RULE_SETUP
-#line 121 "lexical.l"
+#line 121 "front/lexical.l"
 {tokout("LONG");	return type(LONG, MAKE_DWORD2(CombineTypeLong, MAKE_WORD(SpecTypeInt32, true)));}
 	YY_BREAK
 case 54:
 YY_RULE_SETUP
-#line 122 "lexical.l"
+#line 122 "front/lexical.l"
 {tokout("SIGNED");	return type(SIGNED, MAKE_DWORD2(CombineTypeSigned, MAKE_WORD(SpecTypeInt32, true)));}
 	YY_BREAK
 case 55:
 YY_RULE_SETUP
-#line 123 "lexical.l"
+#line 123 "front/lexical.l"
 {tokout("UNSIGNED");return type(UNSIGNED, MAKE_DWORD2(CombineTypeUnsigned, MAKE_WORD(SpecTypeUint32, true)));}
 	YY_BREAK
 case 56:
 YY_RULE_SETUP
-#line 124 "lexical.l"
+#line 124 "front/lexical.l"
 {tokout("FLOAT");	return type(FLOAT, MAKE_WORD(SpecTypeFloat32, false));}
 	YY_BREAK
 case 57:
 YY_RULE_SETUP
-#line 125 "lexical.l"
+#line 125 "front/lexical.l"
 {tokout("DOUBLE");	return type(DOUBLE, MAKE_DWORD2(CombineTypeDouble, MAKE_WORD(SpecTypeFloat64, true)));}
 	YY_BREAK
 case 58:
 YY_RULE_SETUP
-#line 126 "lexical.l"
+#line 126 "front/lexical.l"
 {tokout("INT8T");	return type(INT8T, MAKE_WORD(SpecTypeInt8, false));}
 	YY_BREAK
 case 59:
 YY_RULE_SETUP
-#line 127 "lexical.l"
+#line 127 "front/lexical.l"
 {tokout("INT16T");	return type(INT16T, MAKE_WORD(SpecTypeInt16, false));}
 	YY_BREAK
 case 60:
 YY_RULE_SETUP
-#line 128 "lexical.l"
+#line 128 "front/lexical.l"
 {tokout("INT32T");	return type(INT32T, MAKE_WORD(SpecTypeInt32, false));}
 	YY_BREAK
 case 61:
 YY_RULE_SETUP
-#line 129 "lexical.l"
+#line 129 "front/lexical.l"
 {tokout("INT64T");	return type(INT64T, MAKE_WORD(SpecTypeInt64, false));}
 	YY_BREAK
 case 62:
 YY_RULE_SETUP
-#line 130 "lexical.l"
+#line 130 "front/lexical.l"
 {tokout("UINT8T");	return type(UINT8T, MAKE_WORD(SpecTypeUint8, false));}
 	YY_BREAK
 case 63:
 YY_RULE_SETUP
-#line 131 "lexical.l"
+#line 131 "front/lexical.l"
 {tokout("UINT16T");	return type(UINT16T, MAKE_WORD(SpecTypeUint16, false));}
 	YY_BREAK
 case 64:
 YY_RULE_SETUP
-#line 132 "lexical.l"
+#line 132 "front/lexical.l"
 {tokout("UINT32T");	return type(UINT32T, MAKE_WORD(SpecTypeUint32, false));}
 	YY_BREAK
 case 65:
 YY_RULE_SETUP
-#line 133 "lexical.l"
+#line 133 "front/lexical.l"
 {tokout("UINT64T");	return type(UINT64T, MAKE_WORD(SpecTypeUint64, false));}
 	YY_BREAK
 case 66:
 YY_RULE_SETUP
-#line 134 "lexical.l"
+#line 134 "front/lexical.l"
 {tokout("SIZET");	return type(SIZET, MAKE_WORD(SpecTypeUint32, false));}
 	YY_BREAK
 case 67:
 YY_RULE_SETUP
-#line 135 "lexical.l"
+#line 135 "front/lexical.l"
 {tokout("UINTPTRT");return type(UINTPTRT, MAKE_WORD(SpecTypeUint32, false));}
 	YY_BREAK
 case 68:
 YY_RULE_SETUP
-#line 136 "lexical.l"
+#line 136 "front/lexical.l"
 {tokout("OFFT");	return type(OFFT, MAKE_WORD(SpecTypeInt32, false));}
 	YY_BREAK
 case 69:
 YY_RULE_SETUP
-#line 138 "lexical.l"
+#line 138 "front/lexical.l"
 {tokout("ENUM");	return symbol(ENUM);}
 	YY_BREAK
 case 70:
 YY_RULE_SETUP
-#line 139 "lexical.l"
+#line 139 "front/lexical.l"
 {tokout("UNION");	return symbol(UNION);}
 	YY_BREAK
 case 71:
 YY_RULE_SETUP
-#line 140 "lexical.l"
+#line 140 "front/lexical.l"
 {tokout("STRUCT");	return symbol(STRUCT);}
 	YY_BREAK
 case 72:
 YY_RULE_SETUP
-#line 141 "lexical.l"
+#line 141 "front/lexical.l"
 {tokout("nil");		return symbol(NIL);}
 	YY_BREAK
 case 73:
 YY_RULE_SETUP
-#line 142 "lexical.l"
+#line 142 "front/lexical.l"
 {tokout("true");	return symbol(TRUE);}
 	YY_BREAK
 case 74:
 YY_RULE_SETUP
-#line 143 "lexical.l"
+#line 143 "front/lexical.l"
 {tokout("false");	return symbol(FALSE);}
 	YY_BREAK
 case 75:
 YY_RULE_SETUP
-#line 145 "lexical.l"
+#line 145 "front/lexical.l"
 {tokout("IF");		return symbol(IF);}
 	YY_BREAK
 case 76:
 YY_RULE_SETUP
-#line 146 "lexical.l"
+#line 146 "front/lexical.l"
 {tokout("ELSE");	return symbol(ELSE);}
 	YY_BREAK
 case 77:
 YY_RULE_SETUP
-#line 147 "lexical.l"
+#line 147 "front/lexical.l"
 {tokout("DO");		return symbol(DO);}
 	YY_BREAK
 case 78:
 YY_RULE_SETUP
-#line 148 "lexical.l"
+#line 148 "front/lexical.l"
 {tokout("WHILE");	return symbol(WHILE);}
 	YY_BREAK
 case 79:
 YY_RULE_SETUP
-#line 149 "lexical.l"
+#line 149 "front/lexical.l"
 {tokout("FOR");		return symbol(FOR);}
 	YY_BREAK
 case 80:
 YY_RULE_SETUP
-#line 150 "lexical.l"
+#line 150 "front/lexical.l"
 {tokout("RETURN");	return symbol(RETURN);}
 	YY_BREAK
 case 81:
 YY_RULE_SETUP
-#line 151 "lexical.l"
+#line 151 "front/lexical.l"
 {tokout("SWITCH");	return symbol(SWITCH);}
 	YY_BREAK
 case 82:
 YY_RULE_SETUP
-#line 152 "lexical.l"
+#line 152 "front/lexical.l"
 {tokout("CASE");	return symbol(CASE);}
 	YY_BREAK
 case 83:
 YY_RULE_SETUP
-#line 153 "lexical.l"
+#line 153 "front/lexical.l"
 {tokout("BREAK");	return symbol(BREAK);}
 	YY_BREAK
 case 84:
 YY_RULE_SETUP
-#line 154 "lexical.l"
+#line 154 "front/lexical.l"
 {tokout("DEFAULT");	return symbol(DEFAULT);}
 	YY_BREAK
 case 85:
 YY_RULE_SETUP
-#line 155 "lexical.l"
+#line 155 "front/lexical.l"
 {tokout("GOTO");	return symbol(GOTO);}
 	YY_BREAK
 case 86:
 YY_RULE_SETUP
-#line 157 "lexical.l"
+#line 157 "front/lexical.l"
 {tokout("TYPEDEF");	return qulfr(QulfrTypedef);}
 	YY_BREAK
 case 87:
 YY_RULE_SETUP
-#line 158 "lexical.l"
+#line 158 "front/lexical.l"
 {tokout("EXTERN");	return qulfr(QulfrExtern);}
 	YY_BREAK
 case 88:
 YY_RULE_SETUP
-#line 159 "lexical.l"
+#line 159 "front/lexical.l"
 {tokout("STATIC");	return qulfr(QulfrStatic);}
 	YY_BREAK
 case 89:
 YY_RULE_SETUP
-#line 160 "lexical.l"
+#line 160 "front/lexical.l"
 {tokout("AUTO");	return qulfr(QulfrAuto);}
 	YY_BREAK
 case 90:
 YY_RULE_SETUP
-#line 161 "lexical.l"
+#line 161 "front/lexical.l"
 {tokout("REGISTER");return qulfr(QulfrRegister);}
 	YY_BREAK
 case 91:
 YY_RULE_SETUP
-#line 163 "lexical.l"
+#line 163 "front/lexical.l"
 {tokout("CONST");	return qulfr(QulfrConst);}
 	YY_BREAK
 case 92:
 YY_RULE_SETUP
-#line 164 "lexical.l"
+#line 164 "front/lexical.l"
 {tokout("VOLATILE");return qulfr(QulfrVolatile);}
 	YY_BREAK
 case 93:
 YY_RULE_SETUP
-#line 166 "lexical.l"
+#line 166 "front/lexical.l"
 {tokout("NUM:i");	return num('i');}
 	YY_BREAK
 case 94:
 YY_RULE_SETUP
-#line 167 "lexical.l"
+#line 167 "front/lexical.l"
 {tokout("NUM:x");	return num('x');}
 	YY_BREAK
 case 95:
 YY_RULE_SETUP
-#line 168 "lexical.l"
+#line 168 "front/lexical.l"
 {tokout("NUM:o");	return num('o');}
 	YY_BREAK
 case 96:
 YY_RULE_SETUP
-#line 169 "lexical.l"
+#line 169 "front/lexical.l"
 {tokout("NUM:f");	return num('f');}
 	YY_BREAK
 case 97:
 YY_RULE_SETUP
-#line 171 "lexical.l"
+#line 171 "front/lexical.l"
 {
 						tokout("NUM:v");
 						yydbg(yylineno, yycolumn-yyleng, yyleng, ErrorInvalidNUM);
@@ -1545,29 +1545,29 @@ YY_RULE_SETUP
 case 98:
 /* rule 98 can match eol */
 YY_RULE_SETUP
-#line 176 "lexical.l"
+#line 176 "front/lexical.l"
 {tokout("CHAR");	return reg(LITERAL);}
 	YY_BREAK
 case 99:
 /* rule 99 can match eol */
 YY_RULE_SETUP
-#line 177 "lexical.l"
+#line 177 "front/lexical.l"
 {tokout("STR");		return reg(STRING);}
 	YY_BREAK
 case 100:
 YY_RULE_SETUP
-#line 178 "lexical.l"
+#line 178 "front/lexical.l"
 {tokout("ID");		return reg(ID);}
 	YY_BREAK
 case 101:
 YY_RULE_SETUP
-#line 179 "lexical.l"
+#line 179 "front/lexical.l"
 {strcat(yylinetext, yytext);/*do nothing*/}
 	YY_BREAK
 case 102:
 /* rule 102 can match eol */
 YY_RULE_SETUP
-#line 180 "lexical.l"
+#line 180 "front/lexical.l"
 {
 						yycolumn = 1;
 						yylinetext[0] = 0;
@@ -1576,7 +1576,7 @@ YY_RULE_SETUP
 case 103:
 /* rule 103 can match eol */
 YY_RULE_SETUP
-#line 184 "lexical.l"
+#line 184 "front/lexical.l"
 {tokout("MC");	/*do nothing*/}
 	YY_BREAK
 case 104:
@@ -1584,7 +1584,7 @@ case 104:
 (yy_c_buf_p) = yy_cp -= 1;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 185 "lexical.l"
+#line 185 "front/lexical.l"
 {tokout("SC");	/*do nothing*/}
 	YY_BREAK
 case 105:
@@ -1594,7 +1594,7 @@ YY_LINENO_REWIND_TO(yy_cp - 1);
 (yy_c_buf_p) = yy_cp -= 1;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 186 "lexical.l"
+#line 186 "front/lexical.l"
 {
 						tokout("IC");
 						extern int curlineno;
@@ -1603,7 +1603,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 106:
 YY_RULE_SETUP
-#line 191 "lexical.l"
+#line 191 "front/lexical.l"
 {
 						tokout("UB");
 						yydbg(yylineno, yycolumn-yyleng, yyleng, ErrorUnknownToken);
@@ -1611,10 +1611,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 107:
 YY_RULE_SETUP
-#line 196 "lexical.l"
+#line 196 "front/lexical.l"
 ECHO;
 	YY_BREAK
-#line 1618 "lexical.c"
+#line 1618 "front/lexical.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -2627,7 +2627,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 196 "lexical.l"
+#line 196 "front/lexical.l"
 
 
 

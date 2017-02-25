@@ -1,0 +1,29 @@
+LEX=flex
+YACC=bison
+LFILE=front/lexical.l
+YFILE=front/syntax.y
+LCFILE=$(LFILE:.l=.c)
+YCFILE=$(YFILE:.y=.c)
+YHFILE=$(YFILE:.y=.h)
+
+$(LCFILE):$(LFILE)
+	$(LEX) -o $(LCFILE) $(LFILE)
+
+$(YHFILE) $(YCFILE):$(YFILE)
+	$(YACC) -v $(YFILE) --defines=$(YHFILE) -o $(YCFILE)
+
+#front/ast.h:front/syntax.y front/ast.c
+#	python front/genast.py > front/ast.h
+
+$(eval $(call make_common_rules,front,))
+
+.PHONY: run-ast run-src run-rdu
+
+run-ast:$(COMPILER)
+	@./$(COMPILER) --print-ast $(CMM)
+
+run-src:$(COMPILER)
+	@./$(COMPILER) --print-src $(CMM)
+
+run-rdu:$(COMPILER)
+	@./$(COMPILER) --print-reduce $(CMM)

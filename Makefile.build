@@ -1,0 +1,57 @@
+define compile_rules
+echo + $(2)
+mkdir -p $(1)
+$(CC) $(2) -o $(3) $(4)
+endef
+
+#make_common_rules(
+# 1       2         
+# target, c_ex_flags
+define make_common_rules
+$(1)_SRC_DIR := $(1)/
+$(1)_INC_DIR := $(1)/
+$(1)_OBJ_DIR := $(OBJ_DIR)/$(1)
+
+$(1)_CFILES := $$(shell find $$($(1)_SRC_DIR) -name "*.c")
+$(1)_SFILES := $$(shell find $$($(1)_SRC_DIR) -name "*.S")
+
+$(1)_COBJS := $$(patsubst $$($(1)_SRC_DIR)%.c, $$($(1)_OBJ_DIR)/%.o, $$($(1)_CFILES))
+$(1)_SOBJS := $$(patsubst $$($(1)_SRC_DIR)%.S, $$($(1)_OBJ_DIR)/%.o, $$($(1)_SFILES))
+
+$(1)_OBJS := $$($(1)_SOBJS) $$($(1)_COBJS)
+
+$(1)_PART_OBJ := $$($(1)_OBJ_DIR)/$(1).o
+
+$(1)_CFLAGS := $$(CFLAGS) -I$$($(1)_INC_DIR) $(2)
+$(1)_LDFLAGS := $$(LDFLAGS)
+
+$$($(1)_OBJ_DIR)/%.o: $$($(1)_SRC_DIR)%.c
+	$$(call compile_rules, $$(@D), $$<, $$@, $$($(1)_CFLAGS))
+
+$$($(1)_OBJ_DIR)/%.o: $$($(1)_SRC_DIR)%.S
+	$$(call compile_rules, $$(@D), $$<, $$@, $$($(1)_CFLAGS))
+
+$$($(1)_PART_OBJ): $$($(1)_OBJS) $(4)
+	mkdir -p $$(@D)
+	$(LD) $$($(1)_OBJS) -o $$@ $$($(1)_LDFLAGS)
+
+.PHONY: $(1)-asm $(1)-elf clean-$(1) count-$(1)
+
+$(1)-asm:$$($(1)_PART_OBJ)
+	@objdump -d $$($(1)_PART_OBJ) > $$($(1)_PART_OBJ).S
+	@vim $$($(1)_PART_OBJ).S
+
+$(1)-elf:$$($(1)_PART_OBJ)
+	@readelf -a $$($(1)_PART_OBJ) > $$($(1)_PART_OBJ).elf
+	@vim $$($(1)_PART_OBJ).elf
+
+clean-$(1):
+	@rm -rf $$($(1)_OBJ_DIR)
+
+count-$(1):
+	@printf "total lines in $(1): "
+	@echo $(1)_CFILES $(1)_SFILES | xargs cat | wc -l
+	@rm -rf $$($(1)_OBJ_DIR)
+
+-include $$($(1)_OBJS:.o=.d)
+endef

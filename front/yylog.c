@@ -1,4 +1,4 @@
-#include "common.h"
+#include "front-com.h"
 
 extern bool is_syntax_error;
 extern int last_syntax_error;

@@ -25,6 +25,8 @@ char *sformat(const char *format, ...);
 #define YYLOG_COLOR_WHITE    "37"
 #define YYLOG_COLOR_NORMAL   "38"
 
+int yylog(FILE *fp, const char *tag, const char *format, ...);
+
 #define logf(...) \
 	yylog(stderr, "\033[" YYLOG_STYLE_BACK ";" YYLOG_COLOR_PURPLE "m", __VA_ARGS__)
 

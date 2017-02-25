@@ -1,4 +1,4 @@
-#include "common.h"
+//#include "common.h"
 
 /* memory can be alloced without size
  * act like variable-length array

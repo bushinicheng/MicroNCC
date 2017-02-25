@@ -1,6 +1,5 @@
 #define __AST_C__
-#include "common.h"
-#include "vector.h"
+#include "front-com.h"
 
 #define MAX_SIZE (1024*1024*2)
 

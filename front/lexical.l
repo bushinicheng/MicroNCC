@@ -1,5 +1,5 @@
 %{
-#include "common.h"
+#include "front-com.h"
 
 /*function declaration*/
 int next_number(char **str, int base);

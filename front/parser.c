@@ -1,4 +1,4 @@
-#include "common.h"
+#include "front-com.h"
 
 int yylex();
 

@@ -1,8 +1,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
-#include "common.h"
-#include "ast.h"
 
 int init_bpool();
 int init_hash();
@@ -12,13 +10,13 @@ int init_spec();
 int init_seman();
 int init_component();
 int init_vector();
-void dump_ast(Node*);
-void print_ast(Node*);
+void dump_ast(void*);
+void print_ast(void*);
 void yyrestart(FILE *);
-int semantic_analysis(Node *root);
+int semantic_analysis(void *root);
 
 FILE *fp = NULL;
-extern Node *astroot;
+extern void *astroot;
 /*global onoff*/
 bool is_dump_ast = false;
 bool is_print_ast = false;

@@ -30,11 +30,11 @@
    This special exception was added by the Free Software Foundation in
    version 2.2 of Bison.  */
 
-#ifndef YY_YY_SYNTAX_H_INCLUDED
-# define YY_YY_SYNTAX_H_INCLUDED
+#ifndef YY_YY_FRONT_SYNTAX_H_INCLUDED
+# define YY_YY_FRONT_SYNTAX_H_INCLUDED
 /* Debug traces.  */
 #ifndef YYDEBUG
-# define YYDEBUG 1
+# define YYDEBUG 0
 #endif
 #if YYDEBUG
 extern int yydebug;
@@ -159,11 +159,11 @@ extern int yydebug;
 
 union YYSTYPE
 {
-#line 12 "syntax.y" /* yacc.c:1909  */
+#line 12 "front/syntax.y" /* yacc.c:1909  */
 
 	Node *pnd;
 
-#line 167 "syntax.h" /* yacc.c:1909  */
+#line 167 "front/syntax.h" /* yacc.c:1909  */
 };
 
 typedef union YYSTYPE YYSTYPE;
@@ -190,4 +190,4 @@ extern YYSTYPE yylval;
 extern YYLTYPE yylloc;
 int yyparse (void);
 
-#endif /* !YY_YY_SYNTAX_H_INCLUDED  */
+#endif /* !YY_YY_FRONT_SYNTAX_H_INCLUDED  */
