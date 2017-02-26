@@ -722,28 +722,7 @@ void analyse_paradecln_is_declnspec(node_t *root) {
 	root->dt = declnspec->dt;
 }
 
-int analyse_nested_declr_in_struct(node_t *root, type_t *rdt, int off) {
-	/* root->token == CompDecln
-	 * CompDecln -> DeclnSpec CompDeclrList
-	 * assume CompDeclr's type has been set
-	 */
-	int cnt = 0;
-	node_t *compdeclrlist = get_child_node_w(root, CompDeclrList);
-	while(compdeclrlist) {
-		node_t *compdeclr = get_child_node_w(compdeclrlist, CompDeclr);
-		//FIXME
-		rdt->uos.argv[cnt].id = compdeclr->cv.id;
-		rdt->uos.argv[cnt].off = 0;
-		rdt->uos.argv[cnt].w = 0;
-		rdt->uos.argv[cnt].dt = compdeclr->dt;
-		cnt ++;
-		compdeclrlist = get_child_node(compdeclrlist, CompDeclrList);
-	}
-	return cnt;
-}
-
-off_t register_member_to_uos(type_t *dt, node_t *compdecln, off_t st) {
-	int off = (st > 0) ? (dt->uos.argv[st - 1].off) : 0;
+off_t register_member_to_uos(type_t *dt, node_t *compdecln, off_t st, off_t *off) {
 	if(compdecln->production == AST_CompDecln_is_DeclnSpec_SEMI) {
 		node_t *declnspec = get_child_node_w(compdecln, DeclnSpec);
 		node_t *typespec = find_child_node_w(declnspec, TypeSpec);
@@ -751,14 +730,18 @@ off_t register_member_to_uos(type_t *dt, node_t *compdecln, off_t st) {
 			return 0;
 		//anonymous struct
 		//add member variables of compspec to dt
+		int maxw = 0;
 		node_t *compspec = get_child_node_w(typespec, CompSpec);
 		type_t *csdt = compspec->dt;
 		for(int i = 0; i < csdt->uos.size; i++) {
-			dt->uos.argv[st + i].id = csdt->uos.argv[st + i].id;
-			dt->uos.argv[st + i].off = off + csdt->uos.argv[st + i].w;
-			dt->uos.argv[st + i].w = csdt->uos.argv[st + i].w;
-			dt->uos.argv[st + i].dt = csdt->uos.argv[st + i].dt;
+			dt->uos.argv[st + i].id = csdt->uos.argv[i].id;
+			dt->uos.argv[st + i].off = *off + 8 * csdt->uos.argv[i].off;
+			dt->uos.argv[st + i].w = csdt->uos.argv[i].w;
+			dt->uos.argv[st + i].dt = csdt->uos.argv[i].dt;
+			if(csdt->uos.argv[i].w > maxw)
+				maxw = csdt->uos.argv[i].w;
 		}
+		*off = *off + maxw;
 		return st + csdt->uos.size;
 	}else{
 		int cnt = 0;
@@ -767,12 +750,25 @@ off_t register_member_to_uos(type_t *dt, node_t *compdecln, off_t st) {
 		while(compdeclrlist) {
 			node_t *compdeclr = get_child_node_w(compdeclrlist, CompDeclr);
 			node_t *declr = get_child_node(compdeclr, Declr);
+			node_t *exp = get_child_node(compdeclr, Exp);
+			dt->uos.argv[st + cnt].off = *off;
 			if(declr) {
-				//FIXME
 				dt->uos.argv[st + cnt].id = declr->cv.id;
-				dt->uos.argv[st + cnt].off = off + 1;
-				dt->uos.argv[st + cnt].w = 0;
 				dt->uos.argv[st + cnt].dt = declr->dt;
+			}
+			if(compdeclr->production == AST_CompDeclr_is_Declr) {
+				//int a;
+				dt->uos.argv[st + cnt].w = 8 * declr->dt->w;
+				*off += 8 * declr->dt->w;
+				cnt ++;
+			}else if(compdeclr->production == AST_CompDeclr_is_COLON_Exp) {
+				//int :2;
+				*off += exp->cv._32;
+
+			}else if(compdeclr->production == AST_CompDeclr_is_Declr_COLON_Exp) {
+				//int a:2;
+				dt->uos.argv[st + cnt].w = exp->cv._32;
+				*off += exp->cv._32;
 				cnt ++;
 			}
 			compdeclrlist = get_child_node(compdeclrlist, CompDeclrList);
@@ -801,7 +797,7 @@ void analyse_compspec(node_t *root) {
 	 *          -> CompType LC CompDeclnList RC
 	 *          -> CompType ID
 	 **/
-	int cnt = 0;
+	int cnt = 0, off = 0;
 	type_t *stdt = new_spec();
 	root->dt = stdt;
 	node_t *comptype = get_child_node_w(root, CompType);
@@ -813,12 +809,17 @@ void analyse_compspec(node_t *root) {
 	}else{
 		node_t *compdeclnlist = get_child_node_w(root, CompDeclnList);
 		stdt->uos.size = compdeclnlist->cv.cnt;
-		stdt->uos.argv = malloc(sizeof(stdt->uos.argv[0]) * root->cv.cnt);
+		//FIXME malloc memory not be zero
+		if(stdt->uos.size) {
+			stdt->uos.argv = malloc(sizeof(stdt->uos.argv[0]) * stdt->uos.size);
+		}
 		while(compdeclnlist) {
 			node_t *compdecln = get_child_node_w(compdeclnlist, CompDecln);
-			cnt = register_member_to_uos(stdt, compdecln, cnt);
+			cnt = register_member_to_uos(stdt, compdecln, cnt, &off);
 			compdeclnlist = get_child_node(compdeclnlist, CompDeclnList);
 		}
+		node_t *idnode = get_child_node(root, ID);
+		if(idnode) stdt->uos.id = idnode->cv.id;
 		assert(cnt == stdt->uos.size);
 	}
 }
@@ -913,13 +914,14 @@ void analyse_compdeclr_is_declr(node_t *root) {
 }
 
 void analyse_compdeclr_is_colon_exp(node_t *root) {
-	//TODO
-	assert(0);
 }
 
 void analyse_compdeclr_is_declr_colon_exp(node_t *root) {
-	//TODO
-	assert(0);
+	node_t *declr = get_child_node_w(root, Declr);
+	root->cv.id = declr->cv.id;
+	root->cv.cnt = 1;
+	root->dt = declr->dt;
+	/*-----*/
 }
 
 void analyse_exp_is_id(node_t *root) {
@@ -1075,7 +1077,7 @@ static SemanFunc analyse_function[] = {
 	[AST_CompSpec_is_CompType_ID_LC_CompDeclnList_RC] = analyse_compspec,
 	[AST_CompSpec_is_CompType_LC_CompDeclnList_RC] = analyse_compspec,
 	[AST_CompSpec_is_CompType_ID] = analyse_compspec,
-	[AST_CompDeclnList_is_CompDeclnList_CompDecln] = analyse_compdeclnlist_is_compdeclnlist_compdecln,
+	[AST_CompDeclnList_is_CompDecln_CompDeclnList] = analyse_compdeclnlist_is_compdeclnlist_compdecln,
 	[AST_CompDeclnList_is_CompDecln] = analyse_compdeclnlist_is_compdecln,
 	[AST_CompDecln_is_DeclnSpec_SEMI] = analyse_compdecln_is_declnspec,
 	[AST_CompDecln_is_DeclnSpec_CompDeclrList_SEMI] = analyse_compdecln_is_declnspec_compdeclrlist,
@@ -1137,7 +1139,7 @@ int init_seman() {
 		const char *format_string;
 	} test_case[] = {
 		//{DeclnSpec, "struct{int (*func)(int, int);int b;};", "void"},
-		{CompSpec, "struct {int a; int b;};", "struct {int a; int b;}"},
+		{CompSpec, "struct A {int a:8, :8;union{struct{int x;};int y;}; int b;};", "struct {int a; int b;}"},
 		/*
 		{DeclnSpec, "void a;", "void"},
 		{DeclnSpec, "long long a;", "int64_t"},
@@ -1173,7 +1175,7 @@ int init_seman() {
 		//logw("at %d\n", i);
 		scan_from_string(test_case[i].sample);
 		node_t *target = find_child_node_w(astroot, test_case[i].token);
-		char *sol = type_format(target->dt);
+		char *sol = uos_format(target->dt);
 		if(i == 9) {
 			//print_ast(target);
 			//printf("%s\n", sol);
@@ -1183,6 +1185,6 @@ int init_seman() {
 		UNIT_TEST_STR_EQUAL(test_case[i].format_string, sol);
 	}
 	UNIT_TEST_END;
-	assert(0);
+	exit(0);
 #endif
 }

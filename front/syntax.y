@@ -167,7 +167,7 @@ CompType
 
 CompDeclnList
 	:CompDecln {$$=build_subast(AST_CompDeclnList_is_CompDecln, &@$, $1);}
-	|CompDeclnList CompDecln {$$=build_subast(AST_CompDeclnList_is_CompDeclnList_CompDecln, &@$, $1, $2);}
+	|CompDecln CompDeclnList {$$=build_subast(AST_CompDeclnList_is_CompDecln_CompDeclnList, &@$, $1, $2);}
 ;
 
 CompDecln

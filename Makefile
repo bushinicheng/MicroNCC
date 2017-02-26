@@ -1,6 +1,6 @@
 CC := gcc
 LD := ld
-CFLAGS := -c -std=c11 -O2 -MMD -fno-builtin -fno-stack-protector -include common.h # -m32
+CFLAGS := -c -std=c11 -O2 -ggdb -MMD -fno-builtin -fno-stack-protector -include common.h # -m32
 LDFLAGS := -r # -m elf_i386 -nostdlib
 OBJ_DIR := output
 COMPILER := $(OBJ_DIR)/MicroNCC

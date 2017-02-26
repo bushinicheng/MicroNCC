@@ -217,6 +217,7 @@ typedef struct node_t {
 
 type_t *new_spec();
 char *type_format(type_t *type);
+char *uos_format(type_t *type);
 int get_type_relation(int btA, int btB);
 type_t *convert_btype_to_pointer(uint32_t btype);
 int convert_ctype2type(int ct);

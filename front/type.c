@@ -239,6 +239,27 @@ char *type_format(type_t *type) {
 	return type->format_string;
 }
 
+char *uos_format(type_t *type) {
+	if(!type) return "<NullType>";
+	if(type->bt == SpecTypeStruct
+	|| type->bt == SpecTypeUnion) {
+		char *buf = get_memory_pointer();
+		strcpy(buf, (type->bt == SpecTypeStruct) ? "struct {\n" : "union {\n");
+		for(int i = 0; i < type->uos.size; i++) {
+			push_bpool_state(strlen(buf) + 1);
+			char *uos_type = uos_format(type->uos.argv[i].dt);
+			pop_bpool_state();
+			sprintf(buf + strlen(buf), "%s %s:%d:%d;\n",
+					uos_type, type->uos.argv[i].id,
+					type->uos.argv[i].off, type->uos.argv[i].w);
+		}
+		strcat(buf, "};");
+		return require_memory(strlen(buf) + 1);
+	}else{
+		return type_format(type);
+	}
+}
+
 /* function:
  *   return the basic size of bt
  */
