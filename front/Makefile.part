@@ -12,18 +12,15 @@ $(LCFILE):$(LFILE)
 $(YHFILE) $(YCFILE):$(YFILE)
 	@$(YACC) -v $(YFILE) --defines=$(YHFILE) -o $(YCFILE)
 
-#front/ast.h:front/syntax.y front/ast.c
-#	python front/genast.py > front/ast.h
+front/ast.h:front/syntax.y front/ast.c
+	@cd front; python genast.py > ast.h; cd ..
 
 $(eval $(call make_common_rules,front,))
 
 .PHONY: run-ast run-src run-rdu
 
 run-ast:$(COMPILER)
-	@./$(COMPILER) --print-ast $(CMM)
-
-run-src:$(COMPILER)
-	@./$(COMPILER) --print-src $(CMM)
+	@./$(COMPILER) --print-syntax-tree $(CMM)
 
 run-rdu:$(COMPILER)
-	@./$(COMPILER) --print-reduce $(CMM)
+	@./$(COMPILER) --print-reduce-step $(CMM)

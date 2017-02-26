@@ -45,7 +45,9 @@ int init_front() {
 	yyrestart(fp);
 	while(yylex()>0);
 #else
-	/*grammer:shift and reduce*/
+	/* grammer:shift and reduce
+	 * yyrestart will be replaced by custom parser
+	 * */
 	logd("call yyrestart(fp=%p).\n", fp);
 	yyrestart(fp);
 	logd("call yyparse(void).\n");

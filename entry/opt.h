@@ -6,6 +6,7 @@ enum {
 	ArgumentPrintReduceStep,
 /* declare your own opt here
  */
+	ArgumentHelp,
 };
 
 bool get_onoff_from_arguments(int arg);
