@@ -17,21 +17,17 @@ include $(patsubst %,%/Makefile.part,$(ALL_PARTS))
 # use your own testcase
 TESTCASE := test/more.c
 
-# add your part target rule here
-front: $(front_PART_OBJ)
-lib: $(lib_PART_OBJ)
-entry: $(entry_PART_OBJ)
-#$(eval $(foreach part,$(ALL_PARTS),"\n"$(part): $($(part)_PART_OBJ)))
+$(foreach part,$(ALL_PARTS),$(eval $(part): $($(part)_PART_OBJ)))
 
 # final target file: executable file
-$(COMPILER): $(front_PART_OBJ) $(lib_PART_OBJ) $(entry_PART_OBJ)
+$(COMPILER): $(foreach part,$(ALL_PARTS),$($(part)_PART_OBJ))
 	@$(CC) $^ -o $(COMPILER)
 
 gdb: $(COMPILER)
 	@gdb $(COMPILER)
 
 run: $(COMPILER)
-	./$(COMPILER)
+	@./$(COMPILER)
 
 clean:
 	rm -rf $(OBJ_DIR)

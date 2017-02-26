@@ -135,7 +135,7 @@ int main(int argc, char *argv[])
 	init_vector();
 
 	/*int front module*/
-	//init_front();
+	init_front();
 
 	/*init your own module*/
 
