@@ -7,8 +7,8 @@ void init_hash();
 void init_vector();
 void init_front();
 
-/*your can get file list by declaring this variable*/
-Vector cmd_files;
+/*you can get file list by declaring this variable*/
+vec_t cmd_files;
 
 static struct {
 	char *short_opt;
@@ -131,11 +131,11 @@ int main(int argc, char *argv[])
 	/*init hash module*/
 	init_hash();
 
-	/*init hash module*/
+	/*init vector module*/
 	init_vector();
 
 	/*int front module*/
-	init_front();
+	//init_front();
 
 	/*init your own module*/
 

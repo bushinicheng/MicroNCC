@@ -4,14 +4,14 @@
 
 #define MAX_SIZE 1000000
 
-static MemPool specpool;
+static mem_pool_t specpool;
 
-void print_spec(Spec *type);
-Spec *register_type_declnspec(Node *root);
+void print_spec(type_t *type);
+type_t *register_type_declnspec(node_t *root);
 
-Spec *convert_btype_to_pointer(uint32_t bt) {
+type_t *convert_btype_to_pointer(uint32_t bt) {
 	if(bt >= SpecBTSeparator) return NULL;
-	Spec *specptr = specpool.p[0];
+	type_t *specptr = specpool.p[0];
 	return &specptr[bt];
 }
 
@@ -127,9 +127,9 @@ int get_type_relation(int btA, int btB) {
  * function:
  *   return a new spec pointer point to a clean spec element
  */
-Spec *new_spec() {
-	Spec *spec = (Spec *)mempool_new(&specpool);
-	memset(spec, 0, sizeof(Spec));
+type_t *new_spec() {
+	type_t *spec = (type_t *)mempool_new(&specpool);
+	memset(spec, 0, sizeof(type_t));
 	return spec;
 }
 
@@ -138,14 +138,14 @@ void free_spec() {
 }
 
 
-/* IN[0]: struct tagSpec *
+/* IN[0]: struct tagtype_t *
  *   type pointer
  * OUT[0]:char *
  *   string pointer
  * function:
  *   format given type to string
  */
-char *type_format(Spec *type) {
+char *type_format(type_t *type) {
 	if(!type) return "<NullType>";
 #ifndef __DEBUG__
 	if(type->format_string) return type->format_string;
@@ -191,7 +191,7 @@ char *type_format(Spec *type) {
 		 *       |  comp_type
 		 *       +--return type
 		 */
-		Spec *dt = type->comp.dt;
+		type_t *dt = type->comp.dt;
 		char *dt_type = type_format(dt);
 		char *comp_type = get_memory_pointer();
 		if(dt && dt->bt == SpecTypeFunction) {
@@ -244,7 +244,7 @@ char *type_format(Spec *type) {
  */
 
 void reset_spec_state() {
-	Spec *specptr = specpool.p[0];
+	type_t *specptr = specpool.p[0];
 	int cnt = mempool_size(&specpool);
 	for(int i = 0; i < (int)(SpecBTSeparator - cnt); i++)
 		mempool_new(&specpool);
@@ -259,7 +259,7 @@ void reset_spec_state() {
 }
 
 void init_spec() {
-	mempool_init(&specpool, sizeof(Spec));
+	mempool_init(&specpool, sizeof(type_t));
 	assert(specpool.bs[0] > 32);//leave space for bt
 	construct_type_relations();
 	reset_spec_state();
@@ -267,7 +267,7 @@ void init_spec() {
 	UNIT_TEST_START;
 
 	for(int i = 0; i < SpecBTSeparator; i++) {
-		Spec *type = convert_btype_to_pointer(i);
+		type_t *type = convert_btype_to_pointer(i);
 		if(i != SpecTypeString){
 			UNIT_TEST_EQUAL(type->bt, i);
 			UNIT_TEST_EQUAL(type->w, btype_width[i]);
@@ -278,17 +278,17 @@ void init_spec() {
 		}
 	}
 
-	Spec *func_type = new_spec();
+	type_t *func_type = new_spec();
 	func_type->bt = SpecTypeFunction;
 	func_type->func.ret = convert_btype_to_pointer(SpecTypeInt32);
 	func_type->func.argc = 3;
-	func_type->func.argv = (Spec **)malloc(sizeof(Spec *) * 3);
+	func_type->func.argv = (type_t **)malloc(sizeof(type_t *) * 3);
 	func_type->func.argv[0] = convert_btype_to_pointer(SpecTypeInt32);
 	func_type->func.argv[1] = convert_btype_to_pointer(SpecTypeInt32);
 	func_type->func.argv[2] = convert_btype_to_pointer(SpecTypeInt32);
 	UNIT_TEST_STR_EQUAL(type_format(func_type), "int32_t (int32_t, int32_t, int32_t)");
 
-	Spec *ptr_type = new_spec();
+	type_t *ptr_type = new_spec();
 	ptr_type->bt = SpecTypePointer;
 	ptr_type->comp.pl = 4;
 	ptr_type->comp.dt = convert_btype_to_pointer(SpecTypeInt32);
@@ -301,7 +301,7 @@ void init_spec() {
 	ptr_type->comp.dt = func_type;
 	UNIT_TEST_STR_EQUAL(type_format(ptr_type), "int32_t (****)(int32_t, int32_t, int32_t)");
 
-	Spec *arr_type = new_spec();
+	type_t *arr_type = new_spec();
 	arr_type->bt = SpecTypeArray;
 	arr_type->comp.dt = convert_btype_to_pointer(SpecTypeInt32);
 	arr_type->comp.size = 4;
@@ -312,7 +312,7 @@ void init_spec() {
 	arr_type->comp.dim[3] = 4;
 	UNIT_TEST_STR_EQUAL(type_format(arr_type), "int32_t [1][2][3][4]");
 
-	Spec *comp_type = new_spec();
+	type_t *comp_type = new_spec();
 	comp_type->bt = SpecTypeComplex;
 	comp_type->comp.dt = convert_btype_to_pointer(SpecTypeInt32);
 	comp_type->comp.pl = 1;
@@ -339,7 +339,7 @@ void init_spec() {
 	func_type->bt = SpecTypeFunction;
 	func_type->func.ret = convert_btype_to_pointer(SpecTypeInt32);
 	func_type->func.argc = 3;
-	func_type->func.argv = (Spec **)malloc(sizeof(Spec *) * 3);
+	func_type->func.argv = (type_t **)malloc(sizeof(type_t *) * 3);
 	func_type->func.argv[0] = comp_type;
 	func_type->func.argv[1] = convert_btype_to_pointer(SpecTypeInt32);
 	func_type->func.argv[2] = convert_btype_to_pointer(SpecTypeInt32);

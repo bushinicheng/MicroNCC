@@ -4,23 +4,22 @@
 #define MAX_SIZE (1024*1024*2)
 
 int curlineno;
-static MemPool ndpool;
-Node *astroot = NULL;
+static mem_pool_t ndpool;
+node_t *astroot = NULL;
 
 extern bool is_print_reduce_step;
 
 void decrease_actionlevel();
 
-void __attribute__((noinline)) make_node(Node *root, int reduce_rule, int token, ...)
-{
+void __attribute__((noinline)) make_node(node_t *root, int production, int token, ...) {
 	va_list vlist;
 	va_start(vlist, token);
 
-	root->reduce_rule = reduce_rule;
+	root->production = production;
 	root->token = token;
 
-	Node *first_child = va_arg(vlist, Node*);
-	Node *prev_child = first_child;
+	node_t *first_child = va_arg(vlist, node_t*);
+	node_t *prev_child = first_child;
 
 	if(token == AST_NONTERMINALBEGIN) {
 		root->parent = NULL;
@@ -29,15 +28,15 @@ void __attribute__((noinline)) make_node(Node *root, int reduce_rule, int token,
 	}
 
 	/*debug info*/
-	for(int i = 1; i < syntax_rules[reduce_rule].nr_child; i++)
+	for(int i = 1; i < syntax_rules[production].nr_child; i++)
 	{
-		Node *post_child = va_arg(vlist, Node*);
+		node_t *post_child = va_arg(vlist, node_t*);
 		prev_child->sibling = post_child;
 		prev_child->parent = root;
 		prev_child = post_child;
 	}
 
-	if(!syntax_rules[reduce_rule].nr_child)
+	if(!syntax_rules[production].nr_child)
 		first_child = NULL;
 	else {
 		prev_child->sibling = NULL;
@@ -47,39 +46,36 @@ void __attribute__((noinline)) make_node(Node *root, int reduce_rule, int token,
 	va_end(vlist);
 }
 
-Node* new_node()
-{
-	return (Node*)mempool_new(&ndpool);
+node_t* new_node() {
+	return (node_t*)mempool_new(&ndpool);
 }
 
-Node* new_sym_node(int lexval, YYLTYPE *yyinfo)
-{
-	Node *pnd = new_node();
+node_t* new_sym_node(int lexval, YYLTYPE *yyinfo) {
+	node_t *pnd = new_node();
 	pnd->token = lexval;
 	pnd->lineno = yyinfo->first_line;
 	pnd->column = yyinfo->last_column;
 	return pnd;
 }
 
-Node* __attribute__((noinline)) build_subast(int nodetype, YYLTYPE *yyinfo, ...)
-{
+node_t* __attribute__((noinline)) build_subast(int nodetype, YYLTYPE *yyinfo, ...) {
 	if(is_print_reduce_step)
 		printf("%s\n", syntax_rules[nodetype].str_rule);
 
 	va_list vlist;
 	va_start(vlist, yyinfo);
-	Node *parent_node = new_node();
-	Node *first_child = va_arg(vlist, Node*);
-	Node *prev_child = first_child;
+	node_t *parent_node = new_node();
+	node_t *first_child = va_arg(vlist, node_t*);
+	node_t *prev_child = first_child;
 
 	/*debug info*/
-	parent_node->reduce_rule = nodetype;
+	parent_node->production = nodetype;
 	parent_node->token = syntax_rules[nodetype].root_type;
 	parent_node->lineno = curlineno = yyinfo->first_line;
 	parent_node->column = yyinfo->first_column;
 
 	for(int i = 1; i < syntax_rules[nodetype].nr_child; i++) {
-		Node *post_child = va_arg(vlist, Node*);
+		node_t *post_child = va_arg(vlist, node_t*);
 		prev_child->sibling = post_child;
 		prev_child->parent = parent_node;
 		prev_child = post_child;
@@ -100,11 +96,10 @@ Node* __attribute__((noinline)) build_subast(int nodetype, YYLTYPE *yyinfo, ...)
 }
 
 /*some function for searching child node*/
-Node* get_child_node_with_skip(Node *root, int token, int skip)
-{
+node_t* get_child_node_with_skip(node_t *root, int token, int skip) {
 	if(skip < 0) return NULL;
 	if(!root) return NULL;
-	Node *child = root->child;
+	node_t *child = root->child;
 	while(child) {
 		if(child->token == token) {
 			if(skip == 0)
@@ -117,34 +112,30 @@ Node* get_child_node_with_skip(Node *root, int token, int skip)
 	return NULL;
 }
 
-Node* get_child_node(Node *root, int token)
-{
+node_t* get_child_node(node_t *root, int token) {
 	return get_child_node_with_skip(root, token, 0);
 }
 
-Node* get_child_node_with_skip_w(Node *root, int token, int skip)
-{
+node_t* get_child_node_with_skip_w(node_t *root, int token, int skip) {
 	if(!root)
 		logw("invalid parameter: 'root'=(nil)\n");
-	Node *ret = get_child_node_with_skip(root, token, skip);
+	node_t *ret = get_child_node_with_skip(root, token, skip);
 	if(!ret)
-		logw("unsucessful search:{'root':'%s', 'child':'%s', 'rule':'%s'}\n", str_lexval[root->token], str_lexval[token], syntax_rules[root->reduce_rule].str_rule);
+		logw("unsucessful search:{'root':'%s', 'child':'%s', 'rule':'%s'}\n", str_lexval[root->token], str_lexval[token], syntax_rules[root->production].str_rule);
 	return ret;
 }
 
-Node* get_child_node_w(Node *root, int token)
-{
+node_t* get_child_node_w(node_t *root, int token) {
 	if(!root)
 		logw("invalid parameter: 'root'=(nil)\n");
-	Node *ret = get_child_node(root, token);
+	node_t *ret = get_child_node(root, token);
 	if(!ret) {
-		logw("unsucessful search:{'root':'%s', 'child':'%s', 'rule':'%s'}\n", str_lexval[root->token], str_lexval[token], syntax_rules[root->reduce_rule].str_rule);
+		logw("unsucessful search:{'root':'%s', 'child':'%s', 'rule':'%s'}\n", str_lexval[root->token], str_lexval[token], syntax_rules[root->production].str_rule);
 	}
 	return ret;
 }
 
-Node* __attribute__((noinline))get_child_node_dw(Node *root, int depth, ...)
-{
+node_t* __attribute__((noinline))get_child_node_dw(node_t *root, int depth, ...) {
 	va_list vlist;
 	va_start(vlist, depth);
 	if(!root)
@@ -157,20 +148,25 @@ Node* __attribute__((noinline))get_child_node_dw(Node *root, int depth, ...)
 	return root;
 }
 
-Node* find_child_node(Node *root, int token)
-{
+node_t* find_child_node(node_t *root, int token) {
 	if(!root) return NULL;
 	if(root->token == token) return root;
 
-	Node *node = NULL;
+	node_t *node = NULL;
 	node = find_child_node(root->child, token);
 	if(!node)
 		return find_child_node(root->sibling, token);
 	return node;
 }
 
-void print_ast(Node *root)
-{
+node_t* find_child_node_w(node_t *root, int token) {
+	node_t *ret = find_child_node(root, token);
+	if(!ret)
+		logw("Unsuccessful search:{root:%s, target:%s}\n", str_lexval[root->token], str_lexval[token]);
+	return ret;
+}
+
+void print_ast(node_t *root) {
 	if(root == NULL)
 		return;
 
@@ -216,9 +212,9 @@ void print_ast(Node *root)
 		}
 	}
 	else if(root->token == TYPE)
-		printf("TYPE:%s", str_lexval[root->reduce_rule]);
+		printf("TYPE:%s", str_lexval[root->production]);
 	else if(root->token == TypeQulfr)
-		printf("Qulfr:%s", str_lexval[root->reduce_rule]);
+		printf("Qulfr:%s", str_lexval[root->production]);
 	else
 		printf("%s", str_lexval[root->token]);
 #if 0
@@ -243,5 +239,5 @@ void print_ast(Node *root)
 }
 
 int init_ast() {
-	mempool_init(&ndpool, sizeof(Node));
+	mempool_init(&ndpool, sizeof(node_t));
 }

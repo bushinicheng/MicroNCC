@@ -161,7 +161,7 @@ union YYSTYPE
 {
 #line 12 "front/syntax.y" /* yacc.c:1909  */
 
-	Node *pnd;
+	node_t *pnd;
 
 #line 167 "front/syntax.h" /* yacc.c:1909  */
 };

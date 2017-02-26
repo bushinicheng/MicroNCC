@@ -1,7 +1,7 @@
 # all productions
 ```
 %union {
-	Node *pnd;
+	node_t *pnd;
 }
 
 %nonassoc LOWWER_THAN_ELSE

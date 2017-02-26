@@ -1,6 +1,6 @@
 //#include "common.h"
 
-static MemPool hashpool;
+static mem_pool_t hashpool;
 
 int hash(uint8_t *keybuf, size_t size) {
 	int h = 0;
@@ -10,13 +10,13 @@ int hash(uint8_t *keybuf, size_t size) {
     return (h & 0x7FFFFFFF) % HASH_SIZE;
 }
 
-void hash_init(HashTable *ht) {
-	memset(ht, 0, sizeof(HashTable));
+void hash_init(hash_table_t *ht) {
+	memset(ht, 0, sizeof(hash_table_t));
 }
 
-void hash_push(HashTable *ht, uint8_t *keybuf, size_t size, void *value) {
+void hash_push(hash_table_t *ht, uint8_t *keybuf, size_t size, void *value) {
 	int key = hash(keybuf, size);
-	HashElement *he = (HashElement *)mempool_new(&hashpool);
+	hash_element_t *he = (hash_element_t *)mempool_new(&hashpool);
 	he->keybuf = keybuf;
 	he->size = size;
 	he->next = ht->pool[key];
@@ -24,9 +24,9 @@ void hash_push(HashTable *ht, uint8_t *keybuf, size_t size, void *value) {
 	ht->pool[key] = he;
 }
 
-void *hash_get(HashTable *ht, uint8_t *keybuf, size_t size) {
+void *hash_get(hash_table_t *ht, uint8_t *keybuf, size_t size) {
 	int key = hash(keybuf, size);
-	HashElement *he = ht->pool[key];
+	hash_element_t *he = ht->pool[key];
 	while(he) {
 		if(he->size == size && memcmp(he->keybuf, keybuf, size) == 0) {
 			return he->value;
@@ -36,8 +36,8 @@ void *hash_get(HashTable *ht, uint8_t *keybuf, size_t size) {
 	return NULL;
 }
 
-void hash_destroy_element(HashTable *ht) {
-	memset(ht, 0, sizeof(HashTable));
+void hash_destroy_element(hash_table_t *ht) {
+	memset(ht, 0, sizeof(hash_table_t));
 }
 
 void free_hash() {
@@ -45,6 +45,6 @@ void free_hash() {
 }
 
 int init_hash() {
-	mempool_init(&hashpool, sizeof(HashElement));
+	mempool_init(&hashpool, sizeof(hash_element_t));
 	return 0;
 }

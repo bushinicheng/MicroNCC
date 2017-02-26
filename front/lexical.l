@@ -196,7 +196,7 @@ volatile            {tokout("VOLATILE");return qulfr(QulfrVolatile);}
 %%
 
 static int qulfr(int token) {
-	Node *pnd = new_node();
+	node_t *pnd = new_node();
 	pnd->token = TypeQulfr;
 	pnd->lineno = yylineno;
 	pnd->column = yycolumn;
@@ -206,7 +206,7 @@ static int qulfr(int token) {
 }
 
 static int equop(int token) {
-	Node *pnd = new_node();
+	node_t *pnd = new_node();
 	pnd->token = token;
 	pnd->lineno = yylineno;
 	pnd->column = yycolumn;
@@ -215,7 +215,7 @@ static int equop(int token) {
 }
 
 static int relop(int token) {
-	Node *pnd = new_node();
+	node_t *pnd = new_node();
 	pnd->token = token;
 	pnd->lineno = yylineno;
 	pnd->column = yycolumn;
@@ -224,7 +224,7 @@ static int relop(int token) {
 }
 
 static int symbol(int syntaxval) {
-	Node *pnd = new_node();
+	node_t *pnd = new_node();
 	pnd->token = syntaxval;
 	pnd->lineno = yylineno;
 	pnd->column = yycolumn;
@@ -237,9 +237,9 @@ static int type(int token, int typeinfo) {
 	 * |       ct       |   bt   |   0/1  |
 	 * +----------------+--------+--------+
 	 */
-	Node *pnd = new_node();
+	node_t *pnd = new_node();
 	pnd->token = TYPE;
-	pnd->reduce_rule = token;
+	pnd->production = token;
 	pnd->cv.t = typeinfo;
 	pnd->dt = convert_btype_to_pointer(WORD_PART1(typeinfo));
 	pnd->lineno = yylineno;
@@ -250,7 +250,7 @@ static int type(int token, int typeinfo) {
 
 static int num(int numtype) {
 	char *pstr = yytext;
-	Node *pnd = new_node();
+	node_t *pnd = new_node();
 	pnd->token = NUM;
 	pnd->dt = new_spec();//FIXME:overflow of int
 	pnd->lineno = yylineno;
@@ -281,7 +281,7 @@ static int num(int numtype) {
 }
 
 static int reg(int syntaxval) {
-	Node *pnd = new_node();
+	node_t *pnd = new_node();
 	pnd->token = syntaxval;
 	pnd->lineno = yylineno;
 	pnd->column = yycolumn;

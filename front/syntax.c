@@ -69,7 +69,7 @@
 int yylex();
 int yyerror(const char *str, ...);
 
-extern Node *astroot;
+extern node_t *astroot;
 
 #line 75 "front/syntax.c" /* yacc.c:339  */
 
@@ -222,7 +222,7 @@ union YYSTYPE
 {
 #line 12 "front/syntax.y" /* yacc.c:355  */
 
-	Node *pnd;
+	node_t *pnd;
 
 #line 228 "front/syntax.c" /* yacc.c:355  */
 };

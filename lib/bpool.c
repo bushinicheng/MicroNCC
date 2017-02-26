@@ -8,7 +8,7 @@
 static int toggle_caller_state = 0;
 static uint32_t ptr = 0;
 static uint8_t bpool[POOL_SIZE];
-static Vector bpool_state_stack;
+static vec_t bpool_state_stack;
 
 void *wt_alloc(size_t size) {
 	void *ptr = malloc(size);
@@ -27,7 +27,7 @@ void *wt_realloc(void *ptr, size_t oldsize, size_t newsize) {
 	return ret;
 }
 
-void mempool_init(MemPool *mp, size_t unit_size) {
+void mempool_init(mem_pool_t *mp, size_t unit_size) {
 	mp->unit_size = unit_size;
 	//index
 	mp->index_ptr = 0;
@@ -41,7 +41,7 @@ void mempool_init(MemPool *mp, size_t unit_size) {
 	mp->p[0] = (void *)malloc(mp->bs[0]);
 }
 
-size_t mempool_size(MemPool *mp) {
+size_t mempool_size(mem_pool_t *mp) {
 	if(mp->index_ptr == 0) {
 		//most common case
 		return mp->block_ptr / mp->unit_size;
@@ -54,7 +54,7 @@ size_t mempool_size(MemPool *mp) {
 	}
 }
 
-void *mempool_new(MemPool *mp) {
+void *mempool_new(mem_pool_t *mp) {
 	if(!mp->index_size) return NULL;
 	void *ret = NULL;
 	if(mp->block_ptr < mp->bs[mp->index_ptr]) {
@@ -80,7 +80,7 @@ void *mempool_new(MemPool *mp) {
 	}
 }
 
-void *mempool_free(MemPool *mp) {
+void *mempool_free(mem_pool_t *mp) {
 	for(int i = 0; i < mp->index_size; i++) {
 		if(mp->p[i]) free(mp->p[i]);
 	}
@@ -179,7 +179,7 @@ int init_bpool() {
 	vector_init(&bpool_state_stack, sizeof(off_t));
 #ifdef __DEBUG__
 	UNIT_TEST_START;
-	MemPool mp;
+	mem_pool_t mp;
 	mempool_init(&mp, sizeof(int));
 	const int test_size = 65536;
 	int *pt[test_size];

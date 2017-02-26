@@ -80,7 +80,7 @@ enum {
 	SpecRvalue = 1,
 };
 
-typedef struct VarInfo {
+typedef struct vi_t {
 	//for variable
 	int bt;//0 for code area
 				  //1 for global data
@@ -92,20 +92,18 @@ typedef struct VarInfo {
 	uint32_t ref;
 	off_t off;
 	int qulfr;
-} VarInfo;
+} vi_t;
 
-typedef struct InitorMemoryMap {
+typedef struct imm_t {
 	//FIXME
 	void *buf;
 	size_t bufsize;
 	off_t *offarr;
 	size_t *sizearr;
 	size_t nr_var;
-} InitorMemoryMap;
+} imm_t;
 
-struct Spec;
-
-typedef struct ExpConstPart{
+typedef struct exp_const_part_t{
 	//FIXME
 	/* note: some collision in AST node
 	 *    Enumor->_32 and Enumor->t
@@ -139,8 +137,8 @@ typedef struct ExpConstPart{
 		char *id;
 		char *str;
 		char **pid;
-		struct Spec *type;
-		InitorMemoryMap *mm;
+		struct type_t *type;
+		imm_t *mm;
 	};
 
 	union {
@@ -153,16 +151,16 @@ typedef struct ExpConstPart{
 		int cnt;
 		off_t off;
 	};
-} ExpConstPart;
+} exp_const_part_t;
 
-typedef struct Spec {
+typedef struct type_t {
 	int bt;
 	int w;
 	char *format_string;//format_string
 	union {
 		//ex. int **a[10][20]; type(a) is complex
 		struct {
-			struct Spec *dt;//actual spec,such as `struct A`
+			struct type_t *dt;//actual spec,such as `struct A`
 			size_t *dim;//dimension array:a[2][3][4]=>[2,3,4]
 			size_t size;//length of(dim)
 			           //works if bt == SpecTypeArray
@@ -174,8 +172,8 @@ typedef struct Spec {
 		} comp;//complex variable, array or pointer or both
 
 		struct {
-			struct Spec *ret;
-			struct Spec **argv;
+			struct type_t *ret;
+			struct type_t **argv;
 			int ellipsis;//int func(int a, int b, ...)
 			size_t argc;
 		} func;//func type
@@ -187,43 +185,43 @@ typedef struct Spec {
 				off_t off;//offset in bits, for union
 				          //  it works only for anonymous struct
 				size_t w;//bits
-				struct Spec *dt;
+				struct type_t *dt;
 			} *argv;
 			size_t size;
 		} uos;//union or struct
 	};
-} Spec;
+} type_t;
 
-typedef struct Node {
-	struct Node *sibling;
-	struct Node *child;
-	struct Node *parent;//for reverse-travel
+typedef struct node_t {
+	struct node_t *sibling;
+	struct node_t *child;
+	struct node_t *parent;//for reverse-travel
 
 	/* semantic structure */
 	int token;//syntax value like `Program` `TYPE` `INT`
-	int reduce_rule;//semantic reduce rule like `AST_Exp_is_ID`
+	int production;//semantic reduce rule like `AST_Exp_is_ID`
 
 	//dt + vi for id
 	//dt + vi + cv for exp
 	//for ID node, dt donates id's type, if id is constant, cv.t will indicate this
 	//for Exp node, the same as above
 	int lrv;//temporary strategy, left or right value
-	Spec *dt;//data type, dt->bt reveal which value will be use in cv
-	VarInfo *vi;//for register allocation
-	ExpConstPart cv;//constant value
+	type_t *dt;//data type, dt->bt reveal which value will be use in cv
+	vi_t *vi;//for register allocation
+	exp_const_part_t cv;//constant value
 
 	/* for debugging */
 	int error;
 	int lineno, column;
-} Node;
+} node_t;
 
-Spec *new_spec();
-char *type_format(Spec *type);
+type_t *new_spec();
+char *type_format(type_t *type);
 int get_type_relation(int btA, int btB);
-Spec *convert_btype_to_pointer(uint32_t btype);
+type_t *convert_btype_to_pointer(uint32_t btype);
 int convert_ctype2type(int ct);
 
-typedef void (*SemanFunc)(Node *);
-void syntax_analysis(Node *root);
+typedef void (*SemanFunc)(node_t *);
+void syntax_analysis(node_t *root);
 
 #endif

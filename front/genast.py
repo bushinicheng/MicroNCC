@@ -73,7 +73,7 @@ def get_rules(stream):
 def get_func():
     with open('ast.c') as fp:
         stream = fp.read()
-    result=re.findall('^(\w[\d\w]*\*?\s+\w[\d\w]*\(.*?\))$', stream, flags=re.M)
+    result=re.findall('^(\w[\d\w]*\*?\s+\w[\d\w]*\(.*?\))\s*\{$', stream, flags=re.M)
     return ';\n'.join(result)+';'
 
 def genast():

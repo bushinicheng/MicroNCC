@@ -163,20 +163,20 @@ int analyse_expression(Node *root);
 
 void check_function_call(Node *root, VarElement *func) {
 	if(!root || !func) return;
-	assert(root->reduce_rule == AST_Exp_is_ID_LP_RP
-		|| root->reduce_rule == AST_Exp_is_ID_LP_FuncCallArgList_RP);
+	assert(root->production == AST_Exp_is_ID_LP_RP
+		|| root->production == AST_Exp_is_ID_LP_FuncCallArgList_RP);
 	//need  <==> func->type->func.argv
-	//given <==> root->reduce_rule
+	//given <==> root->production
 	if(func->type->btype != SpecTypeFunction) {
 		//function not callable
 		yyerrtype(ErrorNotCallable, root->lineno, get_child_node_w(root, ID)->idtype->cons.supval.st);
 	}else if(func->type->func.argv == 0) {
 		//0 parameter need, ? given
-		if(root->reduce_rule != AST_Exp_is_ID_LP_RP) {
+		if(root->production != AST_Exp_is_ID_LP_RP) {
 			yyerrtype(ErrorCall0vx, root->lineno);
 		}
 	}else{
-		if(root->reduce_rule != AST_Exp_is_ID_LP_FuncCallArgList_RP) {
+		if(root->production != AST_Exp_is_ID_LP_FuncCallArgList_RP) {
 			//n parameter need, 0 given
 			yyerrtype(ErrorCallnv0, root->lineno, func->type->func.argv);
 		} else {
@@ -238,7 +238,7 @@ int analyse_expression(Node *root) {
 	Node *id = NULL, *num = NULL, *st = NULL;
 	Node *exp = NULL, *exp2 = NULL;
 
-	switch(root->reduce_rule) {
+	switch(root->production) {
 		case AST_Exp_is_ID:
 			id = get_child_node_w(root, ID);
 			root->idtype = convert_btype_to_pointer(SpecTypeInt32, SpecLvalue);
@@ -637,7 +637,7 @@ int analyse_statement(Node *root) {
 	Node *exp = NULL, *exp2 = NULL, *exp3 = NULL;
 	Node *vardef = NULL, *stmt = NULL;
 	Node *stmt2 = NULL, *stmtlist = NULL;
-	switch(root->reduce_rule) {
+	switch(root->production) {
 		case AST_Stmt_is_Exp_SEMI:
 			exp = get_child_node_w(root, Exp);
 			analyse_expression(exp);
@@ -711,7 +711,7 @@ int analyse_statement(Node *root) {
 
 int analyse_function(Node *root, Spec *functype) {
 	if(root == NULL) return 0;
-	assert(root->reduce_rule == AST_Block_is_TypeSpec_FuncDec_CompSt);
+	assert(root->production == AST_Block_is_TypeSpec_FuncDec_CompSt);
 
 	push_barrier();
 	/*register function arguments*/
@@ -767,7 +767,7 @@ int semantic_analysis(Node *root)
 		Spec *type = NULL;
 		Node *idlist = NULL;
 		Node *block = get_child_node_w(blocklist, Block);
-		switch(block->reduce_rule) {
+		switch(block->production) {
 			case AST_Block_is_TypeSpec_FuncDec_CompSt:
 				type = register_type_function(get_child_node_w(block, FuncDec));
 				push_variable(block, get_child_node_dw(block, 2, FuncDec, ID)->idtype->cons.supval.st, type);

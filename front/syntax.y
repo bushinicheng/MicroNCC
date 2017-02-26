@@ -4,13 +4,13 @@
 int yylex();
 int yyerror(const char *str, ...);
 
-extern Node *astroot;
+extern node_t *astroot;
 %}
 
 %locations
 
 %union {
-	Node *pnd;
+	node_t *pnd;
 }
 
 %nonassoc LOWWER_THAN_ELSE

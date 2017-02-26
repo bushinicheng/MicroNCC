@@ -6,7 +6,7 @@ int init_ast();
 int init_spec();
 int init_seman();
 int init_lexical();
-void print_ast(Node *);
+void print_ast(node_t *);
 void yyrestart(FILE *);
 int semantic_analysis(void *root);
 

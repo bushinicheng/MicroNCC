@@ -540,16 +540,18 @@ static char* str_lexval[] = {
 
 #endif
 
-void __attribute__((noinline)) make_node(Node *root, int reduce_rule, int token, ...);
-Node* new_node();
-Node* new_sym_node(int lexval, YYLTYPE *yyinfo);
-Node* __attribute__((noinline)) build_subast(int nodetype, YYLTYPE *yyinfo, ...);
-Node* get_child_node_with_skip(Node *root, int token, int skip);
-Node* get_child_node(Node *root, int token);
-Node* get_child_node_with_skip_w(Node *root, int token, int skip);
-Node* get_child_node_w(Node *root, int token);
-Node* __attribute__((noinline))get_child_node_dw(Node *root, int depth, ...);
-Node* find_child_node(Node *root, int token);
-void print_ast(Node *root);
+void __attribute__((noinline)) make_node(node_t *root, int production, int token, ...);
+node_t* new_node();
+node_t* new_sym_node(int lexval, YYLTYPE *yyinfo);
+node_t* __attribute__((noinline)) build_subast(int nodetype, YYLTYPE *yyinfo, ...);
+node_t* get_child_node_with_skip(node_t *root, int token, int skip);
+node_t* get_child_node(node_t *root, int token);
+node_t* get_child_node_with_skip_w(node_t *root, int token, int skip);
+node_t* get_child_node_w(node_t *root, int token);
+node_t* __attribute__((noinline))get_child_node_dw(node_t *root, int depth, ...);
+node_t* find_child_node(node_t *root, int token);
+node_t* find_child_node_w(node_t *root, int token);
+void print_ast(node_t *root);
+int init_ast();
 
 #endif

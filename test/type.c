@@ -161,7 +161,7 @@ Spec *find_type_of_spec(Node *root) {
 	assert(root->token == TypeSpec);
 	char *struct_id = NULL;
 	
-	if(root->reduce_rule == AST_TypeSpec_is_CommonSpec) {
+	if(root->production == AST_TypeSpec_is_CommonSpec) {
 		switch(get_child_node_w(root, TypeSpec)->idtype->cons.suptype){
 			case CHAR:
 				return convert_btype_to_pointer(SpecTypeInt8, SpecLvalue);
@@ -350,7 +350,7 @@ Spec *register_type_function(Node *root) {
 	newspec->width = 0;
 	newspec->func.ret = find_type_of_spec(get_sibling_node_w(root, TypeSpec));
 
-	if(root->reduce_rule == AST_FuncDec_is_ID_LP_RP)
+	if(root->production == AST_FuncDec_is_ID_LP_RP)
 		return newspec;
 
 	//count up variable firstly
@@ -432,7 +432,7 @@ Spec *register_complex_var_with_type(Spec *type, Node *root, char **varname) {
 	newspec->comp.spec = type;
 	
 	//process star corresponding to `POINTER`
-	while(root->reduce_rule == AST_Decln_is_MULT_Decln) {
+	while(root->production == AST_Decln_is_MULT_Decln) {
 		newspec->comp.plevel ++;
 		root = get_child_node_w(root, Decln);
 	}
@@ -440,7 +440,7 @@ Spec *register_complex_var_with_type(Spec *type, Node *root, char **varname) {
 	//process dim corresponding to `Array`
 	newspec->comp.size = 0;
 	newspec->comp.dim = (size_t*)get_memory_pointer();
-	while(root->reduce_rule == AST_DirectDeclr_is_DirectDeclr_LB_Exp_RB) {
+	while(root->production == AST_DirectDeclr_is_DirectDeclr_LB_Exp_RB) {
 		int cur_dim = get_child_node_w(root, NUM)->idtype->cons.supval.i;
 		newspec->comp.dim[newspec->comp.size] = cur_dim;
 		newspec->width = newspec->width * cur_dim;
@@ -500,7 +500,7 @@ Spec *register_type_complex_var(Node *root, char **varname) {
 	Node *vardef = root;
 
 	//search upwards for the VarDef node to get type
-	while(vardef->reduce_rule != AST_Decln_is_DeclnSpec_InitorDeclrList_SEMI) {
+	while(vardef->production != AST_Decln_is_DeclnSpec_InitorDeclrList_SEMI) {
 		vardef = vardef->parent;
 	}
 	Spec *rawtype = find_type_of_spec(get_child_node_w(vardef, TypeSpec));

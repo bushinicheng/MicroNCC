@@ -1,14 +1,13 @@
-#include "vector.h"
 #include <time.h>
 
-void vector_init(Vector *v, size_t unit_size) {
+void vector_init(vec_t *v, size_t unit_size) {
 	v->ptr = 0;
 	v->unit_size = unit_size;
 	v->size = 128 * v->unit_size;
 	v->p = malloc(v->size);
 }
 
-void *vector_new(Vector *v) {
+void *vector_new(vec_t *v) {
 	if(!v->size) return NULL;
 	int oldptr = v->ptr;
 	if(v->ptr >= v->size) {
@@ -19,12 +18,12 @@ void *vector_new(Vector *v) {
 	return (v->p + oldptr);
 }
 
-void vector_push(Vector *v, void *t) {
+void vector_push(vec_t *v, void *t) {
 	void *p = vector_new(v);
 	memcpy(p, t, v->unit_size);
 }
 
-void *vector_pop(Vector *v) {
+void *vector_pop(vec_t *v) {
 	if(v->ptr > 0) {
 		v->ptr -= v->unit_size;
 		return (v->p + v->ptr);
@@ -33,12 +32,12 @@ void *vector_pop(Vector *v) {
 	}
 }
 
-void vector_resize(Vector *v, size_t size) {
+void vector_resize(vec_t *v, size_t size) {
 	v->size = v->unit_size * size;
 	v->p = realloc(v->p, v->size);
 }
 
-void vector_free(Vector *v) {
+void vector_free(vec_t *v) {
 	free(v->p);
 	v->size = 0;
 	v->ptr = 0;
@@ -49,7 +48,7 @@ int init_vector()
 #ifdef __DEBUG__
 	srand(time(NULL));
 	UNIT_TEST_START;
-	Vector v;
+	vec_t v;
 	const int test_size = 65536;
 	int ans[test_size], pans = 0, num;
 	vector_init(&v, sizeof(int));

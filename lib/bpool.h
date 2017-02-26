@@ -16,22 +16,22 @@
  * size, ptr
  */
 
-typedef struct MemPool {
+typedef struct mem_pool_t {
 	size_t unit_size;
 	off_t index_ptr;
 	off_t block_ptr;
 	size_t index_size;
 	size_t *bs;//block size array
 	void **p;//buffer
-} MemPool;
+} mem_pool_t;
 
 
 void *wt_alloc(size_t size);
 void *wt_realloc(void *ptr, size_t oldsize, size_t newsize);
-void mempool_init(MemPool *mp, size_t unit_size);
-void *mempool_new(MemPool *mp);
-size_t mempool_size(MemPool *mp);
-void *mempool_free(MemPool *mp);
+void mempool_init(mem_pool_t *mp, size_t unit_size);
+void *mempool_new(mem_pool_t *mp);
+size_t mempool_size(mem_pool_t *mp);
+void *mempool_free(mem_pool_t *mp);
 void *get_memory_pointer();
 void *require_memory(size_t size);
 char *strmul(char *str, int dup);

@@ -4,7 +4,7 @@ CFLAGS := -c -std=c11 -O2 -MMD -fno-builtin -fno-stack-protector -include common
 LDFLAGS := -r # -m elf_i386 -nostdlib
 OBJ_DIR := output
 COMPILER := $(OBJ_DIR)/MicroNCC
-# add your target here
+# add your module name here
 ALL_PARTS := front lib entry
 
 .PHONY: count run clean gdb $(ALL_PARTS)
@@ -24,10 +24,10 @@ $(COMPILER): $(foreach part,$(ALL_PARTS),$($(part)_PART_OBJ))
 	@$(CC) $^ -o $(COMPILER)
 
 gdb: $(COMPILER)
-	@gdb $(COMPILER)
+	@gdb --args $(COMPILER) $(TESTCASE)
 
 run: $(COMPILER)
-	@./$(COMPILER)
+	@./$(COMPILER) $(TESTCASE)
 
 clean:
 	rm -rf $(OBJ_DIR)
