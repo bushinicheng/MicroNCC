@@ -153,6 +153,14 @@ typedef struct exp_const_part_t{
 	};
 } exp_const_part_t;
 
+typedef struct uos_member_t {
+	char *id;//member name
+	off_t off;//offset in bits, for union
+			  //  it works only for anonymous struct
+	size_t w;//bits
+	struct type_t *dt;
+} uos_member_t;
+
 typedef struct type_t {
 	int bt;
 	int w;
@@ -180,13 +188,7 @@ typedef struct type_t {
 
 		struct {
 			char *id;//struct name
-			struct {
-				char *id;//member name
-				off_t off;//offset in bits, for union
-				          //  it works only for anonymous struct
-				size_t w;//bits
-				struct type_t *dt;
-			} *argv;
+			uos_member_t *argv;
 			size_t size;
 		} uos;//union or struct
 	};

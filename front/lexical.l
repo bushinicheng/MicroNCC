@@ -10,6 +10,9 @@ int fileno(FILE *stream);
 void increase_actionlevel();
 void decrease_actionlevel();
 
+#define YY_NO_UNPUT
+#define YY_NO_INPUT
+
 /*lexerr*/
 #define MAX_SIZE 1024
 

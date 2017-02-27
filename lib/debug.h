@@ -53,6 +53,15 @@ int yylog(FILE *fp, const char *tag, const char *format, ...);
 #define logd(...) do{}while(0)
 #endif
 
+#ifdef __DEBUG_LEVEL_2__
+#define logd2(...)  do {\
+	fprintf(stderr, "\033[" YYLOG_STYLE_NORMAL ";" YYLOG_COLOR_BLUE "m[DEBUG]\033[0m %s at %d: ", __FILE__, __LINE__);\
+	fprintf(stderr, __VA_ARGS__);\
+}while(0)
+#else
+#define logd2(...) do{}while(0)
+#endif
+
 #define logG(...) do { \
 	fprintf(stderr, "\033[" YYLOG_STYLE_NORMAL ";" YYLOG_COLOR_GREEN "m"); \
 	fprintf(stderr, __VA_ARGS__); \
@@ -140,6 +149,5 @@ __##info##_test_fail__: \
 
 #define UNIT_TEST_END \
 	__TEST_END__(unit);
-
 
 #endif

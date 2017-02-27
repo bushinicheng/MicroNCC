@@ -69,7 +69,7 @@ ident_info_t *find_variable(char *vn) {
 
 void analyse_decln_is_declnspec(node_t *root) {
 	//FIXME
-	node_t *declnspec = get_child_node_w(root, DeclnSpec);
+	//node_t *declnspec = get_child_node_w(root, DeclnSpec);
 	
 }
 
@@ -721,142 +721,173 @@ void analyse_paradecln_is_declnspec(node_t *root) {
 	root->dt = declnspec->dt;
 }
 
-off_t register_member_to_uos(type_t *dt, node_t *compdecln, off_t st, off_t *off) {
-	if(compdecln->production == AST_CompDecln_is_DeclnSpec_SEMI) {
-		node_t *declnspec = get_child_node_w(compdecln, DeclnSpec);
-		node_t *typespec = find_child_node_w(declnspec, TypeSpec);
-		if(typespec->production != AST_TypeSpec_is_CompSpec)
-			return 0;
-		//anonymous struct
-		//add member variables of compspec to dt
-		int maxw = 0;
-		node_t *compspec = get_child_node_w(typespec, CompSpec);
-		type_t *csdt = compspec->dt;
-		for(int i = 0; i < csdt->uos.size; i++) {
-			dt->uos.argv[st + i].id = csdt->uos.argv[i].id;
-			dt->uos.argv[st + i].off = *off + csdt->uos.argv[i].off;
-			dt->uos.argv[st + i].w = csdt->uos.argv[i].w;
-			dt->uos.argv[st + i].dt = csdt->uos.argv[i].dt;
-			if(csdt->uos.argv[i].w > maxw)
-				maxw = csdt->uos.argv[i].w;
-		}
-		*off = *off + maxw;
-		return st + csdt->uos.size;
-	}else{
-		int cnt = 0;
-		node_t *compdeclrlist = get_child_node_w(compdecln, CompDeclrList);
-		//traverse child node of compdeclrlist
-		int maxoff = *off;
-		while(compdeclrlist) {
-			node_t *compdeclr = get_child_node_w(compdeclrlist, CompDeclr);
-			node_t *declr = get_child_node(compdeclr, Declr);
-			node_t *exp = get_child_node(compdeclr, Exp);
-			dt->uos.argv[st + cnt].off = *off;
-			if(declr) {
-				dt->uos.argv[st + cnt].id = declr->cv.id;
-				dt->uos.argv[st + cnt].dt = declr->dt;
-			}
-			if(declr->dt->bt == SpecTypeUnion) {
-				logw("%s\n", uos_format(declr->dt));
-				logw("%d\n", declr->dt->w);
-			}
-			int declr_w = 0;
-			if(compdeclr->production == AST_CompDeclr_is_Declr) {
-				//int a;
-				dt->uos.argv[st + cnt].w = 8 * declr->dt->w;
-				declr_w = 8 * declr->dt->w;
-				cnt ++;
-			}else if(compdeclr->production == AST_CompDeclr_is_COLON_Exp) {
-				//int :2;
-				node_t *declnspec = get_child_node_w(compdecln, DeclnSpec);
-				int bt = declnspec->dt->bt;
-				if(!(get_type_relation(bt, bt) & CBitop)){
-					yyerr("error: bit-field '' has invalid type\n");
-					assert(0);
-				}else if(exp->cv._32 > declnspec->dt->w * 8) {
-					yyerr("error: bit-field width exceeds type width\n");
-					assert(0);
-				}
-				declr_w = exp->cv._32;
+size_t register_member_to_uos_declnspec(type_t *dt, node_t *compdecln) {
+	int top = dt->uos.size, off = 0;
+	bool is_union = (dt->bt == SpecTypeUnion);
+	node_t *declnspec = get_child_node_w(compdecln, DeclnSpec);
+	node_t *typespec = find_child_node_w(declnspec, TypeSpec);
+	uos_member_t *argv = &(dt->uos.argv[top]);
+	if(typespec->production != AST_TypeSpec_is_CompSpec)
+		return 0;
 
-			}else if(compdeclr->production == AST_CompDeclr_is_Declr_COLON_Exp) {
-				//int a:2;
-				//error: bitwise width exceeds type width
-				int bt = declr->dt->bt;
-				if(!(get_type_relation(bt, bt) & CBitop)){
-					yyerr("error: bit-field '' has invalid type\n");
-					assert(0);
-				}else if(exp->cv._32 > declr->dt->w * 8) {
-					yyerr("error: bit-field width exceeds type width\n");
-					assert(0);
-				}
-				dt->uos.argv[st + cnt].w = exp->cv._32;
-				declr_w = exp->cv._32;
-				cnt ++;
-			}
-			if(dt->bt == SpecTypeUnion) {
-				if(*off + declr_w > maxoff) {
-					maxoff = *off + declr_w;
-				}
-			}else{
-				maxoff += declr_w;
-			}
-			compdeclrlist = get_child_node(compdeclrlist, CompDeclrList);
+	if(dt->uos.size > 0) {
+		if(is_union) {
+			off = argv[-1].off;
+		}else{
+			off = argv[-1].off + argv[-1].w;
 		}
-		*off = maxoff;
-		return st + cnt;
+		logd2("top.off:%d, top.w:%d, off:%d\n", argv[-1].off, argv[-1].w, off);
+	}
+
+	//anonymous struct
+	//add member variables of compspec to dt
+	node_t *compspec = get_child_node_w(typespec, CompSpec);
+	type_t *ccdt = compspec->dt;
+	uos_member_t *cc_argv = ccdt->uos.argv;
+	for(int i = 0; i < ccdt->uos.size; i++) {
+		argv[i].id = cc_argv[i].id;
+		argv[i].off = off + cc_argv[i].off;
+		argv[i].w = cc_argv[i].w;
+		argv[i].dt = cc_argv[i].dt;
+	}
+	return ccdt->w;
+}
+
+size_t register_member_to_uos_compdeclr(type_t *dt, node_t *compdecln) {
+	int top = dt->uos.size, cnt = 0;
+	bool is_union = (dt->bt == SpecTypeUnion);
+	int declr_w = 0, max_w = 0, off = 0, base = 0;
+	uos_member_t *argv = &(dt->uos.argv[top]);
+	node_t *compdeclrlist = get_child_node_w(compdecln, CompDeclrList);
+	node_t *declnspec = get_child_node_w(compdecln, DeclnSpec);
+	int bt = declnspec->dt->bt;
+	if(dt->uos.size > 0) {
+		if(is_union) {
+			base = off = argv[-1].off;
+		}else{
+			base = off = argv[-1].off + argv[-1].w;
+		}
+		logd2("top.off=%d, top.w=%d, off=%d\n", argv[-1].off, argv[-1].w, off);
+	}else{
+		logd2("top=0, off=%d\n", off);
+	}
+
+	//traverse child node of compdeclrlist
+	while(compdeclrlist) {
+		node_t *compdeclr = get_child_node_w(compdeclrlist, CompDeclr);
+		node_t *declr = get_child_node(compdeclr, Declr);
+		node_t *exp = get_child_node(compdeclr, Exp);
+		argv[cnt].off = off;
+		argv[cnt].dt = compdeclr->dt;
+		argv[cnt].id = declr ? declr->cv.id : NULL;
+		switch(compdeclr->production) {
+		case AST_CompDeclr_is_Declr:
+			//int a;
+			argv[cnt].w = 8 * compdeclr->dt->w;
+			declr_w = 8 * compdeclr->dt->w;
+			break;
+		case AST_CompDeclr_is_COLON_Exp:
+			//int :2;
+			if(!(get_type_relation(bt, bt) & CBitop)){
+				yyerr("error: bit-field '' has invalid type\n");
+				assert(0);
+			}else if(exp->cv._32 > declnspec->dt->w * 8) {
+				yyerr("error: bit-field width exceeds type width\n");
+				assert(0);
+			}
+			argv[cnt].w = exp->cv._32;
+			declr_w = exp->cv._32;
+			break;
+		case AST_CompDeclr_is_Declr_COLON_Exp:
+			//int a:2;
+			//error: bitwise width exceeds type width
+			if(!(get_type_relation(bt, bt) & CBitop)){
+				yyerr("error: bit-field '' has invalid type\n");
+				assert(0);
+			}else if(exp->cv._32 > compdeclr->dt->w * 8) {
+				yyerr("error: bit-field width exceeds type width\n");
+				assert(0);
+			}
+			argv[cnt].w = exp->cv._32;
+			declr_w = exp->cv._32;
+			break;
+		}
+
+		cnt ++;
+		if(is_union) {
+			//union
+			if(declr_w > max_w) max_w = declr_w;
+		}else{
+			off += declr_w;
+		}
+		compdeclrlist = get_child_node(compdeclrlist, CompDeclrList);
+	}
+	logd2("off=%d, declr_w=%d, max_w=%d, base=%d\n", off, declr_w, max_w, base);
+	off = (is_union) ? max_w : off;
+	return off - base;
+}
+
+size_t register_member_to_uos(type_t *dt, node_t *compdecln) {
+	if(compdecln->production == AST_CompDecln_is_DeclnSpec_SEMI) {
+		return register_member_to_uos_declnspec(dt, compdecln);
+	}else{
+		return register_member_to_uos_compdeclr(dt, compdecln);
 	}
 }
 
-void analyse_compspec(node_t *root) {
-	/*backfill offset and size of each member id by comptype's
-	 *  information(struct or union)
-	 *
-	 * inner struct decl
-	 *   struct A {
-	 *       struct B {int a, b;};
-	 *       struct B x;
-	 *           // ^ inner struct decl and can be used in
-	 *           //     this struct scope
-	 *       int y;
-	 *   };
-	 *
-	 * need information of numbers of member variable,
-	 * which stored in cv.cnt
-	 *
-	 * CompSpec -> CompType ID LC CompDeclnList RC
-	 *          -> CompType LC CompDeclnList RC
-	 *          -> CompType ID
-	 **/
-	int cnt = 0, off = 0;
+void analyse_compspec_is_comptype_id(node_t *root) {
+	//TODO: transmit type by ID
+	assert(0);
+	printf("line %d: warning:\n", root->lineno);
+}
+
+void analyse_compspec_is_compdeclnlist(node_t *root) {
+	int off = 0, max_w = 0, decln_w;
 	type_t *stdt = new_spec();
+	/*set root->dt*/
 	root->dt = stdt;
+
+	/* get CompType */
 	node_t *comptype = get_child_node_w(root, CompType);
-	stdt->bt = (comptype->child->token == STRUCT) ? SpecTypeStruct : SpecTypeUnion;
-	if(root->production == AST_CompSpec_is_CompType_ID) {
-		//TODO: transmit type by ID
-		assert(0);
-		printf("line %d: warning:\n", root->lineno);
-	}else{
-		node_t *compdeclnlist = get_child_node_w(root, CompDeclnList);
-		stdt->uos.size = compdeclnlist->cv.cnt;
-		stdt->uos.argv = malloc(sizeof(stdt->uos.argv[0]) * stdt->uos.size);
-		//FIXME: round address to times of 4
-		int base = off, maxoff = 0;
-		while(compdeclnlist) {
-			node_t *compdecln = get_child_node_w(compdeclnlist, CompDecln);
-			cnt = register_member_to_uos(stdt, compdecln, cnt, &off);
-			compdeclnlist = get_child_node(compdeclnlist, CompDeclnList);
+
+	/* flag of union */
+	bool is_union = (comptype->child->token == UNION);
+
+	/* set bt */
+	stdt->bt = (is_union) ? SpecTypeUnion : SpecTypeStruct;
+
+	/* get CompDeclnList child node */
+	node_t *compdeclnlist = get_child_node_w(root, CompDeclnList);
+
+	/*record number of member variable*/
+	int memid_n = compdeclnlist->cv.cnt;
+
+	/* alloc memory for type `stdt->uos.argv` */
+	stdt->uos.argv = malloc(sizeof(uos_member_t) * memid_n);
+
+	//FIXME: round address to times of 4
+	while(compdeclnlist) {
+		node_t *compdecln = get_child_node_w(compdeclnlist, CompDecln);
+		decln_w = register_member_to_uos(stdt, compdecln);
+		logd2("decln_w=%d\n", decln_w);
+		compdeclnlist = get_child_node(compdeclnlist, CompDeclnList);
+		stdt->uos.size += compdecln->cv.cnt;
+		if(is_union) {
 			//for union
-			if(off > maxoff) maxoff = off;
-			if(comptype->child->token == UNION) off = base;
+			if(decln_w > max_w)
+				max_w = decln_w;
+		}else{
+			off += decln_w;
 		}
-		off = maxoff;
-		stdt->w = ((off + 7) >> 3);
-		node_t *idnode = get_child_node(root, ID);
-		if(idnode) stdt->uos.id = idnode->cv.id;
-		assert(cnt == stdt->uos.size);
+		logw("off=%d\n", off);
 	}
+	off = ((is_union) ? max_w : off);
+	logd2("max_w=%d, decln_w=%d, off=%d\n", max_w, decln_w, off);
+	stdt->w = ((off + 7) >> 3);
+	node_t *idnode = get_child_node(root, ID);
+	if(idnode) stdt->uos.id = idnode->cv.id;
+	logd2("uos.size=%d, cv.cnt=%d\n", stdt->uos.size, memid_n);
+	assert(stdt->uos.size == memid_n);
 }
 
 /* compdeclnlist, compdecln, compdeclrlist, compdeclr
@@ -923,10 +954,8 @@ void analyse_compdecln_is_declnspec_compdeclrlist(node_t *root) {
 	//backfill
 	while(compdeclrlist) {
 		node_t *compdeclr = get_child_node_w(compdeclrlist, CompDeclr);
-		node_t *declr = get_child_node(compdeclr, Declr);
 		//omit case: COLON Exp
-		if(declr)
-			backfill_declr_datatype(declnspec, declr);
+		backfill_declr_datatype(declnspec, compdeclr);
 		compdeclrlist = get_child_node(compdeclrlist, CompDeclrList);
 	}
 }
@@ -949,6 +978,8 @@ void analyse_compdeclr_is_declr(node_t *root) {
 }
 
 void analyse_compdeclr_is_colon_exp(node_t *root) {
+	root->dt = convert_btype_to_pointer(SpecTypeUnknown);
+	root->cv.cnt = 1;
 }
 
 void analyse_compdeclr_is_declr_colon_exp(node_t *root) {
@@ -1109,9 +1140,9 @@ static SemanFunc analyse_function[] = {
 	[AST_ParaDecln_is_DeclnSpec_Declr] = analyse_paradecln_is_declnspec_declr,
 	[AST_ParaDecln_is_DeclnSpec_AbstDeclr] = analyse_paradecln_is_declnspec_abstdeclr,
 	[AST_ParaDecln_is_DeclnSpec] = analyse_paradecln_is_declnspec,
-	[AST_CompSpec_is_CompType_ID_LC_CompDeclnList_RC] = analyse_compspec,
-	[AST_CompSpec_is_CompType_LC_CompDeclnList_RC] = analyse_compspec,
-	[AST_CompSpec_is_CompType_ID] = analyse_compspec,
+	[AST_CompSpec_is_CompType_ID_LC_CompDeclnList_RC] = analyse_compspec_is_compdeclnlist,
+	[AST_CompSpec_is_CompType_LC_CompDeclnList_RC] = analyse_compspec_is_compdeclnlist,
+	[AST_CompSpec_is_CompType_ID] = analyse_compspec_is_comptype_id,
 	[AST_CompDeclnList_is_CompDecln_CompDeclnList] = analyse_compdeclnlist_is_compdeclnlist_compdecln,
 	[AST_CompDeclnList_is_CompDecln] = analyse_compdeclnlist_is_compdecln,
 	[AST_CompDecln_is_DeclnSpec_SEMI] = analyse_compdecln_is_declnspec,
@@ -1173,15 +1204,16 @@ int init_seman() {
 		const char *format_string;
 	} test_case[] = {
 		//{DeclnSpec, "struct{int (*func)(int, int);int b;};", "void"},
-		//{CompSpec, "struct A {int a, b;};", "<>"},
-		//{CompSpec, "union {int a;int b;};", "union {\n int32_t a:0:32, b:0:32;\n}"},
-		//{CompSpec, "union {int a, b;};", "union {\n int32_t a:0:32, b:0:32;\n}"},
-		//{CompSpec, "union {int a, b:8, c; int d, e;};", "union {\n int32_t a:0:32, b:0:8, c:0:32, d:0:32, e:0:32;\n}"},
-		//{CompSpec, "struct {union {int a, b;}; int y;}x;", "struct {\n int32_t a:0:32, b:0:32, y:32:32;\n}"},
-		{CompSpec, "struct {struct {int a;} x; int y;}x;", "struct {\n int32_t a:0:32, b:0:32, y:32:32;\n}"},
-		{CompSpec, "struct {union {int a, b;} x; int y;}x;", "struct {\n int32_t a:0:32, b:0:32, y:32:32;\n}"},
-		{CompSpec, "struct A {int a:8, :8;union{struct{int8_t x:8;} b;int8_t y;} y; int b;};", "struct {\nint32_t a:0:8;\nchar x:16:8;\nchar y:16:8;\nint32_t b:24:32;\n};"},
-		{CompSpec, "struct A {int a:8, :8;union{struct{int8_t x;};int8_t y;}; int b;};", "struct {int a; int b;}"},
+		{CompSpec, "struct A {int a, b;};", "struct:8 {\n  int32_t a:0:32, b:32:32;\n}"},
+		{CompSpec, "union {int a;int b;};", "union:4 {\n  int32_t a:0:32, b:0:32;\n}"},
+		{CompSpec, "union {int a, b;};", "union:4 {\n  int32_t a:0:32, b:0:32;\n}"},
+		{CompSpec, "union {int a, b:8, c; int d, e;};", "union:4 {\n  int32_t a:0:32, b:0:8, c:0:32, d:0:32, e:0:32;\n}"},
+		{CompSpec, "struct {union {int a, b;}; int y;}x;", "struct:5 {\n  int32_t a:0:32, b:0:32, y:32:32;\n}"},
+		{CompSpec, "struct {union {int a; int b;}; int y;}x;", "struct:5 {\n  int32_t a:0:32, b:0:32, y:32:32;\n}"},
+		{CompSpec, "struct {struct {int a, b;} x, p; int y;}x;", "struct:20 {\n  struct:8 {\n    int32_t a:0:32, b:32:32;\n  } x:0:64, p:64:64;\n  int32_t y:128:32;\n}"},
+		{CompSpec, "struct {union {int a, b;} x; int y;}x;", "struct:8 {\n  union:4 {\n    int32_t a:0:32, b:0:32;\n  } x:0:32;\n  int32_t y:32:32;\n}"},
+		{CompSpec, "struct A {int a:8, :8;union{struct{int8_t x:8;} b;int8_t y;} y; int b;};", "struct:7 {\n  int32_t a:0:8, (null):8:8;\n  union:1 {\n    struct:1 {\n      char x:0:8;\n    } b:0:8;\n    char y:0:8;\n  } y:16:8;\n  int32_t b:24:32;\n}"},
+		{CompSpec, "struct A {int a:8, :8;union{struct{int8_t x;};int8_t y;}; int b;};", "struct:7 {\n  int32_t a:0:8, (null):8:8;\n  char x:16:8, y:16:8;\n  int32_t b:24:32;\n}"},
 		/*
 		{DeclnSpec, "void a;", "void"},
 		{DeclnSpec, "long long a;", "int64_t"},

@@ -241,17 +241,19 @@ char *type_format(type_t *type) {
 
 char *uos_format(type_t *type) {
 	static int call_depth = 0;
+	char *tab = strmul(" ", 2 * call_depth);
 	if(!type) return "<NullType>";
 	if(type->bt == SpecTypeStruct
 	|| type->bt == SpecTypeUnion) {
-		char *tab = strmul(" ", 2 * call_depth);
 		char *buf = get_memory_pointer();
+		bool is_union = (type->bt == SpecTypeStruct);
 		strcpy(buf, tab);
-		strcat(buf, (type->bt == SpecTypeStruct) ? "struct {\n" : "union {\n");
+		sprintf(buf + strlen(buf), "%s:%d {\n",
+				is_union ? "struct" : "union",
+				type->w);
 		call_depth ++;
 		type_t *old_type = NULL;
 		for(int i = 0; i < type->uos.size; i++) {
-			int len = strlen(buf);
 			push_bpool_state(strlen(buf) + 1);
 			char *uos_type = uos_format(type->uos.argv[i].dt);
 			pop_bpool_state();
@@ -271,12 +273,12 @@ char *uos_format(type_t *type) {
 		strcat(buf, ";\n");
 		strcat(buf, tab);
 		strcat(buf, "}");
-		free(tab);
-		logw("%s\n", buf);
 		return require_memory(strlen(buf) + 1);
 	}else{
-		return sformat("%s%s", strmul(" ", call_depth * 2), type_format(type));
+		char *type_s = type_format(type);
+		return sformat("%s%s", tab, type_s);
 	}
+	free(tab);
 }
 
 /* function:

@@ -102,25 +102,34 @@ void mempool_free(mem_pool_t *mp) {
  *    require_memory
  * 0--/
  */
+
 void *get_memory_pointer() {
 	if(toggle_caller_state != 0 && toggle_caller_state != 2) {
 		logw("state:%d, some function else has hold the memptr\n", toggle_caller_state);
 	}
+#ifdef __DEBUG_BPOOL__
+	logd2("%s, ptr: %d.\n", __func__, ptr);
+#endif
 	toggle_caller_state = 1;
 	return &bpool[ptr];
 }
 
 void push_bpool_state(off_t op) {
 	toggle_caller_state = 2;
+#ifdef __DEBUG_BPOOL__
+	logd2("%s, ptr: %d --> %d.\n", __func__, ptr, ptr + op);
+#endif
 	vector_push(&bpool_state_stack, &ptr);
-	off_t *p = vector_top(&bpool_state_stack);
-	ptr = p[0] + op;
+	ptr = ptr + op;
 }
 
 void pop_bpool_state() {
 	int *p = vector_pop(&bpool_state_stack);
 	if(!p) loge("bpool state stack should not be empty.\n");
 	toggle_caller_state = 3;
+#ifdef __DEBUG_BPOOL__
+	logd2("%s, ptr: %d --> %d.\n", __func__, ptr, p[0]);
+#endif
 	ptr = p[0];
 }
 
@@ -128,6 +137,9 @@ void *require_memory(size_t size) {
 	toggle_caller_state = 0;
 	if(!size) return NULL;
 	void *ret = malloc(size);
+#ifdef __DEBUG_BPOOL__
+	logd2("%s, ptr:%d, size %d.\n", __func__, ptr, size);
+#endif
 	memcpy(ret, &bpool[ptr], size);
 	assert(ptr + size <= POOL_SIZE);
 	return ret;

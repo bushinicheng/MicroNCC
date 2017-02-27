@@ -30,13 +30,13 @@ char *sformat_t(const char *format, ...) {
  */
 char *strmul(char *str, int dup) {
 	int len = strlen(str);
-	char *p = get_memory_pointer();
+	char *p = malloc(len * dup + 1), *base = p;
 	p[0] = 0;
 	for(int i = 0; i < dup; i++) {
 		strcpy(p, str);
 		p += len;
 	}
-	return require_memory(len * dup + 1);
+	return base;
 }
 
 /*

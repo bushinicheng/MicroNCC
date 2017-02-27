@@ -1,6 +1,6 @@
 CC := gcc
 LD := ld
-CFLAGS := -c -std=c11 -O2 -ggdb -MMD -fno-builtin -fno-stack-protector -include common.h # -m32
+CFLAGS := -c -std=c11 -O2 -Wall -ggdb -MMD -fno-builtin -fno-stack-protector -include common.h # -m32
 LDFLAGS := -r # -m elf_i386 -nostdlib
 OBJ_DIR := output
 COMPILER := $(OBJ_DIR)/MicroNCC
@@ -31,3 +31,7 @@ run: $(COMPILER)
 
 clean:
 	rm -rf $(OBJ_DIR)
+
+count:
+	@printf "total lines: "
+	@find . -name "*.c" -or -name "*.h" | sed "s/\(.\/test.*\|.\/front\/lexical.c\|.\/front\/syntax.c\|.\/front\/syntax.h\)//g" | xargs cat | wc -l
