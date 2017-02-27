@@ -14,8 +14,13 @@ typedef struct hash_table_t {
 	hash_element_t *pool[HASH_SIZE];
 } hash_table_t;
 
+/* init a hash table */
 void hash_init(hash_table_t *ht);
+
+/* push a element into hash table */
 void hash_push(hash_table_t *ht, uint8_t *keybuf, size_t size, void *value);
+
+/* find element from hash table */
 void *hash_get(hash_table_t *ht, uint8_t *keybuf, size_t size);
 
 #endif

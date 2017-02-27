@@ -5,7 +5,6 @@
 //#define YYDEBUG 1
 
 int __attribute__((noinline)) set_break();
-char *sformat(const char *format, ...);
 
 /*output style*/
 #define YYLOG_STYLE_NORMAL    "0"
@@ -102,7 +101,6 @@ int yylog(FILE *fp, const char *tag, const char *format, ...);
 	}
 
 #define __TEST_END__(info) \
-__##info##_test_end__: \
 	logG("PASS"); \
 __##info##_test_fail__: \
 	logG("\n");

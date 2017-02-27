@@ -240,4 +240,5 @@ void print_ast(node_t *root) {
 
 int init_ast() {
 	mempool_init(&ndpool, sizeof(node_t));
+	return 0;
 }

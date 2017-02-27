@@ -38,7 +38,7 @@ void push_variable(char *vn, type_t *type, node_t *node) {
 	ve->vi = vi;
 	ve->cv = &(node->cv);
 	node->vi = vi;
-	hash_push(&ht[actionlevel - 1], vn, strlen(vn), ve);
+	hash_push(&ht[actionlevel - 1], (void*)vn, strlen(vn), ve);
 }
 
 void increase_actionlevel() {
@@ -59,7 +59,7 @@ ident_info_t *find_variable(char *vn) {
 	 */
 	hash_table_t *ht = asv.p;
 	for(int i = actionlevel - 1; i >= 0; i--) {
-		ident_info_t *ve = hash_get(&ht[i], vn, strlen(vn));
+		ident_info_t *ve = hash_get(&ht[i], (void*)vn, strlen(vn));
 		if(ve) return ve;
 	}
 	return NULL;
@@ -467,7 +467,6 @@ void analyse_directdeclr_is_self_index(node_t *root) {
 	//array
 	//DirectDeclr -> DirectDeclr LB Exp RB
 	//FIXME: record size of array
-	node_t *exp = get_child_node_w(root, Exp);
 	node_t *directdeclr = get_child_node_w(root, DirectDeclr);
 	root->cv.id = directdeclr->cv.id;//transmit id
 	root->dt = combine_array_type_of_directdeclr(directdeclr->dt,
@@ -735,7 +734,7 @@ off_t register_member_to_uos(type_t *dt, node_t *compdecln, off_t st, off_t *off
 		type_t *csdt = compspec->dt;
 		for(int i = 0; i < csdt->uos.size; i++) {
 			dt->uos.argv[st + i].id = csdt->uos.argv[i].id;
-			dt->uos.argv[st + i].off = *off + 8 * csdt->uos.argv[i].off;
+			dt->uos.argv[st + i].off = *off + csdt->uos.argv[i].off;
 			dt->uos.argv[st + i].w = csdt->uos.argv[i].w;
 			dt->uos.argv[st + i].dt = csdt->uos.argv[i].dt;
 			if(csdt->uos.argv[i].w > maxw)
@@ -747,6 +746,7 @@ off_t register_member_to_uos(type_t *dt, node_t *compdecln, off_t st, off_t *off
 		int cnt = 0;
 		node_t *compdeclrlist = get_child_node_w(compdecln, CompDeclrList);
 		//traverse child node of compdeclrlist
+		int maxoff = *off;
 		while(compdeclrlist) {
 			node_t *compdeclr = get_child_node_w(compdeclrlist, CompDeclr);
 			node_t *declr = get_child_node(compdeclr, Declr);
@@ -756,23 +756,54 @@ off_t register_member_to_uos(type_t *dt, node_t *compdecln, off_t st, off_t *off
 				dt->uos.argv[st + cnt].id = declr->cv.id;
 				dt->uos.argv[st + cnt].dt = declr->dt;
 			}
+			if(declr->dt->bt == SpecTypeUnion) {
+				logw("%s\n", uos_format(declr->dt));
+				logw("%d\n", declr->dt->w);
+			}
+			int declr_w = 0;
 			if(compdeclr->production == AST_CompDeclr_is_Declr) {
 				//int a;
 				dt->uos.argv[st + cnt].w = 8 * declr->dt->w;
-				*off += 8 * declr->dt->w;
+				declr_w = 8 * declr->dt->w;
 				cnt ++;
 			}else if(compdeclr->production == AST_CompDeclr_is_COLON_Exp) {
 				//int :2;
-				*off += exp->cv._32;
+				node_t *declnspec = get_child_node_w(compdecln, DeclnSpec);
+				int bt = declnspec->dt->bt;
+				if(!(get_type_relation(bt, bt) & CBitop)){
+					yyerr("error: bit-field '' has invalid type\n");
+					assert(0);
+				}else if(exp->cv._32 > declnspec->dt->w * 8) {
+					yyerr("error: bit-field width exceeds type width\n");
+					assert(0);
+				}
+				declr_w = exp->cv._32;
 
 			}else if(compdeclr->production == AST_CompDeclr_is_Declr_COLON_Exp) {
 				//int a:2;
+				//error: bitwise width exceeds type width
+				int bt = declr->dt->bt;
+				if(!(get_type_relation(bt, bt) & CBitop)){
+					yyerr("error: bit-field '' has invalid type\n");
+					assert(0);
+				}else if(exp->cv._32 > declr->dt->w * 8) {
+					yyerr("error: bit-field width exceeds type width\n");
+					assert(0);
+				}
 				dt->uos.argv[st + cnt].w = exp->cv._32;
-				*off += exp->cv._32;
+				declr_w = exp->cv._32;
 				cnt ++;
+			}
+			if(dt->bt == SpecTypeUnion) {
+				if(*off + declr_w > maxoff) {
+					maxoff = *off + declr_w;
+				}
+			}else{
+				maxoff += declr_w;
 			}
 			compdeclrlist = get_child_node(compdeclrlist, CompDeclrList);
 		}
+		*off = maxoff;
 		return st + cnt;
 	}
 }
@@ -809,15 +840,19 @@ void analyse_compspec(node_t *root) {
 	}else{
 		node_t *compdeclnlist = get_child_node_w(root, CompDeclnList);
 		stdt->uos.size = compdeclnlist->cv.cnt;
-		//FIXME malloc memory not be zero
-		if(stdt->uos.size) {
-			stdt->uos.argv = malloc(sizeof(stdt->uos.argv[0]) * stdt->uos.size);
-		}
+		stdt->uos.argv = malloc(sizeof(stdt->uos.argv[0]) * stdt->uos.size);
+		//FIXME: round address to times of 4
+		int base = off, maxoff = 0;
 		while(compdeclnlist) {
 			node_t *compdecln = get_child_node_w(compdeclnlist, CompDecln);
 			cnt = register_member_to_uos(stdt, compdecln, cnt, &off);
 			compdeclnlist = get_child_node(compdeclnlist, CompDeclnList);
+			//for union
+			if(off > maxoff) maxoff = off;
+			if(comptype->child->token == UNION) off = base;
 		}
+		off = maxoff;
+		stdt->w = ((off + 7) >> 3);
 		node_t *idnode = get_child_node(root, ID);
 		if(idnode) stdt->uos.id = idnode->cv.id;
 		assert(cnt == stdt->uos.size);
@@ -1115,7 +1150,6 @@ void free_seman() {
 }
 
 void scan_from_string(const char *string) {
-	extern node_t *astroot;
 	void yylex_destroy();
 	void *yy_scan_string(const char *);
 	void yy_switch_to_buffer(void *);
@@ -1139,7 +1173,15 @@ int init_seman() {
 		const char *format_string;
 	} test_case[] = {
 		//{DeclnSpec, "struct{int (*func)(int, int);int b;};", "void"},
-		{CompSpec, "struct A {int a:8, :8;union{struct{int x;};int y;}; int b;};", "struct {int a; int b;}"},
+		//{CompSpec, "struct A {int a, b;};", "<>"},
+		//{CompSpec, "union {int a;int b;};", "union {\n int32_t a:0:32, b:0:32;\n}"},
+		//{CompSpec, "union {int a, b;};", "union {\n int32_t a:0:32, b:0:32;\n}"},
+		//{CompSpec, "union {int a, b:8, c; int d, e;};", "union {\n int32_t a:0:32, b:0:8, c:0:32, d:0:32, e:0:32;\n}"},
+		//{CompSpec, "struct {union {int a, b;}; int y;}x;", "struct {\n int32_t a:0:32, b:0:32, y:32:32;\n}"},
+		{CompSpec, "struct {struct {int a;} x; int y;}x;", "struct {\n int32_t a:0:32, b:0:32, y:32:32;\n}"},
+		{CompSpec, "struct {union {int a, b;} x; int y;}x;", "struct {\n int32_t a:0:32, b:0:32, y:32:32;\n}"},
+		{CompSpec, "struct A {int a:8, :8;union{struct{int8_t x:8;} b;int8_t y;} y; int b;};", "struct {\nint32_t a:0:8;\nchar x:16:8;\nchar y:16:8;\nint32_t b:24:32;\n};"},
+		{CompSpec, "struct A {int a:8, :8;union{struct{int8_t x;};int8_t y;}; int b;};", "struct {int a; int b;}"},
 		/*
 		{DeclnSpec, "void a;", "void"},
 		{DeclnSpec, "long long a;", "int64_t"},
@@ -1185,6 +1227,6 @@ int init_seman() {
 		UNIT_TEST_STR_EQUAL(test_case[i].format_string, sol);
 	}
 	UNIT_TEST_END;
-	exit(0);
+	assert(0);
 #endif
 }

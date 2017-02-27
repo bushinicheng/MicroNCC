@@ -240,23 +240,42 @@ char *type_format(type_t *type) {
 }
 
 char *uos_format(type_t *type) {
+	static int call_depth = 0;
 	if(!type) return "<NullType>";
 	if(type->bt == SpecTypeStruct
 	|| type->bt == SpecTypeUnion) {
+		char *tab = strmul(" ", 2 * call_depth);
 		char *buf = get_memory_pointer();
-		strcpy(buf, (type->bt == SpecTypeStruct) ? "struct {\n" : "union {\n");
+		strcpy(buf, tab);
+		strcat(buf, (type->bt == SpecTypeStruct) ? "struct {\n" : "union {\n");
+		call_depth ++;
+		type_t *old_type = NULL;
 		for(int i = 0; i < type->uos.size; i++) {
+			int len = strlen(buf);
 			push_bpool_state(strlen(buf) + 1);
 			char *uos_type = uos_format(type->uos.argv[i].dt);
 			pop_bpool_state();
-			sprintf(buf + strlen(buf), "%s %s:%d:%d;\n",
-					uos_type, type->uos.argv[i].id,
+			if(type->uos.argv[i].dt != old_type) {
+				char *pre_s = ((i == 0) ? "" : ";\n");
+				sprintf(buf + strlen(buf), "%s%s %s:%d:%d",
+					pre_s, uos_type, type->uos.argv[i].id,
 					type->uos.argv[i].off, type->uos.argv[i].w);
+			}else{
+				sprintf(buf + strlen(buf), ", %s:%d:%d",
+					type->uos.argv[i].id,
+					type->uos.argv[i].off, type->uos.argv[i].w);
+			}
+			old_type = type->uos.argv[i].dt;
 		}
-		strcat(buf, "};");
+		call_depth --;
+		strcat(buf, ";\n");
+		strcat(buf, tab);
+		strcat(buf, "}");
+		free(tab);
+		logw("%s\n", buf);
 		return require_memory(strlen(buf) + 1);
 	}else{
-		return type_format(type);
+		return sformat("%s%s", strmul(" ", call_depth * 2), type_format(type));
 	}
 }
 

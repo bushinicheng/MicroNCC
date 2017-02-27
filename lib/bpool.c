@@ -80,7 +80,7 @@ void *mempool_new(mem_pool_t *mp) {
 	}
 }
 
-void *mempool_free(mem_pool_t *mp) {
+void mempool_free(mem_pool_t *mp) {
 	for(int i = 0; i < mp->index_size; i++) {
 		if(mp->p[i]) free(mp->p[i]);
 	}
@@ -113,7 +113,8 @@ void *get_memory_pointer() {
 void push_bpool_state(off_t op) {
 	toggle_caller_state = 2;
 	vector_push(&bpool_state_stack, &ptr);
-	ptr = op;
+	off_t *p = vector_top(&bpool_state_stack);
+	ptr = p[0] + op;
 }
 
 void pop_bpool_state() {
@@ -130,49 +131,6 @@ void *require_memory(size_t size) {
 	memcpy(ret, &bpool[ptr], size);
 	assert(ptr + size <= POOL_SIZE);
 	return ret;
-}
-
-char *strmul(char *str, int dup) {
-	int len = strlen(str);
-	char *ret = get_memory_pointer();
-	char *p = ret;
-	for(int i = 0; i < dup; i++) {
-		strcpy(p, str);
-		p += len;
-	}
-	return require_memory(len * dup + 1);
-}
-
-char *strjoin(char **strlist, int size, char *delim) {
-	char *ret = get_memory_pointer();
-	char *p = ret;
-	int delimlen = strlen(delim);
-	for(int i = 0; i < size; i++) {
-		strcpy(p, strlist[i]);
-		p += strlen(strlist[i]);
-		if(i != size - 1) {
-			strcpy(p, delim);
-			p += delimlen;
-		}
-	}
-	return require_memory((size_t)p - (size_t)ret + 1);
-}
-
-int strcnt(const char *strin, char ch) {
-	int ret = 0;
-	char *p = (char*)strin;
-	do{ret+=(*p==ch);}while(*p++);
-	return ret;
-}
-
-char *strseek(const char *strin, char ch) {
-	while(*strin && *strin != ch) {
-		strin ++;
-	}
-	if(*strin == ch)
-		return (char *)strin;
-	else
-		return NULL;
 }
 
 int init_bpool() {
@@ -194,4 +152,5 @@ int init_bpool() {
 	mempool_free(&mp);
 	UNIT_TEST_END;
 #endif
+	return 0;
 }

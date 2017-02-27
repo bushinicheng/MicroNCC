@@ -56,4 +56,5 @@ int init_front() {
 	if(is_print_ast) print_ast(astroot);
 	if(fp && fp != stdin) fclose(fp);
 #endif
+	return 0;
 }

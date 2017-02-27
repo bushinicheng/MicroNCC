@@ -32,6 +32,14 @@ void *vector_pop(vec_t *v) {
 	}
 }
 
+void *vector_top(vec_t *v) {
+	if(v->ptr > 0) {
+		return (v->p + v->ptr);
+	}else{
+		return NULL;
+	}
+}
+
 void vector_resize(vec_t *v, size_t size) {
 	v->size = v->unit_size * size;
 	v->p = realloc(v->p, v->size);

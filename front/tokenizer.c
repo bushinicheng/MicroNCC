@@ -16,11 +16,3 @@ struct {
 	FILE *fp;
 	char *str;
 } wt_buffer;
-
-/*extract next char from current buffer*/
-int next() {
-}
-
-/*manual KMP*/
-int wt_tokenizer() {
-}

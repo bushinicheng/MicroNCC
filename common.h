@@ -30,6 +30,7 @@ typedef unsigned char bool;
 #include "lib/debug.h"
 #include "lib/vector.h"
 #include "lib/bpool.h"
+#include "lib/strop.h"
 #include "lib/hash.h"
 #include "entry/opt.h"
 

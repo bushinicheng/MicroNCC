@@ -37,29 +37,6 @@ static const char *ErrorReason[] = {
 	[ErrorUndeclaredIdentifier] = "line %d: error: use of undeclared identifier '%s'.",
 };
 
-char *sformat(const char *format, ...) {
-	char *ret_str = (char *)get_memory_pointer();
-	va_list ap;
-	va_start(ap, format);
-	int len = vsprintf(ret_str, format, ap);
-	return (char *)require_memory(len + 1);
-}
-
-/* function:
- *		return a format string which stored in temporary buffer
- * It dont't guarantee the timeliness of return string.
- * What can be ensure is that the memory will not be change
- * until the next call of get_memory_pointer
- * */
-char *stformat(const char *format, ...) {
-	char *ret_str = (char *)get_memory_pointer();
-	va_list ap;
-	va_start(ap, format);
-	int len = vsprintf(ret_str, format, ap);
-	push_bpool_state(len + 1);
-	return ret_str;
-}
-
 int yydbg(int lineno, int column, int tokenlen, enum ErrorType errortype)
 {
 	extern char yylinetext[1024];
@@ -82,7 +59,6 @@ int yyerr(const char *format, ...)
 {
 	int done;
 	va_list arg;
-	extern int curlineno;
 	va_start(arg, format);
 	done = vfprintf(stderr, format, arg);
 	va_end(arg);
@@ -92,7 +68,6 @@ int yyerr(const char *format, ...)
 int yyerrtype(int errortype, ...) {
 	int done;
 	va_list arg;
-	extern int curlineno;
 	is_syntax_error = true;
 	last_syntax_error = errortype;
 	va_start(arg, errortype);

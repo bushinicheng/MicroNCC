@@ -215,14 +215,26 @@ typedef struct node_t {
 	int lineno, column;
 } node_t;
 
+/* function alloc a new type descriptor */
 type_t *new_spec();
+
+/* function return a string formating the type descriptor*/
 char *type_format(type_t *type);
+/* similar to `type_format`, plus the function format struct */
 char *uos_format(type_t *type);
+
+/* return type relation of given two types */
 int get_type_relation(int btA, int btB);
+
+/* return a pointer point to a type decriptor with bt `btype` */
 type_t *convert_btype_to_pointer(uint32_t btype);
+
+/* covert combine-type to `bt` */
 int convert_ctype2type(int ct);
 
 typedef void (*SemanFunc)(node_t *);
+
+/* analyse syntax of a single production */
 void syntax_analysis(node_t *root);
 
 #endif
