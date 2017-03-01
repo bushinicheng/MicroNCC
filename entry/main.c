@@ -56,7 +56,7 @@ char *dumps_argv(int argc, char *argv[]) {
 
 void print_help_information() {
 	const char help[] = \
-	"Usage: make [options] [files]\n"
+	"Usage: MicroNCC [options] [files]\n"
 	"Options:\n"
 	"  --print-syntax-tree  Print the syntax tree of source code\n"
 	"  --print-reduce-step  Print reduce step while reducing\n"
@@ -102,12 +102,15 @@ void load_opt(int argc, char *argv[]) {
 			}else{
 				//files
 				match_state = 2;
-				vector_push(&cmd_files, argv[i]);
 			}
+
 		}
 
 		if(match_state == 0) {
 			fprintf(stderr, "Unknown Option '%s'.\n", argv[i]);
+			exit(0);
+		}else if(match_state == 2) {
+			vector_push(&cmd_files, &argv[i]);
 		}
 	}
 }

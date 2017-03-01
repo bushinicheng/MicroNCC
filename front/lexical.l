@@ -14,18 +14,7 @@ void decrease_actionlevel();
 #define YY_NO_INPUT
 
 /*lexerr*/
-#define MAX_SIZE 1024
-
 static int yycolumn = 1;
-char yylinetext[MAX_SIZE];
-
-//#define __DEBUG_LEX__
-#ifdef __DEBUG_LEX__
-#define tokout(a) \
-	do{printf("{%s,%s}\n", a, yytext);strcat(yylinetext, yytext);}while(0)
-#else
-#define tokout(a) do{strcat(yylinetext, yytext);}while(0)
-#endif
 
 extern YYLTYPE yylloc;
 
@@ -35,6 +24,8 @@ extern YYLTYPE yylloc;
 		yylloc.last_column = yycolumn+yyleng-1; \
 		yycolumn += yyleng; \
 	} while(0);
+
+#define YY_DECL int next_token(void)
 
 static int symbol(int syntaxval);
 static int qulfr(int token);
@@ -56,144 +47,156 @@ oct              0[1-7][0-7]*
 invalidnum       \.*[0-9][_a-zA-Z0-9\.]*
 string           (\"([^\"]*(\\\")?)*\"[ \t\r\n]*)+
 literal          (\'([^\']*(\\\')?)*\'[ \t\r\n]*)+
-blank            [ \t\r]+
-newline          \n+
 id               [_a-zA-Z][_a-zA-Z0-9]*
 blockcomment     (?s:\/\*([^\*]|\*[^\/])*\*\/)
 linecomment      \/\/.*$
 invalidcomment   \/\*([^\*]|\*[^\/])*$
 
 %%
-"="                 {tokout("AS");		return symbol(ASSIGNOP);}
-"=="                {tokout("EQ");		return symbol(EQ);}
-"!="                {tokout("NE");		return symbol(NE);}
-"<"                 {tokout("LT");		return relop(LT);}
-"<="                {tokout("LE");		return relop(LE);}
-">"                 {tokout("GT");		return relop(GT);}
-">="                {tokout("GE");		return relop(GE);}
+^#define            {return symbol(MACRO_DEFINE);}
+^#undef             {return symbol(MACRO_UNDEF);}
+^#if                {return symbol(MACRO_IF);}
+^#elif              {return symbol(MACRO_ELIF);}
+^#else              {return symbol(MACRO_ELSE);}
+^#endif             {return symbol(MACRO_ENDIF);}
+^#line              {return symbol(MACRO_LINE);}
+^#warning           {return symbol(MACRO_WARNING);}
+^#error             {return symbol(MACRO_ERROR);}
+"#"                 {return symbol(STRINGIFY);}
+"##"                {return symbol(CONCAT);}
+"__LINE__"          {}
+"__func__"          {}
+"__FILE__"          {}
+"__VA_ARGS__"       {}
 
-"<<"                {tokout("LSHIFT");	return symbol(LSHIFT);}
-">>"                {tokout("RSHIFT");	return symbol(RSHIFT);}
-"<<="               {tokout("LSHIFTE");	return symbol(LSHIFTE);}
-">>="               {tokout("RSHIFTE");	return symbol(RSHIFTE);}
+"="                 {return symbol(ASSIGNOP);}
+"=="                {return symbol(EQ);}
+"!="                {return symbol(NE);}
+"<"                 {return relop(LT);}
+"<="                {return relop(LE);}
+">"                 {return relop(GT);}
+">="                {return relop(GE);}
 
-"+"                 {tokout("ADD");		return symbol(ADD);}
-"-"                 {tokout("SUB");		return symbol(SUB);}
-"*"                 {tokout("MULT");	return symbol(MULT);}
-"/"                 {tokout("DIV");		return symbol(DIV);}
-"%"                 {tokout("MOD");		return symbol(MOD);}
-"++"                {tokout("INC"); 	return symbol(INC);}
-"--"                {tokout("DEC");		return symbol(DEC);}
-"+="                {tokout("ADDE");	return equop(ADDE);}
-"-="                {tokout("SUBE");	return equop(SUBE);}
-"*="                {tokout("MULTE");	return equop(MULTE);}
-"/="                {tokout("DIVE");	return equop(DIVE);}
-"%="                {tokout("MODE");	return equop(MODE);}
-"&="                {tokout("ANDE");	return equop(ANDE);}
-"|="                {tokout("ORE");		return equop(ORE);}
-"^="                {tokout("XORE");	return equop(XORE);}
+"<<"                {return symbol(LSHIFT);}
+">>"                {return symbol(RSHIFT);}
+"<<="               {return symbol(LSHIFTE);}
+">>="               {return symbol(RSHIFTE);}
 
-"&"                 {tokout("AND");		return symbol(AND);}
-"|"                 {tokout("OR");		return symbol(OR);}
-"^"                 {tokout("XOR");		return symbol(XOR);}
-"~"                 {tokout("NOT");		return symbol(NOT);}
-"&&"                {tokout("LAND");	return symbol(LAND);}
-"||"                {tokout("LOR");		return symbol(LOR);}
-"!"                 {tokout("LNOT");	return symbol(LNOT);}
-"sizeof"            {tokout("SIZEOF");	return symbol(SIZEOF);}
+"+"                 {return symbol(ADD);}
+"-"                 {return symbol(SUB);}
+"*"                 {return symbol(MULT);}
+"/"                 {return symbol(DIV);}
+"%"                 {return symbol(MOD);}
+"++"                {return symbol(INC);}
+"--"                {return symbol(DEC);}
+"+="                {return equop(ADDE);}
+"-="                {return equop(SUBE);}
+"*="                {return equop(MULTE);}
+"/="                {return equop(DIVE);}
+"%="                {return equop(MODE);}
+"&="                {return equop(ANDE);}
+"|="                {return equop(ORE);}
+"^="                {return equop(XORE);}
 
-"("                 {tokout("LP");		return symbol(LP);}
-")"                 {tokout("RP");		return symbol(RP);}
-"["                 {tokout("LB");		return symbol(LB);}
-"]"                 {tokout("RB");		return symbol(RB);}
-"{"                 {tokout("LC");increase_actionlevel();return symbol(LC);}
-"}"                 {tokout("RC");return symbol(RC);}
-"."                 {tokout("DOT");		return symbol(DOT);}
-"->"                {tokout("PT");		return symbol(PTR);}
-","                 {tokout("COMMA");	return symbol(COMMA);}
-"?"                 {tokout("QOP");		return symbol(QOP);}
-":"                 {tokout("COLON");	return symbol(COLON);}
-";"                 {tokout("SEMI");	return symbol(SEMI);}
-"..."               {tokout("ELLIPSIS");return symbol(ELLIPSIS);}
+"&"                 {return symbol(AND);}
+"|"                 {return symbol(OR);}
+"^"                 {return symbol(XOR);}
+"~"                 {return symbol(NOT);}
+"&&"                {return symbol(LAND);}
+"||"                {return symbol(LOR);}
+"!"                 {return symbol(LNOT);}
+"sizeof"            {return symbol(SIZEOF);}
 
-void                {tokout("VOID");	return type(VOID, MAKE_WORD(SpecTypeVoid, false));}
-bool                {tokout("BOOL");	return type(BOOL, MAKE_WORD(SpecTypeUint8, false));}
-char                {tokout("CHAR");	return type(CHAR, MAKE_DWORD2(CombineTypeChar, MAKE_WORD(SpecTypeInt8, true)));}
-short               {tokout("SHORT");	return type(SHORT, MAKE_DWORD2(CombineTypeShort, MAKE_WORD(SpecTypeInt16, true)));}
-int                 {tokout("INT");		return type(INT, MAKE_DWORD2(CombineTypeInt, MAKE_WORD(SpecTypeInt32, true)));}
-long                {tokout("LONG");	return type(LONG, MAKE_DWORD2(CombineTypeLong, MAKE_WORD(SpecTypeInt32, true)));}
-signed              {tokout("SIGNED");	return type(SIGNED, MAKE_DWORD2(CombineTypeSigned, MAKE_WORD(SpecTypeInt32, true)));}
-unsigned            {tokout("UNSIGNED");return type(UNSIGNED, MAKE_DWORD2(CombineTypeUnsigned, MAKE_WORD(SpecTypeUint32, true)));}
-float               {tokout("FLOAT");	return type(FLOAT, MAKE_WORD(SpecTypeFloat32, false));}
-double              {tokout("DOUBLE");	return type(DOUBLE, MAKE_DWORD2(CombineTypeDouble, MAKE_WORD(SpecTypeFloat64, true)));}
-int8_t              {tokout("INT8T");	return type(INT8T, MAKE_WORD(SpecTypeInt8, false));}
-int16_t             {tokout("INT16T");	return type(INT16T, MAKE_WORD(SpecTypeInt16, false));}
-int32_t             {tokout("INT32T");	return type(INT32T, MAKE_WORD(SpecTypeInt32, false));}
-int64_t             {tokout("INT64T");	return type(INT64T, MAKE_WORD(SpecTypeInt64, false));}
-uint8_t             {tokout("UINT8T");	return type(UINT8T, MAKE_WORD(SpecTypeUint8, false));}
-uint16_t            {tokout("UINT16T");	return type(UINT16T, MAKE_WORD(SpecTypeUint16, false));}
-uint32_t            {tokout("UINT32T");	return type(UINT32T, MAKE_WORD(SpecTypeUint32, false));}
-uint64_t            {tokout("UINT64T");	return type(UINT64T, MAKE_WORD(SpecTypeUint64, false));}
-size_t              {tokout("SIZET");	return type(SIZET, MAKE_WORD(SpecTypeUint32, false));}
-uintptr_t           {tokout("UINTPTRT");return type(UINTPTRT, MAKE_WORD(SpecTypeUint32, false));}
-off_t               {tokout("OFFT");	return type(OFFT, MAKE_WORD(SpecTypeInt32, false));}
+"("                 {return symbol(LP);}
+")"                 {return symbol(RP);}
+"["                 {return symbol(LB);}
+"]"                 {return symbol(RB);}
+"{"                 {increase_actionlevel();return symbol(LC);}
+"}"                 {return symbol(RC);}
+"."                 {return symbol(DOT);}
+"->"                {return symbol(PTR);}
+","                 {return symbol(COMMA);}
+"?"                 {return symbol(QOP);}
+":"                 {return symbol(COLON);}
+";"                 {return symbol(SEMI);}
+"..."               {return symbol(ELLIPSIS);}
+\\\n                {/*do nothing*/}
+\n                  {return symbol(NEWLINE);}
+[ \t\r\f]+          {return symbol(SPACE);}
 
-enum                {tokout("ENUM");	return symbol(ENUM);}
-union               {tokout("UNION");	return symbol(UNION);}
-struct              {tokout("STRUCT");	return symbol(STRUCT);}
-NULL                {tokout("nil");		return symbol(NIL);}
-true                {tokout("true");	return symbol(TRUE);}
-false               {tokout("false");	return symbol(FALSE);}
+void                {return type(VOID, MAKE_WORD(SpecTypeVoid, false));}
+bool                {return type(BOOL, MAKE_WORD(SpecTypeUint8, false));}
+char                {return type(CHAR, MAKE_DWORD2(CombineTypeChar, MAKE_WORD(SpecTypeInt8, true)));}
+short               {return type(SHORT, MAKE_DWORD2(CombineTypeShort, MAKE_WORD(SpecTypeInt16, true)));}
+int                 {return type(INT, MAKE_DWORD2(CombineTypeInt, MAKE_WORD(SpecTypeInt32, true)));}
+long                {return type(LONG, MAKE_DWORD2(CombineTypeLong, MAKE_WORD(SpecTypeInt32, true)));}
+signed              {return type(SIGNED, MAKE_DWORD2(CombineTypeSigned, MAKE_WORD(SpecTypeInt32, true)));}
+unsigned            {return type(UNSIGNED, MAKE_DWORD2(CombineTypeUnsigned, MAKE_WORD(SpecTypeUint32, true)));}
+float               {return type(FLOAT, MAKE_WORD(SpecTypeFloat32, false));}
+double              {return type(DOUBLE, MAKE_DWORD2(CombineTypeDouble, MAKE_WORD(SpecTypeFloat64, true)));}
+int8_t              {return type(INT8T, MAKE_WORD(SpecTypeInt8, false));}
+int16_t             {return type(INT16T, MAKE_WORD(SpecTypeInt16, false));}
+int32_t             {return type(INT32T, MAKE_WORD(SpecTypeInt32, false));}
+int64_t             {return type(INT64T, MAKE_WORD(SpecTypeInt64, false));}
+uint8_t             {return type(UINT8T, MAKE_WORD(SpecTypeUint8, false));}
+uint16_t            {return type(UINT16T, MAKE_WORD(SpecTypeUint16, false));}
+uint32_t            {return type(UINT32T, MAKE_WORD(SpecTypeUint32, false));}
+uint64_t            {return type(UINT64T, MAKE_WORD(SpecTypeUint64, false));}
+size_t              {return type(SIZET, MAKE_WORD(SpecTypeUint32, false));}
+uintptr_t           {return type(UINTPTRT, MAKE_WORD(SpecTypeUint32, false));}
+off_t               {return type(OFFT, MAKE_WORD(SpecTypeInt32, false));}
 
-if                  {tokout("IF");		return symbol(IF);}
-else                {tokout("ELSE");	return symbol(ELSE);}
-do                  {tokout("DO");		return symbol(DO);}
-while               {tokout("WHILE");	return symbol(WHILE);}
-for                 {tokout("FOR");		return symbol(FOR);}
-return              {tokout("RETURN");	return symbol(RETURN);}
-switch              {tokout("SWITCH");	return symbol(SWITCH);}
-case                {tokout("CASE");	return symbol(CASE);}
-break               {tokout("BREAK");	return symbol(BREAK);}
-default             {tokout("DEFAULT");	return symbol(DEFAULT);}
-goto                {tokout("GOTO");	return symbol(GOTO);}
+enum                {return symbol(ENUM);}
+union               {return symbol(UNION);}
+struct              {return symbol(STRUCT);}
+NULL                {return symbol(NIL);}
+true                {return symbol(TRUE);}
+false               {return symbol(FALSE);}
 
-typedef             {tokout("TYPEDEF");	return qulfr(QulfrTypedef);}
-extern              {tokout("EXTERN");	return qulfr(QulfrExtern);}
-static              {tokout("STATIC");	return qulfr(QulfrStatic);}
-auto                {tokout("AUTO");	return qulfr(QulfrAuto);}
-register            {tokout("REGISTER");return qulfr(QulfrRegister);}
+if                  {return symbol(IF);}
+else                {return symbol(ELSE);}
+do                  {return symbol(DO);}
+while               {return symbol(WHILE);}
+for                 {return symbol(FOR);}
+return              {return symbol(RETURN);}
+switch              {return symbol(SWITCH);}
+case                {return symbol(CASE);}
+break               {return symbol(BREAK);}
+default             {return symbol(DEFAULT);}
+goto                {return symbol(GOTO);}
 
-const               {tokout("CONST");	return qulfr(QulfrConst);}
-volatile            {tokout("VOLATILE");return qulfr(QulfrVolatile);}
+typedef             {return qulfr(QulfrTypedef);}
+extern              {return qulfr(QulfrExtern);}
+static              {return qulfr(QulfrStatic);}
+auto                {return qulfr(QulfrAuto);}
+register            {return qulfr(QulfrRegister);}
 
-{int}               {tokout("NUM:i");	return num('i');}
-{hex}               {tokout("NUM:x");	return num('x');}
-{oct}               {tokout("NUM:o");	return num('o');}
-{float}             {tokout("NUM:f");	return num('f');}
+const               {return qulfr(QulfrConst);}
+volatile            {return qulfr(QulfrVolatile);}
+
+{int}               {return num('i');}
+{hex}               {return num('x');}
+{oct}               {return num('o');}
+{float}             {return num('f');}
 
 {invalidnum}        {
-						tokout("NUM:v");
-						yydbg(yylineno, yycolumn-yyleng, yyleng, ErrorInvalidNUM);
+						
+						//yydbg(yylineno, yycolumn-yyleng, yyleng, ErrorInvalidNUM);
 						return symbol(NUM);
 					}
-{literal}           {tokout("CHAR");	return reg(LITERAL);}
-{string}            {tokout("STR");		return reg(STRING);}
-{id}                {tokout("ID");		return reg(ID);}
-{blank}             {strcat(yylinetext, yytext);/*do nothing*/}
-{newline}           {
-						yycolumn = 1;
-						yylinetext[0] = 0;
-					}
-{blockcomment}      {tokout("MC");	/*do nothing*/}
-{linecomment}       {tokout("SC");	/*do nothing*/}
+{literal}           {return reg(LITERAL);}
+{string}            {return reg(STRING);}
+{id}                {return reg(ID);}
+{blockcomment}      {/*do nothing*/}
+{linecomment}       {/*do nothing*/}
 {invalidcomment}    {
-						tokout("IC");
+						
 						extern int curlineno;
 						logd("%d: error type A: invalid comment\n", curlineno);
 					}
 .					{
-						tokout("UB");
-						yydbg(yylineno, yycolumn-yyleng, yyleng, ErrorUnknownToken);
+						//FIXME
+						//yydbg(yylineno, yycolumn-yyleng, yyleng, ErrorUnknownToken);
 					}
 
 %%
@@ -402,6 +405,72 @@ char* register_id(const char *text) {
 	char *strbuf = get_memory_pointer();
 	strcpy(strbuf, text);
 	return (char*)require_memory(len);
+}
+
+void register_macro(char *id, macro_t *macro) {
+}
+
+void handle_macro() {
+}
+
+int yylex() {
+#define match_token(token) do {\
+	if(next_token() != token) {\
+		while(next_token() != NEWLINE); \
+		lexval = next_token(); \
+		goto __match_fail__;\
+	}\
+}while(0)
+	int lexval = 0;
+	switch(lexval = next_token()) {
+	case SPACE:
+	case NEWLINE:
+		do{lexval = next_token();}while(lexval == NEWLINE || lexval == SPACE);
+		break;
+	case MACRO_DEFINE:
+		if(next_token() == ID) {
+			int cnt = 0;
+			macro_t macro;
+			char *id = yylval.pnd->cv.id;
+			if(next_token() == LP) {
+				//macro func
+				char **args = get_memory_pointer();
+				while(true) {
+					lexval = next_token();
+					if(lexval == ID)
+						args[cnt ++] = yylval.pnd->cv.id;
+					else if(lexval == ELLIPSIS) {
+						match_token(RP);
+						break;
+					}else{
+						yyerr("expected identifier or '...' here\n");
+						goto __match_fail__;
+					}
+
+					lexval = next_token();
+					if(lexval == COMMA) {
+						continue;
+					}else if(lexval == RP){
+						break;
+					}else{
+						yyerr("expected ',' or ')' here\n");
+						goto __match_fail__;
+					}
+				}
+				args = require_memory(sizeof(char *) * cnt);
+				macro.args = args;
+				register_macro(id, &macro);
+			}else{
+				//comon macro
+			}
+			register_macro(id, &macro);
+		}
+		break;
+	default:
+		break;
+	}
+__match_fail__:
+	return lexval;
 }
 
 

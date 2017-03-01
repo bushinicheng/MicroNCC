@@ -211,7 +211,20 @@ extern int yydebug;
     TypeQulfr = 360,
     EQUOP = 361,
     RELOP = 362,
-    UNARYOP = 363
+    UNARYOP = 363,
+    NEWLINE = 364,
+    MACRO_DEFINE = 365,
+    MACRO_UNDEF = 366,
+    MACRO_IF = 367,
+    MACRO_ELIF = 368,
+    MACRO_ELSE = 369,
+    MACRO_ENDIF = 370,
+    MACRO_LINE = 371,
+    MACRO_WARNING = 372,
+    MACRO_ERROR = 373,
+    STRINGIFY = 374,
+    CONCAT = 375,
+    SPACE = 376
   };
 #endif
 
@@ -224,7 +237,7 @@ union YYSTYPE
 
 	node_t *pnd;
 
-#line 228 "front/syntax.c" /* yacc.c:355  */
+#line 241 "front/syntax.c" /* yacc.c:355  */
 };
 
 typedef union YYSTYPE YYSTYPE;
@@ -255,7 +268,7 @@ int yyparse (void);
 
 /* Copy the second part of user declarations.  */
 
-#line 259 "front/syntax.c" /* yacc.c:358  */
+#line 272 "front/syntax.c" /* yacc.c:358  */
 
 #ifdef short
 # undef short
@@ -502,7 +515,7 @@ union yyalloc
 #define YYLAST   1929
 
 /* YYNTOKENS -- Number of terminals.  */
-#define YYNTOKENS  109
+#define YYNTOKENS  122
 /* YYNNTS -- Number of nonterminals.  */
 #define YYNNTS  39
 /* YYNRULES -- Number of rules.  */
@@ -513,7 +526,7 @@ union yyalloc
 /* YYTRANSLATE[YYX] -- Symbol number corresponding to YYX as returned
    by yylex, with out-of-bounds checking.  */
 #define YYUNDEFTOK  2
-#define YYMAXUTOK   363
+#define YYMAXUTOK   376
 
 #define YYTRANSLATE(YYX)                                                \
   ((unsigned int) (YYX) <= YYMAXUTOK ? yytranslate[YYX] : YYUNDEFTOK)
@@ -558,30 +571,31 @@ static const yytype_uint8 yytranslate[] =
       75,    76,    77,    78,    79,    80,    81,    82,    83,    84,
       85,    86,    87,    88,    89,    90,    91,    92,    93,    94,
       95,    96,    97,    98,    99,   100,   101,   102,   103,   104,
-     105,   106,   107,   108
+     105,   106,   107,   108,   109,   110,   111,   112,   113,   114,
+     115,   116,   117,   118,   119,   120,   121
 };
 
 #if YYDEBUG
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint16 yyrline[] =
 {
-       0,    98,    98,   102,   103,   107,   108,   112,   113,   114,
-     115,   119,   120,   124,   125,   129,   130,   134,   135,   136,
-     137,   141,   142,   146,   147,   151,   152,   153,   154,   158,
-     159,   160,   164,   165,   169,   170,   174,   175,   179,   180,
-     184,   185,   186,   190,   191,   192,   193,   194,   198,   199,
-     203,   204,   208,   209,   213,   214,   215,   216,   217,   218,
-     219,   223,   224,   225,   226,   230,   231,   235,   236,   240,
-     241,   245,   246,   247,   251,   252,   256,   257,   261,   262,
-     263,   267,   268,   269,   270,   271,   272,   273,   274,   275,
-     279,   280,   281,   282,   283,   287,   288,   292,   293,   297,
-     298,   299,   303,   304,   308,   309,   310,   311,   312,   313,
-     314,   315,   316,   317,   318,   319,   320,   321,   322,   323,
-     324,   325,   326,   330,   331,   332,   333,   334,   335,   336,
-     337,   338,   339,   340,   341,   342,   343,   344,   345,   346,
-     347,   348,   349,   350,   351,   352,   353,   354,   355,   356,
-     357,   358,   359,   360,   361,   362,   363,   364,   365,   366,
-     367,   368,   369,   370,   371,   372,   373,   374
+       0,   102,   102,   106,   107,   111,   112,   116,   117,   118,
+     119,   123,   124,   128,   129,   133,   134,   138,   139,   140,
+     141,   145,   146,   150,   151,   155,   156,   157,   158,   162,
+     163,   164,   168,   169,   173,   174,   178,   179,   183,   184,
+     188,   189,   190,   194,   195,   196,   197,   198,   202,   203,
+     207,   208,   212,   213,   217,   218,   219,   220,   221,   222,
+     223,   227,   228,   229,   230,   234,   235,   239,   240,   244,
+     245,   249,   250,   251,   255,   256,   260,   261,   265,   266,
+     267,   271,   272,   273,   274,   275,   276,   277,   278,   279,
+     283,   284,   285,   286,   287,   291,   292,   296,   297,   301,
+     302,   303,   307,   308,   312,   313,   314,   315,   316,   317,
+     318,   319,   320,   321,   322,   323,   324,   325,   326,   327,
+     328,   329,   330,   334,   335,   336,   337,   338,   339,   340,
+     341,   342,   343,   344,   345,   346,   347,   348,   349,   350,
+     351,   352,   353,   354,   355,   356,   357,   358,   359,   360,
+     361,   362,   363,   364,   365,   366,   367,   368,   369,   370,
+     371,   372,   373,   374,   375,   376,   377,   378
 };
 #endif
 
@@ -603,14 +617,17 @@ static const char *const yytname[] =
   "INT", "LONG", "SIGNED", "UNSIGNED", "FLOAT", "DOUBLE", "VOID", "BOOL",
   "INT8T", "INT16T", "INT32T", "INT64T", "UINT8T", "UINT16T", "UINT32T",
   "UINT64T", "FLOAT32T", "FLOAT64T", "SIZET", "OFFT", "UINTPTRT",
-  "TypeQulfr", "EQUOP", "RELOP", "UNARYOP", "$accept", "Program",
-  "ExtDeclnList", "ExtDecln", "FuncDef", "ExpList", "DeclnList", "Decln",
-  "DeclnSpec", "InitorDeclrList", "InitorDeclr", "TypeSpec", "CompSpec",
-  "CompType", "CompDeclnList", "CompDecln", "CompDeclrList", "CompDeclr",
-  "EnumSpec", "EnumorList", "Enumor", "Declr", "DirectDeclr", "StarList",
-  "TypeQulfrList", "ParaTypeList", "ParaList", "ParaDecln", "IdList",
-  "TypeName", "AbstDeclr", "DirectAbstDeclr", "Initor", "InitorList",
-  "StmtList", "ExpStmt", "CompSt", "Stmt", "Exp", YY_NULLPTR
+  "TypeQulfr", "EQUOP", "RELOP", "UNARYOP", "NEWLINE", "MACRO_DEFINE",
+  "MACRO_UNDEF", "MACRO_IF", "MACRO_ELIF", "MACRO_ELSE", "MACRO_ENDIF",
+  "MACRO_LINE", "MACRO_WARNING", "MACRO_ERROR", "STRINGIFY", "CONCAT",
+  "SPACE", "$accept", "Program", "ExtDeclnList", "ExtDecln", "FuncDef",
+  "ExpList", "DeclnList", "Decln", "DeclnSpec", "InitorDeclrList",
+  "InitorDeclr", "TypeSpec", "CompSpec", "CompType", "CompDeclnList",
+  "CompDecln", "CompDeclrList", "CompDeclr", "EnumSpec", "EnumorList",
+  "Enumor", "Declr", "DirectDeclr", "StarList", "TypeQulfrList",
+  "ParaTypeList", "ParaList", "ParaDecln", "IdList", "TypeName",
+  "AbstDeclr", "DirectAbstDeclr", "Initor", "InitorList", "StmtList",
+  "ExpStmt", "CompSt", "Stmt", "Exp", YY_NULLPTR
 };
 #endif
 
@@ -629,7 +646,9 @@ static const yytype_uint16 yytoknum[] =
      325,   326,   327,   328,   329,   330,   331,   332,   333,   334,
      335,   336,   337,   338,   339,   340,   341,   342,   343,   344,
      345,   346,   347,   348,   349,   350,   351,   352,   353,   354,
-     355,   356,   357,   358,   359,   360,   361,   362,   363
+     355,   356,   357,   358,   359,   360,   361,   362,   363,   364,
+     365,   366,   367,   368,   369,   370,   371,   372,   373,   374,
+     375,   376
 };
 # endif
 
@@ -1140,59 +1159,59 @@ static const yytype_int16 yycheck[] =
 static const yytype_uint8 yystos[] =
 {
        0,     5,    10,    42,    56,    57,    58,    75,    78,   105,
-     110,   111,   112,   113,   116,   117,   120,   121,   122,   127,
-     130,   131,   132,   105,   132,   133,     5,    71,   130,   117,
-       0,   112,    77,   118,   119,   130,   117,     5,    71,    71,
-     115,   116,   117,   145,    73,    75,   131,   105,   132,    71,
-       5,   128,   129,    76,    11,    77,    16,   115,   145,    71,
-     117,   123,   124,     5,     6,     7,     8,     9,    31,    40,
+     123,   124,   125,   126,   129,   130,   133,   134,   135,   140,
+     143,   144,   145,   105,   145,   146,     5,    71,   143,   130,
+       0,   125,    77,   131,   132,   143,   130,     5,    71,    71,
+     128,   129,   130,   158,    73,    75,   144,   105,   145,    71,
+       5,   141,   142,    76,    11,    77,    16,   128,   158,    71,
+     130,   136,   137,     5,     6,     7,     8,     9,    31,    40,
       41,    42,    45,    46,    47,    48,    60,    61,    62,    63,
       64,    65,    66,    67,    68,    69,    70,    72,    75,    77,
-      79,    80,    81,   116,   143,   145,   146,   147,   116,   145,
-     130,     5,    74,   147,     5,    76,   117,   134,   135,   136,
-     137,   128,    16,    11,    72,   119,    12,    71,    73,   141,
-     147,   145,   123,    15,    77,   125,   126,   130,    72,   123,
-      15,    75,   147,   147,   147,   147,   147,   147,   147,   147,
-     147,   147,    15,    75,    75,    75,   146,    75,     5,    77,
-      77,    77,   147,   117,   138,   147,    72,   146,    11,    12,
+      79,    80,    81,   129,   156,   158,   159,   160,   129,   158,
+     143,     5,    74,   160,     5,    76,   130,   147,   148,   149,
+     150,   141,    16,    11,    72,   132,    12,    71,    73,   154,
+     160,   158,   136,    15,    77,   138,   139,   143,    72,   136,
+      15,    75,   160,   160,   160,   160,   160,   160,   160,   160,
+     160,   160,    15,    75,    75,    75,   159,    75,     5,    77,
+      77,    77,   160,   130,   151,   160,    72,   159,    11,    12,
       13,    14,    16,    27,    28,    29,    30,    31,    32,    33,
       38,    39,    40,    41,    42,    43,    44,    45,    46,    73,
-      75,    77,   106,   107,    74,    73,    75,   130,   132,   139,
-     140,    76,    11,    11,    76,    11,    72,   147,    72,   129,
-       5,   141,   142,   147,    72,   147,    77,    11,    15,   138,
-      15,   146,   147,   147,   147,    64,    77,   116,   144,   147,
-      77,    77,    75,   132,   139,    76,    76,   147,     5,     5,
-     147,   147,   147,   147,   147,   147,   147,   147,   147,   147,
-     147,   147,   147,   147,   147,   147,   147,    76,   114,   147,
-     147,   147,    74,   147,    76,   134,   139,   140,    73,    75,
-      59,   136,     5,    72,    16,    11,    72,    74,   125,   147,
-      76,   146,    76,    76,    76,    75,   144,    77,   147,    15,
-      74,    11,    76,    74,    76,    76,    74,   147,    76,   134,
-     147,    72,   141,    16,   146,   146,   146,   147,    76,   147,
-     147,   147,    74,    76,   147,     4,    76,   146,    76,   146,
-      77,   146
+      75,    77,   106,   107,    74,    73,    75,   143,   145,   152,
+     153,    76,    11,    11,    76,    11,    72,   160,    72,   142,
+       5,   154,   155,   160,    72,   160,    77,    11,    15,   151,
+      15,   159,   160,   160,   160,    64,    77,   129,   157,   160,
+      77,    77,    75,   145,   152,    76,    76,   160,     5,     5,
+     160,   160,   160,   160,   160,   160,   160,   160,   160,   160,
+     160,   160,   160,   160,   160,   160,   160,    76,   127,   160,
+     160,   160,    74,   160,    76,   147,   152,   153,    73,    75,
+      59,   149,     5,    72,    16,    11,    72,    74,   138,   160,
+      76,   159,    76,    76,    76,    75,   157,    77,   160,    15,
+      74,    11,    76,    74,    76,    76,    74,   160,    76,   147,
+     160,    72,   154,    16,   159,   159,   159,   160,    76,   160,
+     160,   160,    74,    76,   160,     4,    76,   159,    76,   159,
+      77,   159
 };
 
   /* YYR1[YYN] -- Symbol number of symbol that rule YYN derives.  */
 static const yytype_uint8 yyr1[] =
 {
-       0,   109,   110,   111,   111,   112,   112,   113,   113,   113,
-     113,   114,   114,   115,   115,   116,   116,   117,   117,   117,
-     117,   118,   118,   119,   119,   120,   120,   120,   120,   121,
-     121,   121,   122,   122,   123,   123,   124,   124,   125,   125,
-     126,   126,   126,   127,   127,   127,   127,   127,   128,   128,
-     129,   129,   130,   130,   131,   131,   131,   131,   131,   131,
-     131,   132,   132,   132,   132,   133,   133,   134,   134,   135,
-     135,   136,   136,   136,   137,   137,   138,   138,   139,   139,
-     139,   140,   140,   140,   140,   140,   140,   140,   140,   140,
-     141,   141,   141,   141,   141,   142,   142,   143,   143,   144,
-     144,   144,   145,   145,   146,   146,   146,   146,   146,   146,
-     146,   146,   146,   146,   146,   146,   146,   146,   146,   146,
-     146,   146,   146,   147,   147,   147,   147,   147,   147,   147,
-     147,   147,   147,   147,   147,   147,   147,   147,   147,   147,
-     147,   147,   147,   147,   147,   147,   147,   147,   147,   147,
-     147,   147,   147,   147,   147,   147,   147,   147,   147,   147,
-     147,   147,   147,   147,   147,   147,   147,   147
+       0,   122,   123,   124,   124,   125,   125,   126,   126,   126,
+     126,   127,   127,   128,   128,   129,   129,   130,   130,   130,
+     130,   131,   131,   132,   132,   133,   133,   133,   133,   134,
+     134,   134,   135,   135,   136,   136,   137,   137,   138,   138,
+     139,   139,   139,   140,   140,   140,   140,   140,   141,   141,
+     142,   142,   143,   143,   144,   144,   144,   144,   144,   144,
+     144,   145,   145,   145,   145,   146,   146,   147,   147,   148,
+     148,   149,   149,   149,   150,   150,   151,   151,   152,   152,
+     152,   153,   153,   153,   153,   153,   153,   153,   153,   153,
+     154,   154,   154,   154,   154,   155,   155,   156,   156,   157,
+     157,   157,   158,   158,   159,   159,   159,   159,   159,   159,
+     159,   159,   159,   159,   159,   159,   159,   159,   159,   159,
+     159,   159,   159,   160,   160,   160,   160,   160,   160,   160,
+     160,   160,   160,   160,   160,   160,   160,   160,   160,   160,
+     160,   160,   160,   160,   160,   160,   160,   160,   160,   160,
+     160,   160,   160,   160,   160,   160,   160,   160,   160,   160,
+     160,   160,   160,   160,   160,   160,   160,   160
 };
 
   /* YYR2[YYN] -- Number of symbols on the right hand side of rule YYN.  */
@@ -1984,1003 +2003,1003 @@ yyreduce:
   switch (yyn)
     {
         case 2:
-#line 98 "front/syntax.y" /* yacc.c:1646  */
+#line 102 "front/syntax.y" /* yacc.c:1646  */
     {astroot=build_subast(AST_Program_is_ExtDeclnList, &(yyloc), (yyvsp[0].pnd));}
-#line 1990 "front/syntax.c" /* yacc.c:1646  */
+#line 2009 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 3:
-#line 102 "front/syntax.y" /* yacc.c:1646  */
+#line 106 "front/syntax.y" /* yacc.c:1646  */
     {astroot=build_subast(AST_ExtDeclnList_is_ExtDecln, &(yyloc), (yyvsp[0].pnd));}
-#line 1996 "front/syntax.c" /* yacc.c:1646  */
+#line 2015 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 4:
-#line 103 "front/syntax.y" /* yacc.c:1646  */
+#line 107 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_ExtDeclnList_is_ExtDeclnList_ExtDecln, &(yyloc), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2002 "front/syntax.c" /* yacc.c:1646  */
+#line 2021 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 5:
-#line 107 "front/syntax.y" /* yacc.c:1646  */
+#line 111 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_ExtDecln_is_FuncDef, &(yyloc), (yyvsp[0].pnd));}
-#line 2008 "front/syntax.c" /* yacc.c:1646  */
+#line 2027 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 6:
-#line 108 "front/syntax.y" /* yacc.c:1646  */
+#line 112 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_ExtDecln_is_Decln, &(yyloc), (yyvsp[0].pnd));}
-#line 2014 "front/syntax.c" /* yacc.c:1646  */
+#line 2033 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 7:
-#line 112 "front/syntax.y" /* yacc.c:1646  */
+#line 116 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_FuncDef_is_DeclnSpec_Declr_DeclnList_CompSt, &(yyloc), (yyvsp[-3].pnd), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2020 "front/syntax.c" /* yacc.c:1646  */
+#line 2039 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 8:
-#line 113 "front/syntax.y" /* yacc.c:1646  */
+#line 117 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_FuncDef_is_DeclnSpec_Declr_CompSt, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2026 "front/syntax.c" /* yacc.c:1646  */
+#line 2045 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 9:
-#line 114 "front/syntax.y" /* yacc.c:1646  */
+#line 118 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_FuncDef_is_Declr_DeclnList_CompSt, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2032 "front/syntax.c" /* yacc.c:1646  */
+#line 2051 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 10:
-#line 115 "front/syntax.y" /* yacc.c:1646  */
+#line 119 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_FuncDef_is_Declr_CompSt, &(yyloc), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2038 "front/syntax.c" /* yacc.c:1646  */
+#line 2057 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 11:
-#line 119 "front/syntax.y" /* yacc.c:1646  */
+#line 123 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_ExpList_is_Exp, &(yyloc), (yyvsp[0].pnd));}
-#line 2044 "front/syntax.c" /* yacc.c:1646  */
+#line 2063 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 12:
-#line 120 "front/syntax.y" /* yacc.c:1646  */
+#line 124 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_ExpList_is_ExpList_COMMA_Exp, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2050 "front/syntax.c" /* yacc.c:1646  */
+#line 2069 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 13:
-#line 124 "front/syntax.y" /* yacc.c:1646  */
+#line 128 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_DeclnList_is_Decln, &(yyloc), (yyvsp[0].pnd));}
-#line 2056 "front/syntax.c" /* yacc.c:1646  */
+#line 2075 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 14:
-#line 125 "front/syntax.y" /* yacc.c:1646  */
+#line 129 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_DeclnList_is_DeclnList_Decln, &(yyloc), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2062 "front/syntax.c" /* yacc.c:1646  */
+#line 2081 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 15:
-#line 129 "front/syntax.y" /* yacc.c:1646  */
+#line 133 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Decln_is_DeclnSpec_SEMI, &(yyloc), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2068 "front/syntax.c" /* yacc.c:1646  */
+#line 2087 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 16:
-#line 130 "front/syntax.y" /* yacc.c:1646  */
+#line 134 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Decln_is_DeclnSpec_InitorDeclrList_SEMI, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2074 "front/syntax.c" /* yacc.c:1646  */
+#line 2093 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 17:
-#line 134 "front/syntax.y" /* yacc.c:1646  */
+#line 138 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_DeclnSpec_is_TypeSpec, &(yyloc), (yyvsp[0].pnd));}
-#line 2080 "front/syntax.c" /* yacc.c:1646  */
+#line 2099 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 18:
-#line 135 "front/syntax.y" /* yacc.c:1646  */
+#line 139 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_DeclnSpec_is_TypeSpec_DeclnSpec, &(yyloc), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2086 "front/syntax.c" /* yacc.c:1646  */
+#line 2105 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 19:
-#line 136 "front/syntax.y" /* yacc.c:1646  */
+#line 140 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_DeclnSpec_is_TypeQulfr, &(yyloc), (yyvsp[0].pnd));}
-#line 2092 "front/syntax.c" /* yacc.c:1646  */
+#line 2111 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 20:
-#line 137 "front/syntax.y" /* yacc.c:1646  */
+#line 141 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_DeclnSpec_is_TypeQulfr_DeclnSpec, &(yyloc), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2098 "front/syntax.c" /* yacc.c:1646  */
+#line 2117 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 21:
-#line 141 "front/syntax.y" /* yacc.c:1646  */
+#line 145 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_InitorDeclrList_is_InitorDeclr, &(yyloc), (yyvsp[0].pnd));}
-#line 2104 "front/syntax.c" /* yacc.c:1646  */
+#line 2123 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 22:
-#line 142 "front/syntax.y" /* yacc.c:1646  */
+#line 146 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_InitorDeclrList_is_InitorDeclrList_COMMA_InitorDeclr, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2110 "front/syntax.c" /* yacc.c:1646  */
+#line 2129 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 23:
-#line 146 "front/syntax.y" /* yacc.c:1646  */
+#line 150 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_InitorDeclr_is_Declr, &(yyloc), (yyvsp[0].pnd));}
-#line 2116 "front/syntax.c" /* yacc.c:1646  */
+#line 2135 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 24:
-#line 147 "front/syntax.y" /* yacc.c:1646  */
+#line 151 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_InitorDeclr_is_Declr_ASSIGNOP_Initor, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2122 "front/syntax.c" /* yacc.c:1646  */
+#line 2141 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 25:
-#line 151 "front/syntax.y" /* yacc.c:1646  */
+#line 155 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_TypeSpec_is_TYPE, &(yyloc), (yyvsp[0].pnd));}
-#line 2128 "front/syntax.c" /* yacc.c:1646  */
+#line 2147 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 26:
-#line 152 "front/syntax.y" /* yacc.c:1646  */
+#line 156 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_TypeSpec_is_CompSpec, &(yyloc), (yyvsp[0].pnd));}
-#line 2134 "front/syntax.c" /* yacc.c:1646  */
+#line 2153 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 27:
-#line 153 "front/syntax.y" /* yacc.c:1646  */
+#line 157 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_TypeSpec_is_EnumSpec, &(yyloc), (yyvsp[0].pnd));}
-#line 2140 "front/syntax.c" /* yacc.c:1646  */
+#line 2159 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 28:
-#line 154 "front/syntax.y" /* yacc.c:1646  */
+#line 158 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_TypeSpec_is_TYPE_NAME, &(yyloc), (yyvsp[0].pnd));}
-#line 2146 "front/syntax.c" /* yacc.c:1646  */
+#line 2165 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 29:
-#line 158 "front/syntax.y" /* yacc.c:1646  */
+#line 162 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_CompSpec_is_CompType_ID_LC_CompDeclnList_RC, &(yyloc), (yyvsp[-4].pnd), (yyvsp[-3].pnd), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2152 "front/syntax.c" /* yacc.c:1646  */
+#line 2171 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 30:
-#line 159 "front/syntax.y" /* yacc.c:1646  */
+#line 163 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_CompSpec_is_CompType_LC_CompDeclnList_RC, &(yyloc), (yyvsp[-3].pnd), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2158 "front/syntax.c" /* yacc.c:1646  */
+#line 2177 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 31:
-#line 160 "front/syntax.y" /* yacc.c:1646  */
+#line 164 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_CompSpec_is_CompType_ID, &(yyloc), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2164 "front/syntax.c" /* yacc.c:1646  */
+#line 2183 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 32:
-#line 164 "front/syntax.y" /* yacc.c:1646  */
+#line 168 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_CompType_is_STRUCT, &(yyloc), (yyvsp[0].pnd));}
-#line 2170 "front/syntax.c" /* yacc.c:1646  */
+#line 2189 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 33:
-#line 165 "front/syntax.y" /* yacc.c:1646  */
+#line 169 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_CompType_is_UNION, &(yyloc), (yyvsp[0].pnd));}
-#line 2176 "front/syntax.c" /* yacc.c:1646  */
+#line 2195 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 34:
-#line 169 "front/syntax.y" /* yacc.c:1646  */
+#line 173 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_CompDeclnList_is_CompDecln, &(yyloc), (yyvsp[0].pnd));}
-#line 2182 "front/syntax.c" /* yacc.c:1646  */
+#line 2201 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 35:
-#line 170 "front/syntax.y" /* yacc.c:1646  */
+#line 174 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_CompDeclnList_is_CompDecln_CompDeclnList, &(yyloc), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2188 "front/syntax.c" /* yacc.c:1646  */
+#line 2207 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 36:
-#line 174 "front/syntax.y" /* yacc.c:1646  */
+#line 178 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_CompDecln_is_DeclnSpec_SEMI, &(yyloc), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2194 "front/syntax.c" /* yacc.c:1646  */
+#line 2213 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 37:
-#line 175 "front/syntax.y" /* yacc.c:1646  */
+#line 179 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_CompDecln_is_DeclnSpec_CompDeclrList_SEMI, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2200 "front/syntax.c" /* yacc.c:1646  */
+#line 2219 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 38:
-#line 179 "front/syntax.y" /* yacc.c:1646  */
+#line 183 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_CompDeclrList_is_CompDeclr, &(yyloc), (yyvsp[0].pnd));}
-#line 2206 "front/syntax.c" /* yacc.c:1646  */
+#line 2225 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 39:
-#line 180 "front/syntax.y" /* yacc.c:1646  */
+#line 184 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_CompDeclrList_is_CompDeclr_COMMA_CompDeclrList, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2212 "front/syntax.c" /* yacc.c:1646  */
+#line 2231 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 40:
-#line 184 "front/syntax.y" /* yacc.c:1646  */
+#line 188 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_CompDeclr_is_Declr, &(yyloc), (yyvsp[0].pnd));}
-#line 2218 "front/syntax.c" /* yacc.c:1646  */
+#line 2237 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 41:
-#line 185 "front/syntax.y" /* yacc.c:1646  */
+#line 189 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_CompDeclr_is_COLON_Exp, &(yyloc), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2224 "front/syntax.c" /* yacc.c:1646  */
+#line 2243 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 42:
-#line 186 "front/syntax.y" /* yacc.c:1646  */
+#line 190 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_CompDeclr_is_Declr_COLON_Exp, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2230 "front/syntax.c" /* yacc.c:1646  */
+#line 2249 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 43:
-#line 190 "front/syntax.y" /* yacc.c:1646  */
+#line 194 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_EnumSpec_is_ENUM_LC_EnumorList_RC, &(yyloc), (yyvsp[-3].pnd), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2236 "front/syntax.c" /* yacc.c:1646  */
+#line 2255 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 44:
-#line 191 "front/syntax.y" /* yacc.c:1646  */
+#line 195 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_EnumSpec_is_ENUM_LC_EnumorList_COMMA_RC, &(yyloc), (yyvsp[-4].pnd), (yyvsp[-3].pnd), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2242 "front/syntax.c" /* yacc.c:1646  */
+#line 2261 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 45:
-#line 192 "front/syntax.y" /* yacc.c:1646  */
+#line 196 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_EnumSpec_is_ENUM_ID_LC_EnumorList_RC, &(yyloc), (yyvsp[-4].pnd), (yyvsp[-3].pnd), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2248 "front/syntax.c" /* yacc.c:1646  */
+#line 2267 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 46:
-#line 193 "front/syntax.y" /* yacc.c:1646  */
+#line 197 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_EnumSpec_is_ENUM_ID_LC_EnumorList_COMMA_RC, &(yyloc), (yyvsp[-5].pnd), (yyvsp[-4].pnd), (yyvsp[-3].pnd), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2254 "front/syntax.c" /* yacc.c:1646  */
+#line 2273 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 47:
-#line 194 "front/syntax.y" /* yacc.c:1646  */
+#line 198 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_EnumSpec_is_ENUM_ID, &(yyloc), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2260 "front/syntax.c" /* yacc.c:1646  */
+#line 2279 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 48:
-#line 198 "front/syntax.y" /* yacc.c:1646  */
+#line 202 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_EnumorList_is_Enumor, &(yyloc), (yyvsp[0].pnd));}
-#line 2266 "front/syntax.c" /* yacc.c:1646  */
+#line 2285 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 49:
-#line 199 "front/syntax.y" /* yacc.c:1646  */
+#line 203 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_EnumorList_is_EnumorList_COMMA_Enumor, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2272 "front/syntax.c" /* yacc.c:1646  */
+#line 2291 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 50:
-#line 203 "front/syntax.y" /* yacc.c:1646  */
+#line 207 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Enumor_is_ID, &(yyloc), (yyvsp[0].pnd));}
-#line 2278 "front/syntax.c" /* yacc.c:1646  */
+#line 2297 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 51:
-#line 204 "front/syntax.y" /* yacc.c:1646  */
+#line 208 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Enumor_is_ID_ASSIGNOP_Exp, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2284 "front/syntax.c" /* yacc.c:1646  */
+#line 2303 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 52:
-#line 208 "front/syntax.y" /* yacc.c:1646  */
+#line 212 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Declr_is_StarList_DirectDeclr, &(yyloc), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2290 "front/syntax.c" /* yacc.c:1646  */
+#line 2309 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 53:
-#line 209 "front/syntax.y" /* yacc.c:1646  */
+#line 213 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Declr_is_DirectDeclr, &(yyloc), (yyvsp[0].pnd));}
-#line 2296 "front/syntax.c" /* yacc.c:1646  */
+#line 2315 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 54:
-#line 213 "front/syntax.y" /* yacc.c:1646  */
+#line 217 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_DirectDeclr_is_ID, &(yyloc), (yyvsp[0].pnd));}
-#line 2302 "front/syntax.c" /* yacc.c:1646  */
+#line 2321 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 55:
-#line 214 "front/syntax.y" /* yacc.c:1646  */
+#line 218 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_DirectDeclr_is_LP_Declr_RP, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2308 "front/syntax.c" /* yacc.c:1646  */
+#line 2327 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 56:
-#line 215 "front/syntax.y" /* yacc.c:1646  */
+#line 219 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_DirectDeclr_is_DirectDeclr_LB_Exp_RB, &(yyloc), (yyvsp[-3].pnd), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2314 "front/syntax.c" /* yacc.c:1646  */
+#line 2333 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 57:
-#line 216 "front/syntax.y" /* yacc.c:1646  */
+#line 220 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_DirectDeclr_is_DirectDeclr_LB_RB, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2320 "front/syntax.c" /* yacc.c:1646  */
+#line 2339 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 58:
-#line 217 "front/syntax.y" /* yacc.c:1646  */
+#line 221 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_DirectDeclr_is_DirectDeclr_LP_ParaTypeList_RP, &(yyloc), (yyvsp[-3].pnd), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2326 "front/syntax.c" /* yacc.c:1646  */
+#line 2345 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 59:
-#line 218 "front/syntax.y" /* yacc.c:1646  */
+#line 222 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_DirectDeclr_is_DirectDeclr_LP_IdList_RP, &(yyloc), (yyvsp[-3].pnd), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2332 "front/syntax.c" /* yacc.c:1646  */
+#line 2351 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 60:
-#line 219 "front/syntax.y" /* yacc.c:1646  */
+#line 223 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_DirectDeclr_is_DirectDeclr_LP_RP, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2338 "front/syntax.c" /* yacc.c:1646  */
+#line 2357 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 61:
-#line 223 "front/syntax.y" /* yacc.c:1646  */
+#line 227 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_StarList_is_MULT, &(yyloc), (yyvsp[0].pnd));}
-#line 2344 "front/syntax.c" /* yacc.c:1646  */
+#line 2363 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 62:
-#line 224 "front/syntax.y" /* yacc.c:1646  */
+#line 228 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_StarList_is_MULT_TypeQulfrList, &(yyloc), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2350 "front/syntax.c" /* yacc.c:1646  */
+#line 2369 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 63:
-#line 225 "front/syntax.y" /* yacc.c:1646  */
+#line 229 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_StarList_is_MULT_StarList, &(yyloc), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2356 "front/syntax.c" /* yacc.c:1646  */
+#line 2375 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 64:
-#line 226 "front/syntax.y" /* yacc.c:1646  */
+#line 230 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_StarList_is_MULT_TypeQulfrList_StarList, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2362 "front/syntax.c" /* yacc.c:1646  */
+#line 2381 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 65:
-#line 230 "front/syntax.y" /* yacc.c:1646  */
+#line 234 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_TypeQulfrList_is_TypeQulfr, &(yyloc), (yyvsp[0].pnd));}
-#line 2368 "front/syntax.c" /* yacc.c:1646  */
+#line 2387 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 66:
-#line 231 "front/syntax.y" /* yacc.c:1646  */
+#line 235 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_TypeQulfrList_is_TypeQulfrList_TypeQulfr, &(yyloc), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2374 "front/syntax.c" /* yacc.c:1646  */
+#line 2393 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 67:
-#line 235 "front/syntax.y" /* yacc.c:1646  */
+#line 239 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_ParaTypeList_is_ParaList, &(yyloc), (yyvsp[0].pnd));}
-#line 2380 "front/syntax.c" /* yacc.c:1646  */
+#line 2399 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 68:
-#line 236 "front/syntax.y" /* yacc.c:1646  */
+#line 240 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_ParaTypeList_is_ParaList_COMMA_ELLIPSIS, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2386 "front/syntax.c" /* yacc.c:1646  */
+#line 2405 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 69:
-#line 240 "front/syntax.y" /* yacc.c:1646  */
+#line 244 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_ParaList_is_ParaDecln, &(yyloc), (yyvsp[0].pnd));}
-#line 2392 "front/syntax.c" /* yacc.c:1646  */
+#line 2411 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 70:
-#line 241 "front/syntax.y" /* yacc.c:1646  */
+#line 245 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_ParaList_is_ParaList_COMMA_ParaDecln, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2398 "front/syntax.c" /* yacc.c:1646  */
+#line 2417 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 71:
-#line 245 "front/syntax.y" /* yacc.c:1646  */
+#line 249 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_ParaDecln_is_DeclnSpec_Declr, &(yyloc), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2404 "front/syntax.c" /* yacc.c:1646  */
+#line 2423 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 72:
-#line 246 "front/syntax.y" /* yacc.c:1646  */
+#line 250 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_ParaDecln_is_DeclnSpec_AbstDeclr, &(yyloc), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2410 "front/syntax.c" /* yacc.c:1646  */
+#line 2429 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 73:
-#line 247 "front/syntax.y" /* yacc.c:1646  */
+#line 251 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_ParaDecln_is_DeclnSpec, &(yyloc), (yyvsp[0].pnd));}
-#line 2416 "front/syntax.c" /* yacc.c:1646  */
+#line 2435 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 74:
-#line 251 "front/syntax.y" /* yacc.c:1646  */
+#line 255 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_IdList_is_ID, &(yyloc), (yyvsp[0].pnd));}
-#line 2422 "front/syntax.c" /* yacc.c:1646  */
+#line 2441 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 75:
-#line 252 "front/syntax.y" /* yacc.c:1646  */
+#line 256 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_IdList_is_IdList_COMMA_ID, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2428 "front/syntax.c" /* yacc.c:1646  */
+#line 2447 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 76:
-#line 256 "front/syntax.y" /* yacc.c:1646  */
+#line 260 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_TypeName_is_DeclnSpec, &(yyloc), (yyvsp[0].pnd));}
-#line 2434 "front/syntax.c" /* yacc.c:1646  */
+#line 2453 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 77:
-#line 257 "front/syntax.y" /* yacc.c:1646  */
+#line 261 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_TypeName_is_DeclnSpec_AbstDeclr, &(yyloc), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2440 "front/syntax.c" /* yacc.c:1646  */
+#line 2459 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 78:
-#line 261 "front/syntax.y" /* yacc.c:1646  */
+#line 265 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_AbstDeclr_is_StarList, &(yyloc), (yyvsp[0].pnd));}
-#line 2446 "front/syntax.c" /* yacc.c:1646  */
+#line 2465 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 79:
-#line 262 "front/syntax.y" /* yacc.c:1646  */
+#line 266 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_AbstDeclr_is_DirectAbstDeclr, &(yyloc), (yyvsp[0].pnd));}
-#line 2452 "front/syntax.c" /* yacc.c:1646  */
+#line 2471 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 80:
-#line 263 "front/syntax.y" /* yacc.c:1646  */
+#line 267 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_AbstDeclr_is_StarList_DirectAbstDeclr, &(yyloc), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2458 "front/syntax.c" /* yacc.c:1646  */
+#line 2477 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 81:
-#line 267 "front/syntax.y" /* yacc.c:1646  */
+#line 271 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_DirectAbstDeclr_is_LP_AbstDeclr_RP, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2464 "front/syntax.c" /* yacc.c:1646  */
+#line 2483 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 82:
-#line 268 "front/syntax.y" /* yacc.c:1646  */
+#line 272 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_DirectAbstDeclr_is_LB_RB, &(yyloc), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2470 "front/syntax.c" /* yacc.c:1646  */
+#line 2489 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 83:
-#line 269 "front/syntax.y" /* yacc.c:1646  */
+#line 273 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_DirectAbstDeclr_is_LB_Exp_RB, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2476 "front/syntax.c" /* yacc.c:1646  */
+#line 2495 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 84:
-#line 270 "front/syntax.y" /* yacc.c:1646  */
+#line 274 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_DirectAbstDeclr_is_DirectAbstDeclr_LB_RB, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2482 "front/syntax.c" /* yacc.c:1646  */
+#line 2501 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 85:
-#line 271 "front/syntax.y" /* yacc.c:1646  */
+#line 275 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_DirectAbstDeclr_is_DirectAbstDeclr_LB_Exp_RB, &(yyloc), (yyvsp[-3].pnd), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2488 "front/syntax.c" /* yacc.c:1646  */
+#line 2507 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 86:
-#line 272 "front/syntax.y" /* yacc.c:1646  */
+#line 276 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_DirectAbstDeclr_is_LP_RP, &(yyloc), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2494 "front/syntax.c" /* yacc.c:1646  */
+#line 2513 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 87:
-#line 273 "front/syntax.y" /* yacc.c:1646  */
+#line 277 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_DirectAbstDeclr_is_LP_ParaTypeList_RP, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2500 "front/syntax.c" /* yacc.c:1646  */
+#line 2519 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 88:
-#line 274 "front/syntax.y" /* yacc.c:1646  */
+#line 278 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_DirectAbstDeclr_is_DirectAbstDeclr_LP_RP, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2506 "front/syntax.c" /* yacc.c:1646  */
+#line 2525 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 89:
-#line 275 "front/syntax.y" /* yacc.c:1646  */
+#line 279 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_DirectAbstDeclr_is_DirectAbstDeclr_LP_ParaTypeList_RP, &(yyloc), (yyvsp[-3].pnd), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2512 "front/syntax.c" /* yacc.c:1646  */
+#line 2531 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 90:
-#line 279 "front/syntax.y" /* yacc.c:1646  */
+#line 283 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Initor_is_Exp, &(yyloc), (yyvsp[0].pnd));}
-#line 2518 "front/syntax.c" /* yacc.c:1646  */
+#line 2537 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 91:
-#line 280 "front/syntax.y" /* yacc.c:1646  */
+#line 284 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Initor_is_DOT_ID_ASSIGNOP_Exp, &(yyloc), (yyvsp[-3].pnd), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2524 "front/syntax.c" /* yacc.c:1646  */
+#line 2543 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 92:
-#line 281 "front/syntax.y" /* yacc.c:1646  */
+#line 285 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Initor_is_LB_Exp_RB_ASSIGNOP_Exp, &(yyloc), (yyvsp[-4].pnd), (yyvsp[-3].pnd), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2530 "front/syntax.c" /* yacc.c:1646  */
+#line 2549 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 93:
-#line 282 "front/syntax.y" /* yacc.c:1646  */
+#line 286 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Initor_is_LC_InitorList_RC, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2536 "front/syntax.c" /* yacc.c:1646  */
+#line 2555 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 94:
-#line 283 "front/syntax.y" /* yacc.c:1646  */
+#line 287 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Initor_is_LC_InitorList_COMMA_RC, &(yyloc), (yyvsp[-3].pnd), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2542 "front/syntax.c" /* yacc.c:1646  */
+#line 2561 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 95:
-#line 287 "front/syntax.y" /* yacc.c:1646  */
+#line 291 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_InitorList_is_Initor, &(yyloc), (yyvsp[0].pnd));}
-#line 2548 "front/syntax.c" /* yacc.c:1646  */
+#line 2567 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 96:
-#line 288 "front/syntax.y" /* yacc.c:1646  */
+#line 292 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_InitorList_is_InitorList_COMMA_Initor, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2554 "front/syntax.c" /* yacc.c:1646  */
+#line 2573 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 97:
-#line 292 "front/syntax.y" /* yacc.c:1646  */
+#line 296 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_StmtList_is_Stmt, &(yyloc), (yyvsp[0].pnd));}
-#line 2560 "front/syntax.c" /* yacc.c:1646  */
+#line 2579 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 98:
-#line 293 "front/syntax.y" /* yacc.c:1646  */
+#line 297 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_StmtList_is_StmtList_Stmt, &(yyloc), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2566 "front/syntax.c" /* yacc.c:1646  */
+#line 2585 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 99:
-#line 297 "front/syntax.y" /* yacc.c:1646  */
+#line 301 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_ExpStmt_is_Decln, &(yyloc), (yyvsp[0].pnd));}
-#line 2572 "front/syntax.c" /* yacc.c:1646  */
+#line 2591 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 100:
-#line 298 "front/syntax.y" /* yacc.c:1646  */
+#line 302 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_ExpStmt_is_Exp_SEMI, &(yyloc), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2578 "front/syntax.c" /* yacc.c:1646  */
+#line 2597 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 101:
-#line 299 "front/syntax.y" /* yacc.c:1646  */
+#line 303 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_ExpStmt_is_SEMI, &(yyloc), (yyvsp[0].pnd));}
-#line 2584 "front/syntax.c" /* yacc.c:1646  */
+#line 2603 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 102:
-#line 303 "front/syntax.y" /* yacc.c:1646  */
+#line 307 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_CompSt_is_LC_RC, &(yyloc), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2590 "front/syntax.c" /* yacc.c:1646  */
+#line 2609 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 103:
-#line 304 "front/syntax.y" /* yacc.c:1646  */
+#line 308 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_CompSt_is_LC_StmtList_RC, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2596 "front/syntax.c" /* yacc.c:1646  */
+#line 2615 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 104:
-#line 308 "front/syntax.y" /* yacc.c:1646  */
+#line 312 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Stmt_is_SEMI, &(yyloc), (yyvsp[0].pnd));}
-#line 2602 "front/syntax.c" /* yacc.c:1646  */
+#line 2621 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 105:
-#line 309 "front/syntax.y" /* yacc.c:1646  */
+#line 313 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Stmt_is_Decln, &(yyloc), (yyvsp[0].pnd));}
-#line 2608 "front/syntax.c" /* yacc.c:1646  */
+#line 2627 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 106:
-#line 310 "front/syntax.y" /* yacc.c:1646  */
+#line 314 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Stmt_is_Exp_SEMI, &(yyloc), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2614 "front/syntax.c" /* yacc.c:1646  */
+#line 2633 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 107:
-#line 311 "front/syntax.y" /* yacc.c:1646  */
+#line 315 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Stmt_is_CompSt, &(yyloc), (yyvsp[0].pnd));}
-#line 2620 "front/syntax.c" /* yacc.c:1646  */
+#line 2639 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 108:
-#line 312 "front/syntax.y" /* yacc.c:1646  */
+#line 316 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Stmt_is_GOTO_ID_SEMI, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2626 "front/syntax.c" /* yacc.c:1646  */
+#line 2645 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 109:
-#line 313 "front/syntax.y" /* yacc.c:1646  */
+#line 317 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Stmt_is_ID_COLON, &(yyloc), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2632 "front/syntax.c" /* yacc.c:1646  */
+#line 2651 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 110:
-#line 314 "front/syntax.y" /* yacc.c:1646  */
+#line 318 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Stmt_is_CONTINUE_SEMI, &(yyloc), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2638 "front/syntax.c" /* yacc.c:1646  */
+#line 2657 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 111:
-#line 315 "front/syntax.y" /* yacc.c:1646  */
+#line 319 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Stmt_is_BREAK_SEMI, &(yyloc), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2644 "front/syntax.c" /* yacc.c:1646  */
+#line 2663 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 112:
-#line 316 "front/syntax.y" /* yacc.c:1646  */
+#line 320 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Stmt_is_RETURN_SEMI, &(yyloc), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2650 "front/syntax.c" /* yacc.c:1646  */
+#line 2669 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 113:
-#line 317 "front/syntax.y" /* yacc.c:1646  */
+#line 321 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Stmt_is_RETURN_Exp_SEMI, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2656 "front/syntax.c" /* yacc.c:1646  */
+#line 2675 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 114:
-#line 318 "front/syntax.y" /* yacc.c:1646  */
+#line 322 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Stmt_is_IF_LP_Exp_RP_Stmt, &(yyloc), (yyvsp[-4].pnd), (yyvsp[-3].pnd), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2662 "front/syntax.c" /* yacc.c:1646  */
+#line 2681 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 115:
-#line 319 "front/syntax.y" /* yacc.c:1646  */
+#line 323 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Stmt_is_IF_LP_Exp_RP_Stmt_ELSE_Stmt, &(yyloc), (yyvsp[-6].pnd), (yyvsp[-5].pnd), (yyvsp[-4].pnd), (yyvsp[-3].pnd), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2668 "front/syntax.c" /* yacc.c:1646  */
+#line 2687 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 116:
-#line 320 "front/syntax.y" /* yacc.c:1646  */
+#line 324 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Stmt_is_SWITCH_LP_Exp_RP_Stmt, &(yyloc), (yyvsp[-4].pnd), (yyvsp[-3].pnd), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2674 "front/syntax.c" /* yacc.c:1646  */
+#line 2693 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 117:
-#line 321 "front/syntax.y" /* yacc.c:1646  */
+#line 325 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Stmt_is_CASE_Exp_COLON_Stmt, &(yyloc), (yyvsp[-3].pnd), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2680 "front/syntax.c" /* yacc.c:1646  */
+#line 2699 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 118:
-#line 322 "front/syntax.y" /* yacc.c:1646  */
+#line 326 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Stmt_is_DEFAULT_COLON_Stmt, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2686 "front/syntax.c" /* yacc.c:1646  */
+#line 2705 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 119:
-#line 323 "front/syntax.y" /* yacc.c:1646  */
+#line 327 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Stmt_is_WHILE_LP_Exp_RP_Stmt, &(yyloc), (yyvsp[-4].pnd), (yyvsp[-3].pnd), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2692 "front/syntax.c" /* yacc.c:1646  */
+#line 2711 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 120:
-#line 324 "front/syntax.y" /* yacc.c:1646  */
+#line 328 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Stmt_is_DO_Stmt_WHILE_LP_Exp_RP_SEMI, &(yyloc), (yyvsp[-6].pnd), (yyvsp[-5].pnd), (yyvsp[-4].pnd), (yyvsp[-3].pnd), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2698 "front/syntax.c" /* yacc.c:1646  */
+#line 2717 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 121:
-#line 325 "front/syntax.y" /* yacc.c:1646  */
+#line 329 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Stmt_is_FOR_LP_ExpStmt_ExpStmt_RP_Stmt, &(yyloc), (yyvsp[-5].pnd), (yyvsp[-4].pnd), (yyvsp[-3].pnd), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2704 "front/syntax.c" /* yacc.c:1646  */
+#line 2723 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 122:
-#line 326 "front/syntax.y" /* yacc.c:1646  */
+#line 330 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Stmt_is_FOR_LP_ExpStmt_ExpStmt_Exp_RP_Stmt, &(yyloc), (yyvsp[-6].pnd), (yyvsp[-5].pnd), (yyvsp[-4].pnd), (yyvsp[-3].pnd), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2710 "front/syntax.c" /* yacc.c:1646  */
+#line 2729 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 123:
-#line 330 "front/syntax.y" /* yacc.c:1646  */
+#line 334 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_ID, &(yyloc), (yyvsp[0].pnd));}
-#line 2716 "front/syntax.c" /* yacc.c:1646  */
+#line 2735 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 124:
-#line 331 "front/syntax.y" /* yacc.c:1646  */
+#line 335 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_NUM, &(yyloc), (yyvsp[0].pnd));}
-#line 2722 "front/syntax.c" /* yacc.c:1646  */
+#line 2741 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 125:
-#line 332 "front/syntax.y" /* yacc.c:1646  */
+#line 336 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_NIL, &(yyloc), (yyvsp[0].pnd));}
-#line 2728 "front/syntax.c" /* yacc.c:1646  */
+#line 2747 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 126:
-#line 333 "front/syntax.y" /* yacc.c:1646  */
+#line 337 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_TRUE, &(yyloc), (yyvsp[0].pnd));}
-#line 2734 "front/syntax.c" /* yacc.c:1646  */
+#line 2753 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 127:
-#line 334 "front/syntax.y" /* yacc.c:1646  */
+#line 338 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_FALSE, &(yyloc), (yyvsp[0].pnd));}
-#line 2740 "front/syntax.c" /* yacc.c:1646  */
+#line 2759 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 128:
-#line 335 "front/syntax.y" /* yacc.c:1646  */
+#line 339 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_STRING, &(yyloc), (yyvsp[0].pnd));}
-#line 2746 "front/syntax.c" /* yacc.c:1646  */
+#line 2765 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 129:
-#line 336 "front/syntax.y" /* yacc.c:1646  */
+#line 340 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_LITERAL, &(yyloc), (yyvsp[0].pnd));}
-#line 2752 "front/syntax.c" /* yacc.c:1646  */
+#line 2771 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 130:
-#line 337 "front/syntax.y" /* yacc.c:1646  */
+#line 341 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_LP_Exp_RP, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2758 "front/syntax.c" /* yacc.c:1646  */
+#line 2777 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 131:
-#line 338 "front/syntax.y" /* yacc.c:1646  */
+#line 342 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_Exp_LB_Exp_RB, &(yyloc), (yyvsp[-3].pnd), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2764 "front/syntax.c" /* yacc.c:1646  */
+#line 2783 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 132:
-#line 339 "front/syntax.y" /* yacc.c:1646  */
+#line 343 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_Exp_LP_RP, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2770 "front/syntax.c" /* yacc.c:1646  */
+#line 2789 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 133:
-#line 340 "front/syntax.y" /* yacc.c:1646  */
+#line 344 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_Exp_LP_ExpList_RP, &(yyloc), (yyvsp[-3].pnd), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2776 "front/syntax.c" /* yacc.c:1646  */
+#line 2795 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 134:
-#line 341 "front/syntax.y" /* yacc.c:1646  */
+#line 345 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_Exp_DOT_ID, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2782 "front/syntax.c" /* yacc.c:1646  */
+#line 2801 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 135:
-#line 342 "front/syntax.y" /* yacc.c:1646  */
+#line 346 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_Exp_PTR_ID, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2788 "front/syntax.c" /* yacc.c:1646  */
+#line 2807 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 136:
-#line 343 "front/syntax.y" /* yacc.c:1646  */
+#line 347 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_Exp_INC, &(yyloc), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2794 "front/syntax.c" /* yacc.c:1646  */
+#line 2813 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 137:
-#line 344 "front/syntax.y" /* yacc.c:1646  */
+#line 348 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_Exp_DEC, &(yyloc), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2800 "front/syntax.c" /* yacc.c:1646  */
+#line 2819 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 138:
-#line 345 "front/syntax.y" /* yacc.c:1646  */
+#line 349 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_INC_Exp, &(yyloc), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2806 "front/syntax.c" /* yacc.c:1646  */
+#line 2825 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 139:
-#line 346 "front/syntax.y" /* yacc.c:1646  */
+#line 350 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_DEC_Exp, &(yyloc), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2812 "front/syntax.c" /* yacc.c:1646  */
+#line 2831 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 140:
-#line 347 "front/syntax.y" /* yacc.c:1646  */
+#line 351 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_AND_Exp, &(yyloc), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2818 "front/syntax.c" /* yacc.c:1646  */
+#line 2837 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 141:
-#line 348 "front/syntax.y" /* yacc.c:1646  */
+#line 352 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_MULT_Exp, &(yyloc), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2824 "front/syntax.c" /* yacc.c:1646  */
+#line 2843 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 142:
-#line 349 "front/syntax.y" /* yacc.c:1646  */
+#line 353 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_ADD_Exp, &(yyloc), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2830 "front/syntax.c" /* yacc.c:1646  */
+#line 2849 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 143:
-#line 350 "front/syntax.y" /* yacc.c:1646  */
+#line 354 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_SUB_Exp, &(yyloc), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2836 "front/syntax.c" /* yacc.c:1646  */
+#line 2855 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 144:
-#line 351 "front/syntax.y" /* yacc.c:1646  */
+#line 355 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_NOT_Exp, &(yyloc), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2842 "front/syntax.c" /* yacc.c:1646  */
+#line 2861 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 145:
-#line 352 "front/syntax.y" /* yacc.c:1646  */
+#line 356 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_LNOT_Exp, &(yyloc), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2848 "front/syntax.c" /* yacc.c:1646  */
+#line 2867 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 146:
-#line 353 "front/syntax.y" /* yacc.c:1646  */
+#line 357 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_SIZEOF_Exp, &(yyloc), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2854 "front/syntax.c" /* yacc.c:1646  */
+#line 2873 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 147:
-#line 354 "front/syntax.y" /* yacc.c:1646  */
+#line 358 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_SIZEOF_LP_TypeName_RP, &(yyloc), (yyvsp[-3].pnd), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2860 "front/syntax.c" /* yacc.c:1646  */
+#line 2879 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 148:
-#line 355 "front/syntax.y" /* yacc.c:1646  */
+#line 359 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_LP_TypeName_RP_Exp, &(yyloc), (yyvsp[-3].pnd), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2866 "front/syntax.c" /* yacc.c:1646  */
+#line 2885 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 149:
-#line 356 "front/syntax.y" /* yacc.c:1646  */
+#line 360 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_Exp_MULT_Exp, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2872 "front/syntax.c" /* yacc.c:1646  */
+#line 2891 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 150:
-#line 357 "front/syntax.y" /* yacc.c:1646  */
+#line 361 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_Exp_DIV_Exp, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2878 "front/syntax.c" /* yacc.c:1646  */
+#line 2897 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 151:
-#line 358 "front/syntax.y" /* yacc.c:1646  */
+#line 362 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_Exp_MOD_Exp, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2884 "front/syntax.c" /* yacc.c:1646  */
+#line 2903 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 152:
-#line 359 "front/syntax.y" /* yacc.c:1646  */
+#line 363 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_Exp_ADD_Exp, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2890 "front/syntax.c" /* yacc.c:1646  */
+#line 2909 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 153:
-#line 360 "front/syntax.y" /* yacc.c:1646  */
+#line 364 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_Exp_SUB_Exp, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2896 "front/syntax.c" /* yacc.c:1646  */
+#line 2915 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 154:
-#line 361 "front/syntax.y" /* yacc.c:1646  */
+#line 365 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_Exp_LSHIFT_Exp, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2902 "front/syntax.c" /* yacc.c:1646  */
+#line 2921 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 155:
-#line 362 "front/syntax.y" /* yacc.c:1646  */
+#line 366 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_Exp_RSHIFT_Exp, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2908 "front/syntax.c" /* yacc.c:1646  */
+#line 2927 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 156:
-#line 363 "front/syntax.y" /* yacc.c:1646  */
+#line 367 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_Exp_RELOP_Exp, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2914 "front/syntax.c" /* yacc.c:1646  */
+#line 2933 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 157:
-#line 364 "front/syntax.y" /* yacc.c:1646  */
+#line 368 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_Exp_EQ_Exp, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2920 "front/syntax.c" /* yacc.c:1646  */
+#line 2939 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 158:
-#line 365 "front/syntax.y" /* yacc.c:1646  */
+#line 369 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_Exp_NE_Exp, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2926 "front/syntax.c" /* yacc.c:1646  */
+#line 2945 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 159:
-#line 366 "front/syntax.y" /* yacc.c:1646  */
+#line 370 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_Exp_AND_Exp, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2932 "front/syntax.c" /* yacc.c:1646  */
+#line 2951 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 160:
-#line 367 "front/syntax.y" /* yacc.c:1646  */
+#line 371 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_Exp_XOR_Exp, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2938 "front/syntax.c" /* yacc.c:1646  */
+#line 2957 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 161:
-#line 368 "front/syntax.y" /* yacc.c:1646  */
+#line 372 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_Exp_OR_Exp, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2944 "front/syntax.c" /* yacc.c:1646  */
+#line 2963 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 162:
-#line 369 "front/syntax.y" /* yacc.c:1646  */
+#line 373 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_Exp_LAND_Exp, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2950 "front/syntax.c" /* yacc.c:1646  */
+#line 2969 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 163:
-#line 370 "front/syntax.y" /* yacc.c:1646  */
+#line 374 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_Exp_LOR_Exp, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2956 "front/syntax.c" /* yacc.c:1646  */
+#line 2975 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 164:
-#line 371 "front/syntax.y" /* yacc.c:1646  */
+#line 375 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_Exp_QOP_Exp_COLON_Exp, &(yyloc), (yyvsp[-4].pnd), (yyvsp[-3].pnd), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2962 "front/syntax.c" /* yacc.c:1646  */
+#line 2981 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 165:
-#line 372 "front/syntax.y" /* yacc.c:1646  */
+#line 376 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_Exp_ASSIGNOP_Exp, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2968 "front/syntax.c" /* yacc.c:1646  */
+#line 2987 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 166:
-#line 373 "front/syntax.y" /* yacc.c:1646  */
+#line 377 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_Exp_EQUOP_Exp, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2974 "front/syntax.c" /* yacc.c:1646  */
+#line 2993 "front/syntax.c" /* yacc.c:1646  */
     break;
 
   case 167:
-#line 374 "front/syntax.y" /* yacc.c:1646  */
+#line 378 "front/syntax.y" /* yacc.c:1646  */
     {(yyval.pnd)=build_subast(AST_Exp_is_Exp_COMMA_Exp, &(yyloc), (yyvsp[-2].pnd), (yyvsp[-1].pnd), (yyvsp[0].pnd));}
-#line 2980 "front/syntax.c" /* yacc.c:1646  */
+#line 2999 "front/syntax.c" /* yacc.c:1646  */
     break;
 
 
-#line 2984 "front/syntax.c" /* yacc.c:1646  */
+#line 3003 "front/syntax.c" /* yacc.c:1646  */
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires

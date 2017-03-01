@@ -217,6 +217,17 @@ typedef struct node_t {
 	int lineno, column;
 } node_t;
 
+#define MACRO_NUL  0
+#define MACRO_REP  1
+#define MACRO_FUNC 2
+
+typedef struct macro_t {
+	int bt;
+	char *id;
+	char **args;
+	node_t *pnd;
+} macro_t;
+
 /* function alloc a new type descriptor */
 type_t *new_spec();
 
@@ -227,6 +238,9 @@ char *uos_format(type_t *type);
 
 /* return type relation of given two types */
 int get_type_relation(int btA, int btB);
+
+/* return preset size of `bt` */
+size_t get_width_of_btype(uint32_t bt);
 
 /* return a pointer point to a type decriptor with bt `btype` */
 type_t *convert_btype_to_pointer(uint32_t btype);

@@ -44,12 +44,22 @@ void push_variable(char *vn, type_t *type, node_t *node) {
 void increase_actionlevel() {
 	actionlevel ++;
 	hash_table_t *ht = vector_new(&asv);
-	memset(ht, 0, sizeof(hash_table_t));
+	vector_init(&(ht->full), sizeof(int));
 }
 
 void decrease_actionlevel() {
 	actionlevel --;
-	vector_pop(&asv);
+	hash_table_t *ht = vector_pop(&asv);
+	hash_destroy_element(ht);
+}
+
+bool check_dup(char *id) {
+	if(!id) return false;
+	int i = actionlevel - 1;
+	hash_table_t *ht = asv.p;
+	ident_info_t *ve = hash_get(&ht[i], (void*)id, strlen(id));
+	if(ve) return true;
+	return false;
 }
 
 ident_info_t *find_variable(char *vn) {
@@ -66,7 +76,7 @@ ident_info_t *find_variable(char *vn) {
 }
 
 /* syntax analysis related function*/
-
+/* typedef extern static auto register const volatile */
 void analyse_decln_is_declnspec(node_t *root) {
 	//FIXME
 	//node_t *declnspec = get_child_node_w(root, DeclnSpec);
@@ -184,6 +194,7 @@ void analyse_declnspec_is_typequlfr(node_t *root) {
 
 void analyse_declnspec_is_typequlfr_declnspec(node_t *root) {
 	//transmit dt and ct and combine qulfr
+	//FIXME:invalid combination of qualifier
 	node_t *typequlfr = get_child_node_w(root, TypeQulfr);
 	node_t *declnspec = get_child_node_w(root, DeclnSpec);
 	root->cv.ex = typequlfr->cv.ex | declnspec->cv.ex;//ex records combine qulfr
@@ -196,6 +207,7 @@ void analyse_starlist_is_mult(node_t *root) {
 	//cv.t records pointer level
 	//ex records qulfr
 	root->dt = new_spec();
+	root->dt->w = get_width_of_btype(SpecTypePointer);
 	root->dt->bt = SpecTypePointer;
 	root->dt->comp.pl = 1;
 }
@@ -205,6 +217,7 @@ void analyse_starlist_is_mult_typequlfrlist(node_t *root) {
 	//init pl, transmit qulfr
 	node_t *typequlfrlist = get_child_node_w(root, TypeQulfrList);
 	root->dt = new_spec();
+	root->dt->w = get_width_of_btype(SpecTypePointer);
 	root->dt->bt = SpecTypePointer;
 	root->dt->comp.pl = 1;
 	root->cv.ex = typequlfrlist->cv.ex;//transmit qulfr
@@ -267,6 +280,10 @@ void analyse_declr_is_starlist_directdeclr(node_t *root) {
 	starlist->dt->comp.dt = convert_btype_to_pointer(SpecTypeUnknown);
 	if(!directdeclr->dt) {
 		root->dt = starlist->dt;
+	}else if(directdeclr->dt->bt == SpecTypeUnknown){
+		// StarList(ptr) + pure id
+		root->dt = starlist->dt;
+		root->dt->comp.dt = convert_btype_to_pointer(SpecTypeUnknown);
 	}else if(directdeclr->dt->bt == SpecTypeFunction) {
 		root->dt = starlist->dt;
 		root->dt->func.ret = starlist->dt;
@@ -286,10 +303,6 @@ void analyse_declr_is_starlist_directdeclr(node_t *root) {
 		 */
 		root->dt = directdeclr->dt;
 		root->dt->comp.pl += starlist->dt->comp.pl;
-	}else if(directdeclr->dt->bt == SpecTypeUnknown){
-		// StarList(ptr) + pure id
-		root->dt = starlist->dt;
-		root->dt->comp.dt = convert_btype_to_pointer(SpecTypeUnknown);
 	}else{
 		//invalid
 		assert(0);
@@ -780,6 +793,11 @@ size_t register_member_to_uos_compdeclr(type_t *dt, node_t *compdecln) {
 		argv[cnt].off = off;
 		argv[cnt].dt = compdeclr->dt;
 		argv[cnt].id = declr ? declr->cv.id : NULL;
+		if(check_dup(argv[cnt].id)) {
+			yyerrtype(ErrorRedefinition, compdeclr->lineno, argv[cnt].id);
+		}else if(argv[cnt].id){
+			push_variable(argv[cnt].id, argv[cnt].dt, compdeclr);
+		}
 		switch(compdeclr->production) {
 		case AST_CompDeclr_is_Declr:
 			//int a;
@@ -879,7 +897,7 @@ void analyse_compspec_is_compdeclnlist(node_t *root) {
 		}else{
 			off += decln_w;
 		}
-		logw("off=%d\n", off);
+		logd2("off=%d\n", off);
 	}
 	off = ((is_union) ? max_w : off);
 	logd2("max_w=%d, decln_w=%d, off=%d\n", max_w, decln_w, off);
@@ -909,28 +927,31 @@ void analyse_compdecln_is_declnspec(node_t *root) {
 	node_t *declnspec = get_child_node_w(root, DeclnSpec);
 	node_t *typespec = find_child_node_w(declnspec, TypeSpec);
 	root->dt = declnspec->dt;//transmit dt
-	assert(typespec != NULL);
-	if(typespec->production == AST_TypeSpec_is_CompSpec) {
-		char *uos = NULL;
-		node_t *compspec = get_child_node_w(typespec, CompSpec);
-		node_t *comptype = get_child_node_w(compspec, CompType);
-		uos = comptype->production == AST_CompType_is_STRUCT ? 
-			"struct" : "union";
-		if(compspec->production == AST_CompSpec_is_CompType_ID_LC_CompDeclnList_RC) {
-			node_t *idnode = get_child_node_w(compspec, ID);
-			//inner struct declaration
-			push_variable(sformat("%s@%s", uos, idnode->cv.id),
-					compspec->dt, compspec);
-		}else if(compspec->production == AST_CompSpec_is_CompType_LC_CompDeclnList_RC) {
-			//anonymous inner struct
-			node_t *compdeclnlist = get_child_node_w(compspec, CompDeclnList);
-			root->cv.cnt = compdeclnlist->cv.cnt;
-		}else{
-			//struct ID;
-			printf("line %d: warning:\n", root->lineno);
-		}
-	}else{
+	if(typespec->production != AST_TypeSpec_is_CompSpec) {
 		//report warning
+		printf("line %d: warning:\n", root->lineno);
+		return;
+	}
+	
+	node_t *compspec = get_child_node_w(typespec, CompSpec);
+	node_t *comptype = get_child_node_w(compspec, CompType);
+	uint32_t csprod = compspec->production;
+	if(csprod == AST_CompSpec_is_CompType_ID_LC_CompDeclnList_RC){
+		char *uos = NULL;
+		if(comptype->production == AST_CompType_is_STRUCT)
+			uos = "struct";
+		else
+			uos = "union";
+		node_t *idnode = get_child_node_w(compspec, ID);
+		//inner struct declaration
+		push_variable(sformat("%s.%s", uos, idnode->cv.id),
+				compspec->dt, compspec);
+	}else if(csprod == AST_CompSpec_is_CompType_LC_CompDeclnList_RC){
+		//anonymous inner struct
+		node_t *compdeclnlist = get_child_node_w(compspec, CompDeclnList);
+		root->cv.cnt = compdeclnlist->cv.cnt;
+	}else{
+		//struct ID;
 		printf("line %d: warning:\n", root->lineno);
 	}
 }
@@ -1203,7 +1224,8 @@ int init_seman() {
 		const char *sample;
 		const char *format_string;
 	} test_case[] = {
-		//{DeclnSpec, "struct{int (*func)(int, int);int b;};", "void"},
+		{DeclnSpec, "struct{int (*func)(int, int);int b;};", "struct:8 {\n  int32_t (*)(int32_t, int32_t) func:0:32;\n  int32_t b:32:32;\n}"},
+
 		{CompSpec, "struct A {int a, b;};", "struct:8 {\n  int32_t a:0:32, b:32:32;\n}"},
 		{CompSpec, "union {int a;int b;};", "union:4 {\n  int32_t a:0:32, b:0:32;\n}"},
 		{CompSpec, "union {int a, b;};", "union:4 {\n  int32_t a:0:32, b:0:32;\n}"},
@@ -1212,9 +1234,10 @@ int init_seman() {
 		{CompSpec, "struct {union {int a; int b;}; int y;}x;", "struct:5 {\n  int32_t a:0:32, b:0:32, y:32:32;\n}"},
 		{CompSpec, "struct {struct {int a, b;} x, p; int y;}x;", "struct:20 {\n  struct:8 {\n    int32_t a:0:32, b:32:32;\n  } x:0:64, p:64:64;\n  int32_t y:128:32;\n}"},
 		{CompSpec, "struct {union {int a, b;} x; int y;}x;", "struct:8 {\n  union:4 {\n    int32_t a:0:32, b:0:32;\n  } x:0:32;\n  int32_t y:32:32;\n}"},
-		{CompSpec, "struct A {int a:8, :8;union{struct{int8_t x:8;} b;int8_t y;} y; int b;};", "struct:7 {\n  int32_t a:0:8, (null):8:8;\n  union:1 {\n    struct:1 {\n      char x:0:8;\n    } b:0:8;\n    char y:0:8;\n  } y:16:8;\n  int32_t b:24:32;\n}"},
-		{CompSpec, "struct A {int a:8, :8;union{struct{int8_t x;};int8_t y;}; int b;};", "struct:7 {\n  int32_t a:0:8, (null):8:8;\n  char x:16:8, y:16:8;\n  int32_t b:24:32;\n}"},
-		/*
+		{CompSpec, "struct A {int a:8, :8;union{struct{int8_t x:8;} b;int8_t y;} y; int b;};", "struct:7 {\n  int32_t a:0:8, (null):8:8;\n  union:1 {\n    struct:1 {\n      int8_t x:0:8;\n    } b:0:8;\n    int8_t y:0:8;\n  } y:16:8;\n  int32_t b:24:32;\n}"},
+		{CompSpec, "struct A {int a:8, :8;union{struct{int8_t x;};int8_t y;}; int b;};", "struct:7 {\n  int32_t a:0:8, (null):8:8;\n  int8_t x:16:8, y:16:8;\n  int32_t b:24:32;\n}"},
+
+
 		{DeclnSpec, "void a;", "void"},
 		{DeclnSpec, "long long a;", "int64_t"},
 		{DeclnSpec, "signed long a;", "int32_t"},
@@ -1238,11 +1261,11 @@ int init_seman() {
 		{Declr, "int func[2];", "int32_t [2]"},
 		{Declr, "int * extern *const *p;", "<TypeUnknown> ***"},
 		{Declr, "int func(int, int);", "<TypeUnknown> (int32_t, int32_t)"},
-		{Declr, "int (*func)(int, float);", "<UnknownType> (*)(int32_t, float)"},
-		{Declr, "int (*func)(int(*p)(float,short), char);", "<UnknownType> (*)(int32_t (*)(float, int16_t), char)"},
-		{Declr, "int (**func[2])(int, float);", "<UnknownType> (**[2])(int32_t, float)"},
-		{Declr, "bool check_dupset(char *dupformat, void *set, size_t len, size_t unitsize, off_t off){}", "<TypeUnknown> (char *, void *, uint32_t, uint32_t, int32_t)"},
-		*/
+		{Declr, "int (*func)(int, float);", "<TypeUnknown> (*)(int32_t, float)"},
+		{Declr, "int (*func)(int(*p)(float,short), char);", "<TypeUnknown> (*)(int32_t (*)(float, int16_t), int8_t)"},
+		{Declr, "int (**func[2])(int, float);", "<TypeUnknown> (**[2])(int32_t, float)"},
+		{Declr, "bool check_dupset(char *dupformat, void *set, size_t len, size_t unitsize, off_t off){}", "<TypeUnknown> (int8_t *, void *, uint32_t, uint32_t, int32_t)"},
+
 	};
 
 	for(int i = 0; i < sizeof(test_case)/sizeof(test_case[0]); i++){
@@ -1259,6 +1282,7 @@ int init_seman() {
 		UNIT_TEST_STR_EQUAL(test_case[i].format_string, sol);
 	}
 	UNIT_TEST_END;
-	assert(0);
+	return 0;
+	//assert(0);
 #endif
 }

@@ -68,11 +68,18 @@ static size_t btype_width[] = {
 	[SpecTypeVoid] = 4,
 	[SpecTypeBad] = 1,
 	[SpecTypeUnknown] = 1,
+#ifdef __32__
+	[SpecTypePointer] = 4,
+#elif defined(__64__)
+	[SpecTypePointer] = 8,
+#else
+#	error "unknown word size"
+#endif
 };
 
 static const char *btype_format_string[] = {
-	[SpecTypeInt8] = "char",
-	[SpecTypeUint8] = "uchar",
+	[SpecTypeInt8] = "int8_t",
+	[SpecTypeUint8] = "uint8_t",
 	[SpecTypeInt16] = "int16_t",
 	[SpecTypeUint16] = "uint16_t",
 	[SpecTypeInt32] = "int32_t",
@@ -85,6 +92,14 @@ static const char *btype_format_string[] = {
 	[SpecTypeBad] = "<TypeBad>",
 	[SpecTypeUnknown] = "<TypeUnknown>",
 };
+
+size_t get_width_of_btype(uint32_t bt) {
+	if(bt >= sizeof(btype_width) / sizeof(btype_width[0])) {
+		logw("check here.\n");
+		return 0;
+	}
+	return btype_width[bt];
+}
 
 #define TYPE_CNT SpecTypeEnd
 
@@ -199,7 +214,7 @@ char *type_format(type_t *type) {
 			if(dt->func.ret) {
 				strcpy(comp_type, type_format(dt->func.ret));
 			}else{
-				strcpy(comp_type, "<UnknownType>");
+				strcpy(comp_type, "<TypeUnknown>");
 			}
 			strcat(comp_type, " (");
 			for(int i = 0; i < type->comp.pl; i++) {

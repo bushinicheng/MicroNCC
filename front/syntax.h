@@ -150,7 +150,20 @@ extern int yydebug;
     TypeQulfr = 360,
     EQUOP = 361,
     RELOP = 362,
-    UNARYOP = 363
+    UNARYOP = 363,
+    NEWLINE = 364,
+    MACRO_DEFINE = 365,
+    MACRO_UNDEF = 366,
+    MACRO_IF = 367,
+    MACRO_ELIF = 368,
+    MACRO_ELSE = 369,
+    MACRO_ENDIF = 370,
+    MACRO_LINE = 371,
+    MACRO_WARNING = 372,
+    MACRO_ERROR = 373,
+    STRINGIFY = 374,
+    CONCAT = 375,
+    SPACE = 376
   };
 #endif
 
@@ -163,7 +176,7 @@ union YYSTYPE
 
 	node_t *pnd;
 
-#line 167 "front/syntax.h" /* yacc.c:1909  */
+#line 180 "front/syntax.h" /* yacc.c:1909  */
 };
 
 typedef union YYSTYPE YYSTYPE;

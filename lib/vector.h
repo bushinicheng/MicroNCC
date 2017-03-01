@@ -25,8 +25,14 @@ void *vector_pop(vec_t *v);
 /* return top element's pointer */
 void *vector_top(vec_t *v);
 
+/*return vector buffer*/
+void *vector_ptr(vec_t *v);
+
 /* resize the vector */
 void vector_resize(vec_t *v, size_t size);
+
+/* return the size */
+size_t vector_size(vec_t *v);
 
 /* free the memory which used by vector */
 void vector_free(vec_t *v);

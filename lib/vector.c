@@ -32,6 +32,10 @@ void *vector_pop(vec_t *v) {
 	}
 }
 
+void *vector_ptr(vec_t *v) {
+	return v->p;
+}
+
 void *vector_top(vec_t *v) {
 	if(v->ptr > 0) {
 		return (v->p + v->ptr);
@@ -43,6 +47,10 @@ void *vector_top(vec_t *v) {
 void vector_resize(vec_t *v, size_t size) {
 	v->size = v->unit_size * size;
 	v->p = realloc(v->p, v->size);
+}
+
+size_t vector_size(vec_t *v) {
+	return v->ptr / v->unit_size;
 }
 
 void vector_free(vec_t *v) {
@@ -78,7 +86,7 @@ int init_vector()
 			"\nfail at case #%d, should be '%d' but got '%d'", i, ans[i], p[i]);
 	}
 
-	UNIT_TEST_ASSERT(pans * sizeof(int) == v.ptr, \
+	UNIT_TEST_ASSERT(pans == vector_size(&v), \
 			"\ntest failed: inconsistent vector size..");
 	vector_free(&v);
 	UNIT_TEST_END;

@@ -24,59 +24,56 @@ int __attribute__((noinline)) set_break();
 #define YYLOG_COLOR_WHITE    "37"
 #define YYLOG_COLOR_NORMAL   "38"
 
+#define veprintf(fmt...) vfprintf (stderr, fmt)
+#define eprintf(fmt...) fprintf (stderr, fmt)
+
 int yylog(FILE *fp, const char *tag, const char *format, ...);
 
-#define logf(...) \
-	yylog(stderr, "\033[" YYLOG_STYLE_BACK ";" YYLOG_COLOR_PURPLE "m", __VA_ARGS__)
-
-#define loge(...) do {\
-	yylog(stderr, "\033[" YYLOG_STYLE_BOLD ";" YYLOG_COLOR_RED "m", __VA_ARGS__); \
+#define loge(fmt, ...) do {\
+	eprintf("\033[" YYLOG_STYLE_BOLD ";" YYLOG_COLOR_RED "m" fmt "\033[0m", ## __VA_ARGS__); \
 	exit(-1); \
 } while(0)
 
-#define logw(...) do { \
+#define logw(fmt, ...) do { \
 	set_break(); \
-	yylog(stderr, "\033[" YYLOG_STYLE_NORMAL ";" YYLOG_COLOR_YELLOW "m[WARNING] \033[0m", "line:%d, file:%s, ", __LINE__, __FILE__); \
-	yylog(stderr, "\033[" YYLOG_STYLE_BOLD ";" YYLOG_COLOR_WHITE "m", __VA_ARGS__); \
+	eprintf("\033[" YYLOG_STYLE_NORMAL ";" YYLOG_COLOR_YELLOW "m[WARNING] \033[0m" "line:%d, file:%s, " "\033[" YYLOG_STYLE_BOLD ";" YYLOG_COLOR_WHITE "m" fmt "\033[0m", __LINE__, __FILE__, ## __VA_ARGS__); \
 } while(0)
 
-#define logi(...) \
-	yylog(stderr, "\033[" YYLOG_STYLE_NORMAL ";" YYLOG_COLOR_NORMAL "m", __VA_ARGS__)
+#define logi(fmt, ...) \
+	eprintf("\033[" YYLOG_STYLE_NORMAL ";" YYLOG_COLOR_NORMAL "m[INFO] \033[0m" fmt, ## __VA_ARGS__)
 
 #define logl() \
-	yylog(stderr, "\033[" YYLOG_STYLE_NORMAL ";" YYLOG_COLOR_BLUE "m[DEBUG] \033[0m", "line: %-3d, func:%s\n", __LINE__, __func__)
+	eprintf("\033[" YYLOG_STYLE_NORMAL ";" YYLOG_COLOR_BLUE "m[DEBUG] \033[0m" "line: %-3d, func:%s\n", __LINE__, __func__)
 
 #ifdef __DEBUG__
-#define logd(...) \
-	yylog(stderr, "\033[" YYLOG_STYLE_NORMAL ";" YYLOG_COLOR_BLUE "m[DEBUG] \033[0m", __VA_ARGS__)
+#define logd(fmt, ...) \
+	eprintf("\033[" YYLOG_STYLE_NORMAL ";" YYLOG_COLOR_BLUE "m[DEBUG] \033[0m" fmt, ## __VA_ARGS__)
 #else
 #define logd(...) do{}while(0)
 #endif
 
 #ifdef __DEBUG_LEVEL_2__
-#define logd2(...)  do {\
-	fprintf(stderr, "\033[" YYLOG_STYLE_NORMAL ";" YYLOG_COLOR_BLUE "m[DEBUG]\033[0m %s at %d: ", __FILE__, __LINE__);\
-	fprintf(stderr, __VA_ARGS__);\
-}while(0)
+#define logd2(fmt, ...) \
+	eprintf("\033[" YYLOG_STYLE_NORMAL ";" YYLOG_COLOR_BLUE "m[DEBUG]\033[0m %s at %d: " fmt, __FILE__, __LINE__, ## __VA_ARGS__)
 #else
 #define logd2(...) do{}while(0)
 #endif
 
 #define logG(...) do { \
-	fprintf(stderr, "\033[" YYLOG_STYLE_NORMAL ";" YYLOG_COLOR_GREEN "m"); \
-	fprintf(stderr, __VA_ARGS__); \
-	fprintf(stderr, "\033[0m"); \
+	eprintf("\033[" YYLOG_STYLE_NORMAL ";" YYLOG_COLOR_GREEN "m"); \
+	eprintf(__VA_ARGS__); \
+	eprintf("\033[0m"); \
 } while(0)
 
 #define logR(...) do { \
-	fprintf(stderr, "\033[" YYLOG_STYLE_NORMAL ";" YYLOG_COLOR_RED "m"); \
-	fprintf(stderr, __VA_ARGS__); \
-	fprintf(stderr, "\033[0m"); \
+	eprintf("\033[" YYLOG_STYLE_NORMAL ";" YYLOG_COLOR_RED "m"); \
+	eprintf(__VA_ARGS__); \
+	eprintf("\033[0m"); \
 } while(0)
 
 
 #define __TEST_START__(info)\
-	logi("\033[" YYLOG_STYLE_NORMAL ";" YYLOG_COLOR_BLUE "m[%-5s test]\033[0m func:%s, line:%d...", #info, __func__, __LINE__);
+	eprintf("\033[" YYLOG_STYLE_NORMAL ";" YYLOG_COLOR_BLUE "m[%-5s test]\033[0m func:%s, line:%d...", #info, __func__, __LINE__);
 
 #define __TEST_AVOID__(info, cond) \
 	if(cond) {\

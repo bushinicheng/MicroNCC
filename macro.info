@@ -1,0 +1,69 @@
+<https://gcc.gnu.org/onlinedocs/gcc-3.0.1/cpp_3.html>
+
+1.simple macro
+  ...
+
+2.function-like macros
+  ... 
+
+3.macro arguments
+  ...
+
+4.stringification
+  #define STRING(x) #x
+
+5.concatentation
+  #define concat(x, y) x ## y
+
+6.variadic macros
+  #define eprintf(...) fprintf(stderr, __VA_ARGS__)
+  #define eprintf(fmt...) fprintf(stderr, fmt)
+  #define eprintf(fmt, ...) fprintf(stderr, fmt, ## __VA_ARGS__)
+
+7.predefined macro
+  __FILE__, __LINE__, __DATE__, __TIME__, __STDC__, __STDC_VERSION__
+  __STDC_HOSTED__, __cplusplus
+
+7.4.named operator, defined in iso646.h
+  and     &&
+  and_eq  &=
+  bitand  &
+  bitor   |
+  compl   ~
+  not     !
+  not_eq  !=
+  or      ||
+  or_eq   |=
+  xor     ^
+  xor_eq  ^=
+
+8.undefining and redefining macros
+  ...
+
+9.1.misnesting
+  ...
+
+9.2.operator precedence problem
+  ...
+
+9.3.swallowing the semicolon
+  ...
+
+9.4.duplication of side effects
+  ...
+
+9.5.self-referential macros
+  #define foo (4 + foo)
+      ==>  (4 + foo) cut the expand process after one step
+  #define x (4 + y)
+  #define y (2 * x)
+    x and y will expands as follows:
+      x  ==>  (4 + y)
+	     ==>  (4 + (2 * x))
+	  y  ==>  (2 * x)
+	     ==>  (2 * (4 + y))
+
+9.6.argument prescan
+  #define f(x) x
+    f(f(1))  ==>  f(1)
+	         ==>  1

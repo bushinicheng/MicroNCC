@@ -11,17 +11,20 @@ int hash(uint8_t *keybuf, size_t size) {
 }
 
 void hash_init(hash_table_t *ht) {
+	vector_init(&(ht->full), sizeof(int));
 	memset(ht, 0, sizeof(hash_table_t));
 }
 
 void hash_push(hash_table_t *ht, uint8_t *keybuf, size_t size, void *value) {
 	int key = hash(keybuf, size);
+	if(!ht->pool[key]) vector_push(&(ht->full), &key);
 	hash_element_t *he = (hash_element_t *)mempool_new(&hashpool);
 	he->keybuf = keybuf;
 	he->size = size;
 	he->next = ht->pool[key];
 	he->value = value;
 	ht->pool[key] = he;
+	/**/
 }
 
 void *hash_get(hash_table_t *ht, uint8_t *keybuf, size_t size) {
@@ -36,8 +39,17 @@ void *hash_get(hash_table_t *ht, uint8_t *keybuf, size_t size) {
 	return NULL;
 }
 
+/* cost too much */
 void hash_destroy_element(hash_table_t *ht) {
-	memset(ht, 0, sizeof(hash_table_t));
+	size_t vec_n = vector_size(&(ht->full));
+	if(vec_n * 4 > HASH_SIZE) {
+		memset(&(ht->pool), 0, sizeof(ht->pool));
+	}else{
+		int *p = ht->full.p;
+		for(int i = 0; i < vec_n; i++) {
+			ht->pool[p[i]] = NULL;
+		}
+	}
 }
 
 void free_hash() {
@@ -46,5 +58,7 @@ void free_hash() {
 
 int init_hash() {
 	mempool_init(&hashpool, sizeof(hash_element_t));
+#ifdef __DEBUG__
+#endif
 	return 0;
 }
