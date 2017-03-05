@@ -36,6 +36,7 @@ size_t mempool_size(mem_pool_t *mp);
 void mempool_free(mem_pool_t *mp);
 
 /* bpool API */
+bool bpool_state_close();
 void *get_memory_pointer();
 void *require_memory(size_t size);
 void push_bpool_state(off_t op);

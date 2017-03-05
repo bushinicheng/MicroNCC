@@ -48,20 +48,21 @@ invalidnum       \.*[0-9][_a-zA-Z0-9\.]*
 string           (\"([^\"]*(\\\")?)*\"[ \t\r\n]*)+
 literal          (\'([^\']*(\\\')?)*\'[ \t\r\n]*)+
 id               [_a-zA-Z][_a-zA-Z0-9]*
+nb               [ \t\f\r]*
 blockcomment     (?s:\/\*([^\*]|\*[^\/])*\*\/)
 linecomment      \/\/.*$
 invalidcomment   \/\*([^\*]|\*[^\/])*$
 
 %%
-^#define            {return symbol(MACRO_DEFINE);}
-^#undef             {return symbol(MACRO_UNDEF);}
-^#if                {return symbol(MACRO_IF);}
-^#elif              {return symbol(MACRO_ELIF);}
-^#else              {return symbol(MACRO_ELSE);}
-^#endif             {return symbol(MACRO_ENDIF);}
-^#line              {return symbol(MACRO_LINE);}
-^#warning           {return symbol(MACRO_WARNING);}
-^#error             {return symbol(MACRO_ERROR);}
+^{nb}#{nb}define    {return symbol(MACRO_DEFINE);}
+^{nb}#{nb}undef     {return symbol(MACRO_UNDEF);}
+^{nb}#{nb}if        {return symbol(MACRO_IF);}
+^{nb}#{nb}elif      {return symbol(MACRO_ELIF);}
+^{nb}#{nb}else      {return symbol(MACRO_ELSE);}
+^{nb}#{nb}endif     {return symbol(MACRO_ENDIF);}
+^{nb}#{nb}line      {return symbol(MACRO_LINE);}
+^{nb}#{nb}warning   {return symbol(MACRO_WARNING);}
+^{nb}#{nb}error     {return symbol(MACRO_ERROR);}
 "#"                 {return symbol(STRINGIFY);}
 "##"                {return symbol(CONCAT);}
 "__LINE__"          {}
@@ -261,6 +262,7 @@ static int num(int numtype) {
 	pnd->dt = new_spec();//FIXME:overflow of int
 	pnd->lineno = yylineno;
 	pnd->column = yycolumn;
+	pnd->cv.str = sformat("%s", yytext);
 	yylval.pnd = pnd;
 
 	switch(numtype) {
@@ -295,21 +297,21 @@ static int reg(int syntaxval) {
 
 	switch(syntaxval)
 	{
-	case ID:
-		pnd->cv.id = register_id(yytext);
+	case LITERAL:
+		pnd->lrv = SpecRvalue;
+		pnd->dt = convert_btype_to_pointer(SpecTypeInt8);
+		pnd->cv.str = sformat("%s", yytext);
+		pnd->cv._8 = register_literal(yytext);
 		break;
 	case STRING:
 		pnd->lrv = SpecLvalue;
 		pnd->dt = convert_btype_to_pointer(SpecTypeString);
 		pnd->cv.str = register_string(yytext);
 		break;
-	case LITERAL:
-		pnd->lrv = SpecRvalue;
-		pnd->dt = convert_btype_to_pointer(SpecTypeInt8);
-		pnd->cv._8 = register_literal(yytext);
+	case ID:
+		pnd->cv.id = register_id(yytext);
 		break;
 	}
-
 	return syntaxval;
 }
 
@@ -372,8 +374,8 @@ char register_literal(const char *str) {
 
 /* return value is the start position of registered string */
 char* register_string(const char *str) {
-	int strbuf_ptr = 0;
-	char *strbuf = get_memory_pointer();
+	int buf_ptr = 0;
+	char *buf = malloc(strlen(str) + 1);
 	char *p = (char *)str;
 	bool in_str = true;
 	while(*(++p)) //since the first char is always `"`
@@ -381,103 +383,407 @@ char* register_string(const char *str) {
 		if(*p == '"') {in_str = !in_str;continue;}
 		if(!in_str)	continue;
 		if(*p != '\\')
-			strbuf[strbuf_ptr ++] = *p;
+			buf[buf_ptr ++] = *p;
 		else
 			switch(*(++p))
 			{
-				case '\\':strbuf[strbuf_ptr ++] = '\\';break;
-				case 'n' :strbuf[strbuf_ptr ++] = '\n';break;
-				case 'r' :strbuf[strbuf_ptr ++] = '\r';break;
-				case 't' :strbuf[strbuf_ptr ++] = '\t';break;
-				case 'b' :strbuf[strbuf_ptr ++] = '\b';break;
+				case '\\':buf[buf_ptr ++] = '\\';break;
+				case 'n' :buf[buf_ptr ++] = '\n';break;
+				case 'r' :buf[buf_ptr ++] = '\r';break;
+				case 't' :buf[buf_ptr ++] = '\t';break;
+				case 'b' :buf[buf_ptr ++] = '\b';break;
 				case 'x' :
-				case 'X' :p++;strbuf[strbuf_ptr ++] = next_number(&p, 16);p--;break;
-				case '0' :p++;strbuf[strbuf_ptr ++] = next_number(&p, 8);p--;break;
-				default  :strbuf[strbuf_ptr ++] = *p;break;
+				case 'X' :p++;buf[buf_ptr ++] = next_number(&p, 16);p--;break;
+				case '0' :p++;buf[buf_ptr ++] = next_number(&p, 8);p--;break;
+				default  :buf[buf_ptr ++] = *p;break;
 			}
 	}
-	strbuf[strbuf_ptr ++] = 0;
-	return (char*)require_memory(strbuf_ptr);
+	buf[buf_ptr] = 0;
+	return buf;
 }
 
 char* register_id(const char *text) {
 	int len = strlen(text) + 1;
-	char *strbuf = get_memory_pointer();
-	strcpy(strbuf, text);
-	return (char*)require_memory(len);
+	char *buf = malloc(len);
+	strcpy(buf, text);
+	return buf;
 }
 
-void register_macro(char *id, macro_t *macro) {
+int swallow_space() {
+	int lexval = -1;
+	do{lexval = next_token();}while(lexval == SPACE);
+	return lexval;
 }
 
-void handle_macro() {
+int swallow_blank_and_newline() {
+	int lexval = -1;
+	do{lexval = next_token();}while(lexval == NEWLINE || lexval == SPACE);
+	return lexval;
+}
+
+bool check_duparg_in_macro(macro_arg_t *arg, size_t len) {
+	for(int i = 0; i < len; i++) {
+		for(int j = i + 1; j < len; j++) {
+			if(strcmp(arg[i].id, arg[j].id) == 0) {
+				eprintf("dupplicate argument '%s' in macro.\n", arg[i].id);
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+int find_arg_in_macro(macro_arg_t *argv, size_t len, char *id) {
+	for(int i = 0; i < len; i++) {
+		if(strcmp(argv[i].id, id) == 0) {
+			return i;
+		}
+	}
+	return -1;
+}
+
+vec_t macro_buffer;
+
+int match_macro() {
+	static int mmt[11][MacroTokenSize] = {
+		     /*ID LP RP , ... id.## #  \n ' 'other EOF*/
+		[0] = { 1,10,10,10,10,10,10,10,10, 0,10, 10},
+		[1] = { 8, 2, 8, 8, 8, 8, 8, 8, 8, 1, 8,  9},
+		[2] = { 3,10, 5,10, 4,10,10,10,10, 2,10, 10},
+		[3] = {10,10, 5, 2, 4,10,10,10,10, 3,10, 10},
+		[4] = {10,10, 5,10,10,10,10,10,10, 4,10, 10},
+		[5] = { 8, 8, 8, 8, 8, 8, 8, 6, 8, 5, 8,  9},
+		[6] = { 8,10,10,10,10,10,10,10,10, 6,10, 10},
+		[7] = { 8, 8, 8, 8, 8, 8,10,10,10, 7, 8,  8},
+		[8] = { 8, 8, 8, 8, 8, 8, 7, 6, 9, 8, 8,  9},
+		[9] = {10,10,10,10,10,10,10,10,10, 9,10, 10},//acc
+		[10]= {10,10,10,10,10,10,10,10,10,10,10, 10},//err
+	};
+	//register .. or args... in state 4
+	//register id in state 5
+	macro_t macro;
+	size_t argc = 0, mtlen = 0;
+	int cur_state = 0, last_state = 0, lexval = 0;
+	node_t *lastnd = NULL;
+	macro_token_t *mt = NULL;
+	macro_arg_t *argv = NULL;
+	while(cur_state != 9 && cur_state != 10) {
+		int tokval = 0;
+		lexval = swallow_space();
+		switch(lexval) {
+			case ID:        tokval = MacroID;        break;
+			case LP:        tokval = MacroLP;        break;
+			case RP:        tokval = MacroRP;        break;
+			case COMMA:     tokval = MacroCOMMA;     break;
+			case ELLIPSIS:  tokval = MacroELLIPSIS;  break;
+			case CONCAT:    tokval = MacroCONCAT;    break;
+			case STRINGIFY: tokval = MacroSTRINGIFY; break;
+			case NEWLINE:   tokval = MacroNEWLINE;   break;
+			case SPACE:     tokval = MacroSPACE;     break;
+			case 0://EOF
+				tokval = MacroEOF;
+				break;
+			default:        tokval = MacroOther;     break;
+		}
+
+		cur_state = mmt[cur_state][tokval];
+		logd("switch state: %d --> %d\n", last_state, cur_state);
+		logd("triggered by %d, '%s'\n", tokval, lexval?yytext:"EOF");
+
+		int index = 0, mtt = 0, cat_index = 0, last_mtt = -1;
+		switch(cur_state) {
+		case 1:
+			macro.id = yylval.pnd->cv.id;
+			argv = get_memory_pointer();
+			break;
+		case 2:
+			if(last_state == 3) {
+				//ID
+				argv[argc].token = MacroID;
+				argv[argc].id = lastnd->cv.id;
+				argc ++;
+			}
+			break;
+		case 4:
+			if(last_state == 2) {
+				//...
+				argv[argc].token = MacroELLIPSIS;
+				argv[argc].id = lastnd->cv.id;
+				argc ++;
+			}else if(last_state == 3){
+				//args...
+				argv[argc].token = MacroIDELLIPSIS;
+				argv[argc].id = lastnd->cv.id;
+				argc ++;
+			}else{
+				logw("check here.\n");
+			}
+			break;
+		case 5:
+			if(last_state == 3) {
+				//ID
+				macro.bt = MacroFixedArgs;
+				argv[argc].token = MacroID;
+				argv[argc].id = lastnd->cv.id;
+				argc ++;
+			}
+			argv = require_memory(sizeof(macro_arg_t) * argc);
+			if(check_duparg_in_macro(argv, argc))
+				cur_state = 10;//err
+			else
+				mt = get_memory_pointer();
+			break;
+		case 6:
+			lexval = swallow_space();
+			if(lexval != ID) {
+				//err
+				logd("lexval=%d, should be ID=%d\n", lexval, ID);
+				cur_state = 10;
+			}else{
+				char *cur_id = yylval.pnd->cv.id;
+				int index = find_arg_in_macro(argv, argc, cur_id);
+				if(index == -1) {
+					//err
+					cur_state = 10;
+					logd("fail to find arg '%s'\n", cur_id);
+				}else{
+					mt[mtlen].mtt = MacroTokenStringify;
+					mt[mtlen].i = index;
+					mt[mtlen].pnd = yylval.pnd;
+					last_mtt = MacroTokenStringify;
+					mtlen ++;
+					cur_state = 8;
+				}
+			}
+			break;
+		case 7:
+			mtt = 0;
+			logw("%d,%d\n", mtlen - 1, last_mtt);
+			if(last_mtt == MacroTokenConcatTJ
+			|| last_mtt == MacroTokenConcatIJ)
+				cat_index = mtlen ++;
+			else
+				cat_index = mtlen - 1;
+			if(lastnd->token == ID && (index = find_arg_in_macro(argv, argc, lastnd->cv.id)) != -1){
+				//this is arg
+				mtt = mtt | 0x2;
+				mt[cat_index].i = index;
+			}else{
+				//common token
+				mt[mtlen].mtt = MacroTokenCommon;
+				mt[mtlen].pnd = lastnd;
+				mtlen ++;
+			}
+
+			swallow_space();
+			if(yylval.pnd->token == ID && (index = find_arg_in_macro(argv, argc, yylval.pnd->cv.id)) != -1){
+				//this is arg
+				mtt = mtt | 0x1;
+				mt[cat_index].j = index;
+			}else{
+				mt[mtlen].mtt = MacroTokenCommon;
+				mt[mtlen].pnd = yylval.pnd;
+				mtlen ++;
+			}
+			mt[cat_index].mtt = mtt;
+			last_mtt = mtt;
+			cur_state = 8;
+			break;
+		case 8:
+			//store all token
+			if(last_state == 1){
+				macro.bt = MacroNormal;
+				require_memory(0);
+				mt = get_memory_pointer();
+				mt[mtlen].mtt = MacroTokenCommon;
+				mt[mtlen].pnd = yylval.pnd;
+				last_mtt = MacroTokenCommon;
+				mtlen ++;
+			}else if(last_state == 5 || last_state == 8){
+				//store
+				int index = 0;
+				if(yylval.pnd->token == ID
+				&& (index = find_arg_in_macro(argv, argc, yylval.pnd->cv.id)) != -1){
+					mt[mtlen].mtt = MacroTokenArg;
+					mt[mtlen].i = index;
+					mt[mtlen].pnd = yylval.pnd;
+					last_mtt = MacroTokenArg;
+					mtlen ++;
+				}else{
+					mt[mtlen].mtt = MacroTokenCommon;
+					mt[mtlen].pnd = yylval.pnd;
+					last_mtt = MacroTokenCommon;
+					mtlen ++;
+				}
+			}else if(last_state == 6){//do nothing
+			}else if(last_state == 7){//do nothing
+			}
+			break;
+		case 9:
+			mt = require_memory(mtlen * sizeof(macro_token_t));
+			//accept
+			break;
+		}
+
+		last_state = cur_state;
+		lastnd = yylval.pnd;
+	}
+	if(!bpool_state_close()) require_memory(0);
+
+	if(cur_state == 10) macro.bt = MacroBad;
+
+	if(lexval == NEWLINE) swallow_blank_and_newline();
+
+	macro.argc = argc;
+	macro.argv = argv;
+	macro.mtlen = mtlen;
+	macro.mt = mt;
+	vector_push(&macro_buffer, &macro);
+
+	return lexval;
+}
+
+char *macro_format(macro_t *macro) {
+	if(!macro) return NULL;
+	//format arg
+	char *token_format(node_t *);
+	char *buf = get_memory_pointer();
+	sprintf(buf, "#define %s(", macro->id);
+	for(int i = 0; i < macro->argc; i++) {
+		if(i != macro->argc - 1)
+			sprintf(buf + strlen(buf), "%s, ", macro->argv[i].id);
+		else
+			sprintf(buf + strlen(buf), "%s", macro->argv[i].id);
+	}
+	sprintf(buf + strlen(buf), ") ");
+	for(int i = 0; i < macro->mtlen; i++) {
+		printf("%d", macro->mt[i].mtt);
+		if(macro->mt[i].mtt == MacroTokenCommon)
+			printf(":%s ", token_format(macro->mt[i].pnd));
+		else
+			printf(" ");
+	}
+	printf("\n");
+	for(int i = 0; i < macro->mtlen; i++) {
+		//logw("i:%d, mtt:%d\n", i, macro->mt[i].mtt);
+		//logw("%p\n", &macro->mt[i].mtt);
+		if(macro->mt[i].mtt == MacroTokenArg) {
+			sprintf(buf + strlen(buf), "@%d:%s ", macro->mt[i].i, token_format(macro->mt[i].pnd));
+		}else if(macro->mt[i].mtt == MacroTokenStringify){
+			sprintf(buf + strlen(buf), "#%d:%s ", macro->mt[i].i, token_format(macro->mt[i].pnd));
+		}else if(macro->mt[i].mtt == MacroTokenConcatTT){
+			if(i + 2 >= macro->mtlen || macro->mt[i + 2].mtt >= 4){
+				sprintf(buf + strlen(buf), "%s ## %s ", token_format(macro->mt[i + 1].pnd), token_format(macro->mt[i + 2].pnd));
+				i += 2;
+			}else{
+				sprintf(buf + strlen(buf), "%s ## ", token_format(macro->mt[i + 1].pnd));
+				i ++;
+			}
+		}else if(macro->mt[i].mtt == MacroTokenConcatTJ){
+			if(i + 2 >= macro->mtlen || macro->mt[i + 2].mtt >= 4){
+				sprintf(buf + strlen(buf), "%s ## @%d:%s ",
+					token_format(macro->mt[i + 1].pnd),
+					macro->mt[i].j,
+					macro->argv[macro->mt[i].j].id);
+				i ++;
+			}else{
+				sprintf(buf + strlen(buf), "%s ## ",
+					token_format(macro->mt[i + 1].pnd));
+				i ++;
+			}
+		}else if(macro->mt[i].mtt == MacroTokenConcatIT){
+			if(i + 2 >= macro->mtlen || macro->mt[i + 2].mtt >= 4){
+				sprintf(buf + strlen(buf), "@%d:%s ## %s ",
+					macro->mt[i].i, macro->argv[macro->mt[i].i].id,
+					token_format(macro->mt[i + 1].pnd));
+				i ++;
+			}else{
+				sprintf(buf + strlen(buf), "@%d:%s ## ",
+					macro->mt[i].i);
+			}
+		}else if(macro->mt[i].mtt == MacroTokenConcatIJ){
+			sprintf(buf + strlen(buf), "@%d:%s ## @%d:%s ",
+				macro->mt[i].i, macro->argv[macro->mt[i].i].id,
+				macro->mt[i].j, macro->argv[macro->mt[i].j].id);
+		}else if(macro->mt[i].mtt == MacroTokenCommon){
+			sprintf(buf + strlen(buf), "%s ", token_format(macro->mt[i].pnd));
+		}else{
+			logw("check it! mtt=%d\n", macro->mt[i].mtt);
+		}
+	}
+	buf = require_memory(strlen(buf) + 1);
+	return buf;
 }
 
 int yylex() {
-#define match_token(token) do {\
-	if(next_token() != token) {\
-		while(next_token() != NEWLINE); \
-		lexval = next_token(); \
-		goto __match_fail__;\
-	}\
-}while(0)
-	int lexval = 0;
-	switch(lexval = next_token()) {
-	case SPACE:
-	case NEWLINE:
-		do{lexval = next_token();}while(lexval == NEWLINE || lexval == SPACE);
-		break;
+	int lexval = swallow_blank_and_newline();
+	switch(lexval) {
 	case MACRO_DEFINE:
-		if(next_token() == ID) {
-			int cnt = 0;
-			macro_t macro;
-			char *id = yylval.pnd->cv.id;
-			if(next_token() == LP) {
-				//macro func
-				char **args = get_memory_pointer();
-				while(true) {
-					lexval = next_token();
-					if(lexval == ID)
-						args[cnt ++] = yylval.pnd->cv.id;
-					else if(lexval == ELLIPSIS) {
-						match_token(RP);
-						break;
-					}else{
-						yyerr("expected identifier or '...' here\n");
-						goto __match_fail__;
-					}
-
-					lexval = next_token();
-					if(lexval == COMMA) {
-						continue;
-					}else if(lexval == RP){
-						break;
-					}else{
-						yyerr("expected ',' or ')' here\n");
-						goto __match_fail__;
-					}
-				}
-				args = require_memory(sizeof(char *) * cnt);
-				macro.args = args;
-				register_macro(id, &macro);
-			}else{
-				//comon macro
-			}
-			register_macro(id, &macro);
-		}
+		lexval = match_macro();
 		break;
 	default:
 		break;
 	}
-__match_fail__:
 	return lexval;
 }
 
+void tokenize_from_string(const char *string) {
+	void *buffer_state = yy_scan_string(string);
+	yy_switch_to_buffer(buffer_state);
+	while(yylex() > 0);
+	yylex_destroy();
+}
 
 int init_lexical() {
+	vector_init(&macro_buffer, sizeof(macro_t));
 #ifdef __DEBUG__
 	/* unit test of register_string */
 	UNIT_TEST_START;
+	
+	struct {
+		char *sample, *ans;
+	}test_macro_string[] = {
+		{"#define macro a e + - extern int * /",
+			"#define macro() a e ADD SUB extern INT MULT DIV "},
+		{"#define macro a b c \\\n d e\n",
+			"#define macro() a b c d e "},
+		{"#define macro() a b c \\\n d e\n",
+			"#define macro() a b c d e "},
+		{"#define macro() a b c \\/\n d e\n",
+			"#define macro() a b c DIV "},
+		{"#define macro(aa) aa vv dd \\/\n d e\n",
+			"#define macro(aa) @0:aa vv dd DIV "},
+		{"#define macro(aa) a vv dd \\/\n d e\n",
+			"#define macro(aa) a vv dd DIV "},
+		{"#define macro(aa,vv,dd) aa vv dd \\/\n d e\n",
+			"#define macro(aa, vv, dd) @0:aa @1:vv @2:dd DIV "},
+		{"#define macro(a,b,c) # a vv dd \\/",
+			"#define macro(a, b, c) #0:a vv dd DIV "},
+		{"#define macro(a,b,c)  d## vv dd ",
+			"#define macro(a, b, c) d ## vv dd "},
+		{"#define macro(a,b,c)  a## vv dd ",
+			"#define macro(a, b, c) @0:a ## vv dd "},
+		{"#define macro(a,b,c)  vv## c dd ",
+			"#define macro(a, b, c) vv ## @2:c dd "},
+		{"#define macro(a,b,c)  a## c dd ",
+			"#define macro(a, b, c) @0:a ## @2:c dd "},
+		{"#define macro(a,b,c)  vv## vv##vv dd ",
+			"#define macro(a, b, c) vv ## vv ## vv dd "},
+		{"#define macro(a,b,c)  vv## a##vv dd ",
+			"#define macro(a, b, c) vv ## @0:a ## vv dd "},
+	};
+
+	for(int i = 0; i < sizeof(test_macro_string)/sizeof(test_macro_string[0]); i++) {
+		logd("\ntest macro case %d\n", i);
+		tokenize_from_string(test_macro_string[i].sample);
+		macro_t *pma = vector_top(&macro_buffer);
+		if(strcmp(macro_format(pma), test_macro_string[i].ans) != 0) {
+			logw("fail at %d\n", i);
+		}
+		UNIT_TEST_STR_EQUAL(macro_format(pma), test_macro_string[i].ans);
+	}
+
+
 	const char *ss[] = {
 		"\"Hello World!\"",
 		"\"prefix\"\"\\n\\r\\t\\\\suffix\"",

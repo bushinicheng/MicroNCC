@@ -9,6 +9,7 @@ static int toggle_caller_state = 0;
 static uint32_t ptr = 0;
 static uint8_t bpool[POOL_SIZE];
 static vec_t bpool_state_stack;
+static vec_t alloced_pointer;
 
 void *wt_alloc(size_t size) {
 	void *ptr = malloc(size);
@@ -114,6 +115,10 @@ void *get_memory_pointer() {
 	return &bpool[ptr];
 }
 
+bool bpool_state_close() {
+	return (toggle_caller_state == 0 || toggle_caller_state == 2);
+}
+
 void push_bpool_state(off_t op) {
 	toggle_caller_state = 2;
 #ifdef __DEBUG_BPOOL__
@@ -142,11 +147,17 @@ void *require_memory(size_t size) {
 #endif
 	memcpy(ret, &bpool[ptr], size);
 	assert(ptr + size <= POOL_SIZE);
+	vector_push(&alloced_pointer, &ret);
 	return ret;
+}
+
+void free_bpool() {
+	//FIXME
 }
 
 int init_bpool() {
 	vector_init(&bpool_state_stack, sizeof(off_t));
+	vector_init(&alloced_pointer, sizeof(void *));
 #ifdef __DEBUG__
 	UNIT_TEST_START;
 	mem_pool_t mp;

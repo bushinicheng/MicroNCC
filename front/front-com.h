@@ -5,5 +5,6 @@
 #include "node.h"
 #include "syntax.h"
 #include "ast.h"
+#include "macro.h"
 
 #endif

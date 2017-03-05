@@ -21,7 +21,8 @@
   #define eprintf(fmt, ...) fprintf(stderr, fmt, ## __VA_ARGS__)
 
 7.predefined macro
-  __FILE__, __LINE__, __DATE__, __TIME__, __STDC__, __STDC_VERSION__
+  __FILE__, __LINE__,
+  __DATE__, __TIME__, __STDC__, __STDC_VERSION__
   __STDC_HOSTED__, __cplusplus
 
 7.4.named operator, defined in iso646.h

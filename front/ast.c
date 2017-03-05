@@ -166,6 +166,33 @@ node_t* find_child_node_w(node_t *root, int token) {
 	return ret;
 }
 
+char *token_format(node_t *node) {
+	if(node->token == TYPE) {
+		return str_lexval[node->production];
+	}else if(node->token == TypeQulfr) {
+		switch(node->cv.ex) {
+			case QulfrTypedef: return "typedef";
+			case QulfrExtern:  return "extern";
+			case QulfrStatic:  return "static";
+			case QulfrAuto:    return "auto";
+			case QulfrRegister:return "register";
+			case QulfrConst:   return "const";
+			case QulfrVolatile:return "volatile";
+			default:return NULL;
+		}
+	}else if(node->token == NUM){
+		return node->cv.str;
+	}else if(node->token == LITERAL){
+		return node->cv.str;
+	}else if(node->token == STRING){
+		return node->cv.str;
+	}else if(node->token == ID){
+		return node->cv.id;
+	}else{
+		return str_lexval[node->token];
+	}
+}
+
 void print_ast(node_t *root) {
 	if(root == NULL)
 		return;

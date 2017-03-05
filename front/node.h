@@ -203,6 +203,8 @@ typedef struct node_t {
 	int token;//syntax value like `Program` `TYPE` `INT`
 	int production;//semantic reduce rule like `AST_Exp_is_ID`
 
+	char *raw_s;
+
 	//dt + vi for id
 	//dt + vi + cv for exp
 	//for ID node, dt donates id's type, if id is constant, cv.t will indicate this
@@ -216,17 +218,6 @@ typedef struct node_t {
 	int error;
 	int lineno, column;
 } node_t;
-
-#define MACRO_NUL  0
-#define MACRO_REP  1
-#define MACRO_FUNC 2
-
-typedef struct macro_t {
-	int bt;
-	char *id;
-	char **args;
-	node_t *pnd;
-} macro_t;
 
 /* function alloc a new type descriptor */
 type_t *new_spec();
@@ -252,5 +243,8 @@ typedef void (*SemanFunc)(node_t *);
 
 /* analyse syntax of a single production */
 void syntax_analysis(node_t *root);
+
+/*scan string and parse it*/
+void scan_from_string(const char *string);
 
 #endif

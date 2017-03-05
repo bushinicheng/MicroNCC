@@ -38,7 +38,7 @@ void *vector_ptr(vec_t *v) {
 
 void *vector_top(vec_t *v) {
 	if(v->ptr > 0) {
-		return (v->p + v->ptr);
+		return (v->p + v->ptr - v->unit_size);
 	}else{
 		return NULL;
 	}

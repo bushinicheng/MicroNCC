@@ -33,14 +33,14 @@ int init_front() {
 	/* init some global variables */
 	init_front_global_variables();
 
-	/*init lexical file*/
-	init_lexical();
-
 	/*init syntax tree module*/
 	init_ast();
 
 	/*init type system*/
 	init_spec();
+
+	/*init lexical file*/
+	init_lexical();
 
 	/*init semantic module*/
 	init_seman();

@@ -17,7 +17,6 @@ test/case*
 *.docx
 *.pdf
 tags
-*.png
 *.tab.c
 submit.sh
 !.gitignore
