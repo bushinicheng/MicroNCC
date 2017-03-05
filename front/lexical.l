@@ -445,6 +445,7 @@ int find_arg_in_macro(macro_arg_t *argv, size_t len, char *id) {
 vec_t macro_buffer;
 
 int match_macro() {
+	//FIXME:handle error state
 	static int mmt[11][MacroTokenSize] = {
 		     /*ID LP RP , ... id.## #  \n ' 'other EOF*/
 		[0] = { 1,10,10,10,10,10,10,10,10, 0,10, 10},
@@ -463,7 +464,7 @@ int match_macro() {
 	//register id in state 5
 	macro_t macro;
 	size_t argc = 0, mtlen = 0;
-	int cur_state = 0, last_state = 0, lexval = 0;
+	int cur_state = 0, last_state = 0, lexval = 0, last_mtt = -1;
 	node_t *lastnd = NULL;
 	macro_token_t *mt = NULL;
 	macro_arg_t *argv = NULL;
@@ -490,7 +491,7 @@ int match_macro() {
 		logd("switch state: %d --> %d\n", last_state, cur_state);
 		logd("triggered by %d, '%s'\n", tokval, lexval?yytext:"EOF");
 
-		int index = 0, mtt = 0, cat_index = 0, last_mtt = -1;
+		int index = 0, mtt = 0, cat_index = 0;
 		switch(cur_state) {
 		case 1:
 			macro.id = yylval.pnd->cv.id;
@@ -558,7 +559,6 @@ int match_macro() {
 			break;
 		case 7:
 			mtt = 0;
-			logw("%d,%d\n", mtlen - 1, last_mtt);
 			if(last_mtt == MacroTokenConcatTJ
 			|| last_mtt == MacroTokenConcatIJ)
 				cat_index = mtlen ++;
@@ -575,7 +575,9 @@ int match_macro() {
 				mtlen ++;
 			}
 
-			swallow_space();
+			do{
+				lexval = next_token();
+			}while(lexval == SPACE || lexval == CONCAT);
 			if(yylval.pnd->token == ID && (index = find_arg_in_macro(argv, argc, yylval.pnd->cv.id)) != -1){
 				//this is arg
 				mtt = mtt | 0x1;
@@ -630,7 +632,10 @@ int match_macro() {
 	}
 	if(!bpool_state_close()) require_memory(0);
 
-	if(cur_state == 10) macro.bt = MacroBad;
+	if(cur_state == 10) {
+		macro.bt = MacroBad;
+		//TODO:report error reason
+	}
 
 	if(lexval == NEWLINE) swallow_blank_and_newline();
 
@@ -657,9 +662,10 @@ char *macro_format(macro_t *macro) {
 	}
 	sprintf(buf + strlen(buf), ") ");
 	for(int i = 0; i < macro->mtlen; i++) {
-		printf("%d", macro->mt[i].mtt);
+		char *ss[] = {"TT", "TJ", "IT", "IJ", "", "s.", "@"};
+		printf("%s", ss[macro->mt[i].mtt]);
 		if(macro->mt[i].mtt == MacroTokenCommon)
-			printf(":%s ", token_format(macro->mt[i].pnd));
+			printf("%s ", token_format(macro->mt[i].pnd));
 		else
 			printf(" ");
 	}
@@ -692,19 +698,24 @@ char *macro_format(macro_t *macro) {
 				i ++;
 			}
 		}else if(macro->mt[i].mtt == MacroTokenConcatIT){
-			if(i + 2 >= macro->mtlen || macro->mt[i + 2].mtt >= 4){
+			if(i + 1 >= macro->mtlen || macro->mt[i + 1].mtt >= 4){
 				sprintf(buf + strlen(buf), "@%d:%s ## %s ",
 					macro->mt[i].i, macro->argv[macro->mt[i].i].id,
 					token_format(macro->mt[i + 1].pnd));
 				i ++;
 			}else{
 				sprintf(buf + strlen(buf), "@%d:%s ## ",
-					macro->mt[i].i);
+					macro->mt[i].i, macro->argv[macro->mt[i].i].id);
 			}
 		}else if(macro->mt[i].mtt == MacroTokenConcatIJ){
-			sprintf(buf + strlen(buf), "@%d:%s ## @%d:%s ",
-				macro->mt[i].i, macro->argv[macro->mt[i].i].id,
-				macro->mt[i].j, macro->argv[macro->mt[i].j].id);
+			if(i + 1 >= macro->mtlen || macro->mt[i + 1].mtt >= 4){
+				sprintf(buf + strlen(buf), "@%d:%s ## @%d:%s ",
+					macro->mt[i].i, macro->argv[macro->mt[i].i].id,
+					macro->mt[i].j, macro->argv[macro->mt[i].j].id);
+			}else{
+				sprintf(buf + strlen(buf), "@%d:%s ## ",
+					macro->mt[i].i, macro->argv[macro->mt[i].i].id);
+			}
 		}else if(macro->mt[i].mtt == MacroTokenCommon){
 			sprintf(buf + strlen(buf), "%s ", token_format(macro->mt[i].pnd));
 		}else{
@@ -759,6 +770,12 @@ int init_lexical() {
 			"#define macro(aa, vv, dd) @0:aa @1:vv @2:dd DIV "},
 		{"#define macro(a,b,c) # a vv dd \\/",
 			"#define macro(a, b, c) #0:a vv dd DIV "},
+		{"#define macro(a,b,c) # a",
+			"#define macro(a, b, c) #0:a "},
+		{"#define macro(a,b,c) # a b ## c",
+			"#define macro(a, b, c) #0:a @1:b ## @2:c "},
+		{"#define macro(a,b) a##b",
+			"#define macro(a, b) @0:a ## @1:b "},
 		{"#define macro(a,b,c)  d## vv dd ",
 			"#define macro(a, b, c) d ## vv dd "},
 		{"#define macro(a,b,c)  a## vv dd ",
@@ -769,17 +786,29 @@ int init_lexical() {
 			"#define macro(a, b, c) @0:a ## @2:c dd "},
 		{"#define macro(a,b,c)  vv## vv##vv dd ",
 			"#define macro(a, b, c) vv ## vv ## vv dd "},
+		{"#define macro(a,b,c)  vv## vv##a dd ",
+			"#define macro(a, b, c) vv ## vv ## @0:a dd "},
 		{"#define macro(a,b,c)  vv## a##vv dd ",
 			"#define macro(a, b, c) vv ## @0:a ## vv dd "},
+		{"#define macro(a,b,c)  a## vv##vv dd ",
+			"#define macro(a, b, c) @0:a ## vv ## vv dd "},
+		{"#define macro(a,b,c)  a## b##vv dd ",
+			"#define macro(a, b, c) @0:a ## @1:b ## vv dd "},
+		{"#define macro(a,b,c)  vv ##a## b vv dd ",
+			"#define macro(a, b, c) vv ## @0:a ## @1:b vv dd "},
+		{"#define macro(a,b,c)  c ##a## b vv dd ",
+			"#define macro(a, b, c) @2:c ## @0:a ## @1:b vv dd "},
+		{"#define macro(a,b,c)  vv ##vv## a## vv##b##c##as##q vv dd ",
+			"#define macro(a, b, c) vv ## vv ## @0:a ## vv ## @1:b ## @2:c ## as ## q vv dd "},
+		{"#define macro(a,b,c)  vv ##a## b## vv dd ",
+			"#define macro(a, b, c) vv ## @0:a ## @1:b ## vv dd "},
+		{"#define macro(a,b,c)  vv #### b## vv dd ",
+			"#define macro(a, b, c) vv ## @1:b ## vv dd "},
 	};
 
 	for(int i = 0; i < sizeof(test_macro_string)/sizeof(test_macro_string[0]); i++) {
-		logd("\ntest macro case %d\n", i);
 		tokenize_from_string(test_macro_string[i].sample);
 		macro_t *pma = vector_top(&macro_buffer);
-		if(strcmp(macro_format(pma), test_macro_string[i].ans) != 0) {
-			logw("fail at %d\n", i);
-		}
 		UNIT_TEST_STR_EQUAL(macro_format(pma), test_macro_string[i].ans);
 	}
 
