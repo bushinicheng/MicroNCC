@@ -83,8 +83,8 @@ def genast():
         sym=get_symbol(stream)
         astenum, aststruct=get_rules(stream)
         asth=\
-        "#ifndef __AST_H__\n"+\
-        "#define __AST_H__\n\n"+\
+        "#ifndef AST_H\n"+\
+        "#define AST_H\n\n"+\
             nonterm+\
             "\n\n"+\
             astenum+\

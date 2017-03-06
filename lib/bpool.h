@@ -1,5 +1,5 @@
-#ifndef __BPOOL_H__
-#define __BPOOL_H__
+#ifndef BPOOL_H
+#define BPOOL_H
 
 /*  index                            block
  * +-----+     +------------------------------------------------+

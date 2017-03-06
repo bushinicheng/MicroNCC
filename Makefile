@@ -34,4 +34,4 @@ clean:
 
 count:
 	@printf "total lines: "
-	@find . -name "*.c" -or -name "*.h" | sed "s/\(.\/test.*\|.\/front\/lexical.c\|.\/front\/syntax.c\|.\/front\/syntax.h\)//g" | xargs cat | wc -l
+	@find . -name "*.c" -or -name "*.h" -or -name "*.l" -or -name "*.y" | sed "s/\(.\/test.*\|.\/front\/lexical.c\|.\/front\/syntax.c\|.\/front\/syntax.h\)//g" | xargs cat | wc -l

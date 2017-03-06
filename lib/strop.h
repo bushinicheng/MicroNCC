@@ -1,5 +1,5 @@
-#ifndef __STROP_H__
-#define __STROP_H__
+#ifndef STROP_H
+#define STROP_H
 
 /* return a format string which stored in memory alloced by malloc */
 char *sformat(const char *format, ...);

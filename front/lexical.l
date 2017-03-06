@@ -68,7 +68,8 @@ invalidcomment   \/\*([^\*]|\*[^\/])*$
 "__LINE__"          {}
 "__func__"          {}
 "__FILE__"          {}
-"__VA_ARGS__"       {}
+"__VA_ARGS__"       {return symbol(VA_ARGS);}
+"defined"           {return symbol(DEFINED);}
 
 "="                 {return symbol(ASSIGNOP);}
 "=="                {return symbol(EQ);}
@@ -424,8 +425,8 @@ int swallow_blank_and_newline() {
 bool check_duparg_in_macro(macro_arg_t *arg, size_t len) {
 	for(int i = 0; i < len; i++) {
 		for(int j = i + 1; j < len; j++) {
-			if(strcmp(arg[i].id, arg[j].id) == 0) {
-				eprintf("dupplicate argument '%s' in macro.\n", arg[i].id);
+			if(arg[j].id && strcmp(arg[i].id, arg[j].id) == 0) {
+				eprintf("duplicate argument '%s' in macro.\n", arg[i].id);
 				return true;
 			}
 		}
@@ -435,7 +436,7 @@ bool check_duparg_in_macro(macro_arg_t *arg, size_t len) {
 
 int find_arg_in_macro(macro_arg_t *argv, size_t len, char *id) {
 	for(int i = 0; i < len; i++) {
-		if(strcmp(argv[i].id, id) == 0) {
+		if(argv[i].id && strcmp(argv[i].id, id) == 0) {
 			return i;
 		}
 	}
@@ -443,6 +444,48 @@ int find_arg_in_macro(macro_arg_t *argv, size_t len, char *id) {
 }
 
 vec_t macro_buffer;
+
+macro_t *find_macro_by_id(char *id) {
+	if(!id) return NULL;
+	macro_t *ma = macro_buffer.p;
+	for(int i = vector_size(&macro_buffer) - 1; i >= 0; i--) {
+		if(ma[i].id && strcmp(ma[i].id, id) == 0){
+			return &ma[i];
+		}
+	}
+	return NULL;
+}
+
+bool match_const_macro_exp() {
+	//+, -, *, /, %, <<, >>,
+	//<, >, ==
+	//&, |, ~, ^, &&, ||, !
+	//defined(), ','
+	//warning: no floating, no zero division
+	static int priority[] = {
+		[LP] = 1, [RP] = 1,
+		[LNOT] = 2, [NOT] = 2, [DEFINED] = 2,
+		[MULT] = 3, [DIV] = 3, [MOD] = 3,
+		[LSHIFT] = 4, [RSHIFT] = 4,
+		[LT] = 5, [LE] = 5, [GE] = 5, [GT] = 5,
+		[EQ] = 6, [NE] = 6,
+		[AND] = 7, [XOR] = 8, [OR] = 9, [LAND] = 10, [LOR] = 11,
+		[QOP] = 12, [COLON] = 12, [COMMA] = 13,
+	};
+
+	vec_t opstack, outstack;
+	vector_init(&opstack, sizeof(node_t *));
+	vector_init(&outstack, sizeof(int));
+	if(swallow_space() == NEWLINE) {
+		//TODO:report error
+		return false;
+	}else{
+		vector_push(&opstack, &(yylval.pnd));
+	}
+
+	while(vector_size(&opstack)) {
+	}
+}
 
 int match_macro() {
 	//FIXME:handle error state
@@ -509,7 +552,7 @@ int match_macro() {
 			if(last_state == 2) {
 				//...
 				argv[argc].token = MacroELLIPSIS;
-				argv[argc].id = lastnd->cv.id;
+				argv[argc].id = NULL;
 				argc ++;
 			}else if(last_state == 3){
 				//args...
@@ -521,9 +564,9 @@ int match_macro() {
 			}
 			break;
 		case 5:
+			macro.bt = MacroArgs;
 			if(last_state == 3) {
 				//ID
-				macro.bt = MacroFixedArgs;
 				argv[argc].token = MacroID;
 				argv[argc].id = lastnd->cv.id;
 				argc ++;
@@ -655,10 +698,16 @@ char *macro_format(macro_t *macro) {
 	char *buf = get_memory_pointer();
 	sprintf(buf, "#define %s(", macro->id);
 	for(int i = 0; i < macro->argc; i++) {
-		if(i != macro->argc - 1)
-			sprintf(buf + strlen(buf), "%s, ", macro->argv[i].id);
-		else
+		if(macro->argv[i].token == MacroID)
 			sprintf(buf + strlen(buf), "%s", macro->argv[i].id);
+		else if(macro->argv[i].token == MacroELLIPSIS) {
+			sprintf(buf + strlen(buf), "...");
+		}else if(macro->argv[i].token == MacroIDELLIPSIS){
+			sprintf(buf + strlen(buf), "%s...", macro->argv[i].id);
+		}
+
+		if(i != macro->argc - 1)
+			sprintf(buf + strlen(buf), ", ");
 	}
 	sprintf(buf + strlen(buf), ") ");
 	for(int i = 0; i < macro->mtlen; i++) {
@@ -732,6 +781,18 @@ int yylex() {
 	case MACRO_DEFINE:
 		lexval = match_macro();
 		break;
+	case ID:
+		if(find_macro_by_id(yylval.pnd->cv.id)){
+			//TODO
+		}
+		break;
+	case VA_ARGS:
+		yylval.pnd = new_node();
+		yylval.pnd->token = ID;
+		yylval.pnd->lineno = yylineno;
+		yylval.pnd->column = yycolumn;
+		yylval.pnd->cv.id = "__VA_ARGS__";
+		break;
 	default:
 		break;
 	}
@@ -755,55 +816,59 @@ int init_lexical() {
 		char *sample, *ans;
 	}test_macro_string[] = {
 		{"#define macro a e + - extern int * /",
-			"#define macro() a e ADD SUB extern INT MULT DIV "},
+		 "#define macro() a e ADD SUB extern INT MULT DIV "},
 		{"#define macro a b c \\\n d e\n",
-			"#define macro() a b c d e "},
+		 "#define macro() a b c d e "},
 		{"#define macro() a b c \\\n d e\n",
-			"#define macro() a b c d e "},
+		 "#define macro() a b c d e "},
 		{"#define macro() a b c \\/\n d e\n",
-			"#define macro() a b c DIV "},
+		 "#define macro() a b c DIV "},
 		{"#define macro(aa) aa vv dd \\/\n d e\n",
-			"#define macro(aa) @0:aa vv dd DIV "},
+		 "#define macro(aa) @0:aa vv dd DIV "},
 		{"#define macro(aa) a vv dd \\/\n d e\n",
-			"#define macro(aa) a vv dd DIV "},
+		 "#define macro(aa) a vv dd DIV "},
 		{"#define macro(aa,vv,dd) aa vv dd \\/\n d e\n",
-			"#define macro(aa, vv, dd) @0:aa @1:vv @2:dd DIV "},
+		 "#define macro(aa, vv, dd) @0:aa @1:vv @2:dd DIV "},
 		{"#define macro(a,b,c) # a vv dd \\/",
-			"#define macro(a, b, c) #0:a vv dd DIV "},
+		 "#define macro(a, b, c) #0:a vv dd DIV "},
 		{"#define macro(a,b,c) # a",
-			"#define macro(a, b, c) #0:a "},
+		 "#define macro(a, b, c) #0:a "},
 		{"#define macro(a,b,c) # a b ## c",
-			"#define macro(a, b, c) #0:a @1:b ## @2:c "},
+		 "#define macro(a, b, c) #0:a @1:b ## @2:c "},
 		{"#define macro(a,b) a##b",
-			"#define macro(a, b) @0:a ## @1:b "},
+		 "#define macro(a, b) @0:a ## @1:b "},
 		{"#define macro(a,b,c)  d## vv dd ",
-			"#define macro(a, b, c) d ## vv dd "},
+		 "#define macro(a, b, c) d ## vv dd "},
 		{"#define macro(a,b,c)  a## vv dd ",
-			"#define macro(a, b, c) @0:a ## vv dd "},
+		 "#define macro(a, b, c) @0:a ## vv dd "},
 		{"#define macro(a,b,c)  vv## c dd ",
-			"#define macro(a, b, c) vv ## @2:c dd "},
+		 "#define macro(a, b, c) vv ## @2:c dd "},
 		{"#define macro(a,b,c)  a## c dd ",
-			"#define macro(a, b, c) @0:a ## @2:c dd "},
+		 "#define macro(a, b, c) @0:a ## @2:c dd "},
 		{"#define macro(a,b,c)  vv## vv##vv dd ",
-			"#define macro(a, b, c) vv ## vv ## vv dd "},
+		 "#define macro(a, b, c) vv ## vv ## vv dd "},
 		{"#define macro(a,b,c)  vv## vv##a dd ",
-			"#define macro(a, b, c) vv ## vv ## @0:a dd "},
+		 "#define macro(a, b, c) vv ## vv ## @0:a dd "},
 		{"#define macro(a,b,c)  vv## a##vv dd ",
-			"#define macro(a, b, c) vv ## @0:a ## vv dd "},
+		 "#define macro(a, b, c) vv ## @0:a ## vv dd "},
 		{"#define macro(a,b,c)  a## vv##vv dd ",
-			"#define macro(a, b, c) @0:a ## vv ## vv dd "},
+		 "#define macro(a, b, c) @0:a ## vv ## vv dd "},
 		{"#define macro(a,b,c)  a## b##vv dd ",
-			"#define macro(a, b, c) @0:a ## @1:b ## vv dd "},
+		 "#define macro(a, b, c) @0:a ## @1:b ## vv dd "},
 		{"#define macro(a,b,c)  vv ##a## b vv dd ",
-			"#define macro(a, b, c) vv ## @0:a ## @1:b vv dd "},
+		 "#define macro(a, b, c) vv ## @0:a ## @1:b vv dd "},
 		{"#define macro(a,b,c)  c ##a## b vv dd ",
-			"#define macro(a, b, c) @2:c ## @0:a ## @1:b vv dd "},
+		 "#define macro(a, b, c) @2:c ## @0:a ## @1:b vv dd "},
 		{"#define macro(a,b,c)  vv ##vv## a## vv##b##c##as##q vv dd ",
-			"#define macro(a, b, c) vv ## vv ## @0:a ## vv ## @1:b ## @2:c ## as ## q vv dd "},
+		 "#define macro(a, b, c) vv ## vv ## @0:a ## vv ## @1:b ## @2:c ## as ## q vv dd "},
 		{"#define macro(a,b,c)  vv ##a## b## vv dd ",
-			"#define macro(a, b, c) vv ## @0:a ## @1:b ## vv dd "},
+		 "#define macro(a, b, c) vv ## @0:a ## @1:b ## vv dd "},
 		{"#define macro(a,b,c)  vv #### b## vv dd ",
-			"#define macro(a, b, c) vv ## @1:b ## vv dd "},
+		 "#define macro(a, b, c) vv ## @1:b ## vv dd "},
+		{"#define macro(a,b,...)  vv #### b## __VA_ARGS__ vv dd ",
+		 "#define macro(a, b, ...) vv ## @1:b ## VA_ARGS vv dd "},
+		{"#define macro(a,b...)  vv #### b## __VA_ARGS__ vv dd ",
+		 "#define macro(a, b...) vv ## @1:b ## VA_ARGS vv dd "},
 	};
 
 	for(int i = 0; i < sizeof(test_macro_string)/sizeof(test_macro_string[0]); i++) {

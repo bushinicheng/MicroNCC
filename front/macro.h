@@ -1,5 +1,5 @@
-#ifndef __MACRO_H__
-#define __MACRO_H__
+#ifndef MACRO_H
+#define MACRO_H
 
 /* #define A
  * #define A()
@@ -26,9 +26,7 @@ enum {
 
 enum {
 	MacroNormal,//#define M 12
-	MacroFixedArgs,//#define M() ...
-	MacroVaArgs,//#define M(...) ...
-	MacroArgsEllipsis,//#define M(args...)
+	MacroArgs,//#define M(args...)
 	MacroBad,
 };
 

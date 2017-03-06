@@ -24,6 +24,7 @@ void init_front_global_variables() {
 		loge("no input files.\n");
 	else if(vector_size(&cmd_files) > 1)
 		loge("unable to handle more than one files.\n");
+	logd("load file '%s'\n", files[0]);
 	fp = fopen(files[0], "r");
 	if(!fp)
 		loge("fail to open file '%s'.\n", files[0]);

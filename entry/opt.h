@@ -1,5 +1,5 @@
-#ifndef __OPT_H__
-#define __OPT_H__
+#ifndef OPT_H
+#define OPT_H
 
 enum {
 	ArgumentPrintSyntaxTree,

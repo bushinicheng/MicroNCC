@@ -1,5 +1,5 @@
-#ifndef __AST_H__
-#define __AST_H__
+#ifndef AST_H
+#define AST_H
 
 enum {
 	NONTERMINALBEGIN = 512,
@@ -511,6 +511,8 @@ static char* str_lexval[] = {
 	[STRINGIFY] = "STRINGIFY",
 	[CONCAT] = "CONCAT",
 	[SPACE] = "SPACE",
+	[VA_ARGS] = "VA_ARGS",
+	[DEFINED] = "DEFINED",
 	[Program] = "Program",
 	[ExtDecln] = "ExtDecln",
 	[ExtDeclnList] = "ExtDeclnList",

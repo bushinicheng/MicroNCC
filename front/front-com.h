@@ -1,5 +1,5 @@
-#ifndef __FRONT_COM_H__
-#define __FRONT_COM_H__
+#ifndef FRONT_COM_H
+#define FRONT_COM_H
 
 #include "error.h"
 #include "node.h"

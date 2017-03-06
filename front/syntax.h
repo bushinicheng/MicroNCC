@@ -163,7 +163,9 @@ extern int yydebug;
     MACRO_ERROR = 373,
     STRINGIFY = 374,
     CONCAT = 375,
-    SPACE = 376
+    SPACE = 376,
+    VA_ARGS = 377,
+    DEFINED = 378
   };
 #endif
 
@@ -176,7 +178,7 @@ union YYSTYPE
 
 	node_t *pnd;
 
-#line 180 "front/syntax.h" /* yacc.c:1909  */
+#line 182 "front/syntax.h" /* yacc.c:1909  */
 };
 
 typedef union YYSTYPE YYSTYPE;
